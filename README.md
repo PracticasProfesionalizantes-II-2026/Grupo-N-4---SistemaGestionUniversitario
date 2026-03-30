@@ -1,3 +1,3 @@
 # Grupo-N-4---SistemaGestionUniversitario
-Giordano Martin
+Giordano Martin,
 Ojeda Kevin
