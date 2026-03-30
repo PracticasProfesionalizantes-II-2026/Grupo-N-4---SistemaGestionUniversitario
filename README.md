@@ -1,9 +1,8 @@
 Giordano Martin,
 Ojeda Kevin
 
+2025
 [Link Documentación V1](https://docs.google.com/document/d/1K7SdkbY4a9UeSlPkVLyU_3uC9lLczmPmTM-CarP7JWg/edit?tab=t.0)
-
-[Link Documentación V2](https://docs.google.com/document/d/1GsE1BN4iRZEYlQQUb48V6NqJ_bKWE2LxoPeHL1yvoiE/edit?usp=sharing)
 
 [Link Mockups](https://www.figma.com/design/uz9Gfz40SZZQfPM7BSm6DZ/Responsive-Login-Page--Community-?node-id=180-541&t=gbEONt1hT1G4naf7-1)
 
@@ -11,3 +10,5 @@ Ojeda Kevin
 
 [Link Caso de Uso](https://docs.google.com/document/d/1H6oAlzkMiqMJDnTuQYiDy1yD3_bYfWTaNfj0hg3E4kI/edit?usp=sharing)
 
+2026
+[Link Documentación V2](https://docs.google.com/document/d/1GsE1BN4iRZEYlQQUb48V6NqJ_bKWE2LxoPeHL1yvoiE/edit?usp=sharing)
