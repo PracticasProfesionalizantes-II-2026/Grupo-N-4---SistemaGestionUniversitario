@@ -1,0 +1,233 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\asistencia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\asistencia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\carrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\carrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\examen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\examen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\materia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\materia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\estudiante-materia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\estudiante-materia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\anio.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\anio.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\rol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\rol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\notaexamen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\notaexamen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\estudianteexamen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\estudianteexamen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\estadomateria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\estadomateria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|c:\\users\\mkevi\\onedrive\\documentos\\github\\grupo-n-4---sistema-de-gestion-universitario\\clases-acadion\\clases-acadion\\models\\estadousuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F4B24E05-9BB8-4B96-AC16-508498EFE124}|Clases-Acadion\\Acadion-Sistema de gestion universitario.csproj|solutionrelative:clases-acadion\\models\\estadousuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "EstudianteExamen.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstudianteExamen.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\EstudianteExamen.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstudianteExamen.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\EstudianteExamen.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-31T18:28:46.625Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "NotaExamen.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\NotaExamen.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\NotaExamen.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\NotaExamen.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\NotaExamen.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:46:41.64Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Asistencia.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Asistencia.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Asistencia.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Asistencia.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Asistencia.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:43:46.513Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Usuario.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Usuario.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Usuario.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:38:03.161Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Rol.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Rol.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Rol.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Rol.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Rol.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T22:04:03.389Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Materia.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Materia.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Materia.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Materia.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Materia.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAAABUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:46:58.228Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Anio.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Anio.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Anio.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Anio.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Anio.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAAAAsAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:48:07.996Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Examen.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Examen.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Examen.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Examen.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Examen.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:46:23.706Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Persona.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Persona.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Persona.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Persona.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Persona.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:43:07.284Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Carrera.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Carrera.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Carrera.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Carrera.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Carrera.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T22:06:06.981Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "EstadoMateria.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstadoMateria.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\EstadoMateria.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstadoMateria.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\EstadoMateria.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T22:24:15.692Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Estudiante-Materia.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Estudiante-Materia.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\Estudiante-Materia.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\Estudiante-Materia.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\Estudiante-Materia.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T21:46:02.737Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "EstadoUsuario.cs",
+              "DocumentMoniker": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstadoUsuario.cs",
+              "RelativeDocumentMoniker": "Clases-Acadion\\Models\\EstadoUsuario.cs",
+              "ToolTip": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---Sistema-de-gestion-universitario\\Clases-Acadion\\Clases-Acadion\\Models\\EstadoUsuario.cs",
+              "RelativeToolTip": "Clases-Acadion\\Models\\EstadoUsuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T22:05:34.616Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
