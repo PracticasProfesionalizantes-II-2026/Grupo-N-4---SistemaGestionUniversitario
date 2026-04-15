@@ -13,4 +13,4 @@ Ojeda Kevin
 2026
 [Link Documentación V2](https://docs.google.com/document/d/1GsE1BN4iRZEYlQQUb48V6NqJ_bKWE2LxoPeHL1yvoiE/edit?usp=sharing)
 
-[Link Documentación V2](https://docs.google.com/document/d/1cc3mV6P1VJHxA-aC-L2l-9H8uPBoPo969ti8IO17fVg/edit?usp=sharing)
+[API Rest](https://docs.google.com/document/d/1cc3mV6P1VJHxA-aC-L2l-9H8uPBoPo969ti8IO17fVg/edit?usp=sharing)
