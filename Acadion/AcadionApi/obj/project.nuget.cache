@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "JgVJzxcjXhw=",
+  "dgSpecHash": "E1m3ZaX7D2s=",
   "success": true,
-  "projectFilePath": "C:\\ICES\\Visual Studio Code PC\\Acadion\\AcadionApi\\AcadionApi.csproj",
+  "projectFilePath": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---SistemaGestionUniversitario\\Acadion\\AcadionApi\\AcadionApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mkevi\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\mkevi\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
