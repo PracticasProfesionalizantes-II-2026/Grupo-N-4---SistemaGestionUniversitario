@@ -153,89 +153,62 @@ namespace AcadionApi.Logica
         // =========================
         // OBTENER TODOS
         // =========================
-        public async Task<IEnumerable<UsuarioListaDto>>
-            ObtenerUsuariosAsync()
+        public async Task<IEnumerable<UsuarioListaDto>> ObtenerUsuariosAsync()
         {
-            var usuarios =
-                await _unitOfWork.Usuarios.GetAllAsync();
+        var usuarios = await _unitOfWork.Usuarios.GetAllAsync();
 
-            return usuarios.Select(u => new UsuarioListaDto
-            {
-                Id = u.Id,
-
-                NombreUsuario = u.NombreUsuario,
-
-                Nombre = u.Persona.Nombre,
-
-                Apellido = u.Persona.Apellido,
-
-                Rol = u.Rol.ToString(),
-
-                Estado = u.Estado.ToString()
-            });
+        return usuarios.Select(u => new UsuarioListaDto
+        {
+        Id = u.Id,
+        NombreUsuario = u.NombreUsuario,
+        // Evitamos el NullReferenceException usando el operador ?.
+        Nombre = u.Persona?.Nombre ?? "Sin Nombre",
+        Apellido = u.Persona?.Apellido ?? "Sin Apellido",
+        Rol = u.Rol.ToString(),
+        Estado = u.Estado.ToString()
+        });
         }
+
 
         // =========================
         // OBTENER POR ID
         // =========================
-        public async Task<UsuarioDto?>
-            ObtenerUsuarioPorIdAsync(int id)
+        public async Task<UsuarioDto?> ObtenerUsuarioPorIdAsync(int id)
         {
-            var usuario =
-                await _unitOfWork.Usuarios.GetByIdAsync(id);
+        var usuario = await _unitOfWork.Usuarios.GetByIdAsync(id);
 
-            if (usuario == null)
-                return null;
+        if (usuario == null)
+            return null;
+        return new UsuarioDto
+        {
+        Id = usuario.Id,
+        PersonaId = usuario.PersonaId,
+        NombreUsuario = usuario.NombreUsuario,
 
-            return new UsuarioDto
-            {
-                Id = usuario.Id,
+        // Mapeo seguro de Persona
+        Nombre = usuario.Persona?.Nombre ?? string.Empty,
+        Apellido = usuario.Persona?.Apellido ?? string.Empty,
+        Dni = usuario.Persona?.Dni ?? 0,
+        FechaNacimiento = usuario.Persona?.FechaNacimiento ?? DateTime.MinValue,
 
-                PersonaId = usuario.PersonaId,
+        // Datos Usuario
+        Email = usuario.EmailInstitucional,
+        Rol = usuario.Rol.ToString(),
+        Estado = usuario.Estado.ToString(),
+        FechaCreacion = usuario.FechaCreacion,
+        FechaUltimoAcceso = usuario.FechaUltimoAcceso,
+        TelefonoContacto = usuario.TelefonoContacto,
 
-                NombreUsuario = usuario.NombreUsuario,
+        // Estudiante
+        Matricula = usuario.Matricula,
+        Legajo = usuario.Legajo,
+        PromedioGeneral = usuario.PromedioGeneral,
 
-                // Datos Persona
-                Nombre = usuario.Persona.Nombre,
-
-                Apellido = usuario.Persona.Apellido,
-
-                Dni = usuario.Persona.Dni,
-
-                FechaNacimiento =
-                    usuario.Persona.FechaNacimiento,
-
-                // Datos Usuario
-                Email = usuario.EmailInstitucional,
-
-                Rol = usuario.Rol.ToString(),
-
-                Estado = usuario.Estado.ToString(),
-
-                FechaCreacion = usuario.FechaCreacion,
-
-                FechaUltimoAcceso =
-                    usuario.FechaUltimoAcceso,
-
-                TelefonoContacto =
-                    usuario.TelefonoContacto,
-
-                // Estudiante
-                Matricula = usuario.Matricula,
-
-                Legajo = usuario.Legajo,
-
-                PromedioGeneral =
-                    usuario.PromedioGeneral,
-
-                // Docente
-                Especialidad =
-                    usuario.Especialidad,
-
-                TituloAcademico =
-                    usuario.TituloAcademico
-            };
-        }
+        // Docente
+        Especialidad = usuario.Especialidad,
+        TituloAcademico = usuario.TituloAcademico
+        };
+    }
 
         // =========================
         // ACTUALIZAR

@@ -15,6 +15,19 @@ public class UsuarioRepositorio : Repositorio<Usuario>, IUsuarioRepositorio
     public UsuarioRepositorio(AppDbContext context) : base(context)
     {
     }
+    
+    public override async Task<IEnumerable<Usuario>> GetAllAsync()
+    {
+    return await _context.Usuarios
+        .Include(u => u.Persona)
+        .ToListAsync();
+    }
+    public override async Task<Usuario?> GetByIdAsync(int id)
+    {
+    return await _context.Usuarios
+        .Include(u => u.Persona)
+        .FirstOrDefaultAsync(u => u.Id == id);
+    }
 
     public async Task<Usuario?> GetByNombreUsuarioAsync(string nombreUsuario)
     {

@@ -19,4 +19,5 @@ public interface IUsuarioRepositorio : IRepositorio<Usuario>
     Task<IEnumerable<Usuario>> GetDocentesAsync();
     Task<IEnumerable<Usuario>> GetActivosAsync();
     Task<Usuario?> ValidarCredencialesAsync(string nombreUsuario, string Password);
+    
 }
