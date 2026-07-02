@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcadionApi", "AcadionApi\AcadionApi.csproj", "{DCA8FDC8-86A9-1095-F5C3-C6751B5715C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCA8FDC8-86A9-1095-F5C3-C6751B5715C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCA8FDC8-86A9-1095-F5C3-C6751B5715C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCA8FDC8-86A9-1095-F5C3-C6751B5715C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCA8FDC8-86A9-1095-F5C3-C6751B5715C8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E84B82B4-58D9-44E5-B775-E32D718FF0EB}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "HY1WqDbdo1fCnIpGoPvGUGjgQBYuE2RdOAz2DV0RmeU=",
+  "Source": "AcadionApi",
+  "BasePath": "_content/AcadionApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
