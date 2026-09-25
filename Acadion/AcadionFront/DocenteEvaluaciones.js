@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedEditExam = null;
   const expandedSubjects = new Set();
   form.fecha.value = new Date().toISOString().slice(0, 10);
-  finalForm.fecha.value = new Date().toISOString().slice(0, 10);
+  finalForm.fecha.value = localDateTimeInputValue(new Date());
 
   function showMessage(text, error = false) {
     message.hidden = !text;
@@ -51,11 +51,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatDate(value) {
     if (!value) return "—";
-    return new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(value));
+    const date = new Date(value);
+    const includeTime = date.getHours() !== 0 || date.getMinutes() !== 0;
+    return new Intl.DateTimeFormat("es-AR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      ...(includeTime ? { hour: "2-digit", minute: "2-digit" } : {})
+    }).format(date);
   }
 
-  function dateInputValue(value) {
-    return String(value || "").slice(0, 10);
+  function localDateTimeInputValue(value) {
+    const date = value instanceof Date ? value : new Date(value);
+    const pad = number => String(number).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  function dateTimePayload(value) {
+    return value.length === 10 ? `${value}T00:00:00` : `${value}:00`;
   }
 
   function examType(value) {
@@ -205,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function beginDateEdit(exam) {
     selectedEditExam = exam;
     document.getElementById("editExamTitle").textContent = `${examType(exam.tipoExamen)} · ${exam.materia}`;
-    document.getElementById("editExamDate").value = dateInputValue(exam.fecha);
+    document.getElementById("editExamDate").value = localDateTimeInputValue(exam.fecha);
     editPanel.hidden = false;
     editPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -330,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function createExam(assignment, type, date) {
     return AcadionApi.request("/api/docente/examenes", {
       method: "POST",
-      body: JSON.stringify({ idMateria: assignment.materiaId, cicloLectivo: assignment.cicloLectivo, fecha: `${date}T00:00:00`, tipoExamen: type })
+      body: JSON.stringify({ idMateria: assignment.materiaId, cicloLectivo: assignment.cicloLectivo, fecha: dateTimePayload(date), tipoExamen: type })
     });
   }
 
@@ -370,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const button = editForm.querySelector('button[type="submit"]'); button.disabled = true;
     try {
       await AcadionApi.request(`/api/docente/examenes/${selectedEditExam.idExamen}/fecha`, {
-        method: "PUT", body: JSON.stringify({ fecha: `${document.getElementById("editExamDate").value}T00:00:00` })
+        method: "PUT", body: JSON.stringify({ fecha: dateTimePayload(document.getElementById("editExamDate").value) })
       });
       editPanel.hidden = true; selectedEditExam = null;
       showMessage("La fecha se modificó correctamente.");

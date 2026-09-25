@@ -83,7 +83,7 @@ public static class NotificacionAutomaticaService
             .Include(e => e.Materia)
             .SingleAsync(e => e.IdExamen == examenId);
         if (!examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase) ||
-            examen.Fecha.Date == fechaAnterior.Date)
+            examen.Fecha == fechaAnterior)
             return;
 
         var ahora = DateTime.UtcNow;
@@ -101,7 +101,7 @@ public static class NotificacionAutomaticaService
                 $"AUTO:CAMBIO_FECHA_FINAL:{examenId}:{ahora.Ticks}:ESTUDIANTE:{estudianteId}",
                 "Se modificó la fecha de un examen final",
                 $"El final de {examen.Materia?.Nombre ?? "tu materia"} cambió del " +
-                $"{fechaAnterior:dd/MM/yyyy} al {examen.Fecha:dd/MM/yyyy}.",
+                $"{fechaAnterior:dd/MM/yyyy HH:mm} al {examen.Fecha:dd/MM/yyyy HH:mm}.",
                 ahora, expiracion, examen.IdDocente, null, estudianteId, "Alta");
         }
     }

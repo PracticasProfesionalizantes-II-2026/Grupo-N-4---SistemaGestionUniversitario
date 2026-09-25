@@ -20,14 +20,14 @@
 
       <section id="examEditPanel" class="panel compact-edit-panel" hidden>
         <div><p class="section-kicker">Modificar fecha</p><h2 id="editExamTitle">Evaluación</h2></div>
-        <form id="examEditForm" class="edit-date-form"><label class="form-field">Nueva fecha<input id="editExamDate" type="date" required></label><button class="secondary-button" id="cancelExamEdit" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar fecha</button></form>
+        <form id="examEditForm" class="edit-date-form"><label class="form-field">Nueva fecha y hora<input id="editExamDate" type="datetime-local" required></label><button class="secondary-button" id="cancelExamEdit" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar fecha</button></form>
       </section>
 
       <section class="panel exam-list-panel"><div class="panel-heading"><div><p class="section-kicker">Cursada</p><h2>Evaluaciones creadas</h2><p class="muted">Solo se muestran parciales, trabajos prácticos, presentaciones y recuperatorios.</p></div><div class="evaluation-toolbar"><label class="form-field">Materia<select id="examSubjectFilter"></select></label><button id="refreshEvaluations" class="secondary-button compact-button" type="button">Actualizar</button></div></div><div class="table-wrapper"><table><thead><tr><th>Evaluación</th><th>Materia</th><th>Fecha</th><th>Ciclo</th><th>Notas cargadas</th><th></th></tr></thead><tbody id="evaluationTableBody"><tr><td colspan="6" class="empty-state">Cargando evaluaciones...</td></tr></tbody></table></div></section>
 
       <section class="panel finals-panel">
         <div class="panel-heading"><div><p class="section-kicker">Mesas de examen</p><h2>Exámenes finales</h2><p class="muted">Cada materia muestra sus mesas y únicamente los estudiantes que se inscribieron al final.</p></div><button id="toggleFinalForm" class="primary-button" type="button">+ Programar final</button></div>
-        <form id="finalForm" class="final-create-form" hidden><div class="inline-grid"><label class="form-field span-2">Materia<select id="finalSubject" required></select></label><label class="form-field">Fecha<input name="fecha" type="date" required></label></div><div class="form-actions"><button id="cancelFinal" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Programar final</button></div></form>
+        <form id="finalForm" class="final-create-form" hidden><div class="inline-grid"><label class="form-field span-2">Materia<select id="finalSubject" required></select></label><label class="form-field">Fecha y hora<input name="fecha" type="datetime-local" required></label></div><div class="form-actions"><button id="cancelFinal" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Programar final</button></div></form>
         <div id="finalSubjectList" class="final-subject-list"><p class="empty-state">Cargando materias...</p></div>
       </section>
 

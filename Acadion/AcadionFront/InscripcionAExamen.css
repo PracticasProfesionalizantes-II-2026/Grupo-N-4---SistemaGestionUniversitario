@@ -66,8 +66,12 @@
 .detail-item:nth-child(odd) { border-right: 1px solid #e8e8e8; }
 .detail-label { display: block; margin-bottom: 6px; color: var(--gris); font-size: .68rem; font-weight: 800; text-transform: uppercase; }
 .detail-value { font-size: .88rem; }
-.detail-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+.detail-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 20px; }
 .primary-button { min-height: 42px; padding: 0 18px; border: 0; border-radius: 9px; background: var(--naranja); color: white; font-weight: 700; cursor: pointer; }
+.secondary-button { min-height: 42px; padding: 0 18px; border: 1px solid #d7d7d7; border-radius: 9px; background: white; color: var(--gris-oscuro); font-weight: 700; cursor: pointer; }
+.secondary-button:hover { border-color: #e67920; color: #bf5100; }
+.withdrawal-deadline { width: 100%; margin: 0; color: var(--gris); font-size: .8rem; text-align: right; }
+.withdrawal-deadline.is-closed { color: #a35a2b; }
 .global-state { min-height: 330px; margin-top: 24px; padding: 35px; border: 1px dashed #d4d4d4; border-radius: 14px; background: #fafafa; text-align: center; }
 .global-state .state-icon { color: var(--naranja); font-size: 2.4rem; }
 .global-state h2 { margin: 12px 0 8px; font-size: 1.1rem; }

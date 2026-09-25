@@ -33,10 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
     masterDetail.classList.remove("is-hidden");
   }
 
-  function formatDate(value) {
+  function formatDate(value, includeTime = false) {
     if (!value) return "Fecha a confirmar";
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+    return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("es-AR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      ...(includeTime ? { hour: "2-digit", minute: "2-digit" } : {})
+    }).format(date);
   }
 
   function renderDetail(exam) {
@@ -56,8 +59,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const actions = document.createElement("div"); actions.className = "detail-actions";
     const button = document.createElement("button"); button.type = "button"; button.className = "primary-button"; button.textContent = "Inscribirme";
     if (exam.inscripto) {
-      button.textContent = "Ya estás inscripto";
-      button.disabled = true;
+      if (exam.puedeDarseDeBaja) {
+        button.className = "secondary-button";
+        button.textContent = "Darme de baja";
+        button.addEventListener("click", () => withdrawExam(exam, button));
+        const deadline = document.createElement("p");
+        deadline.className = "withdrawal-deadline";
+        deadline.textContent = `Podés darte de baja hasta el ${formatDate(exam.limiteBaja, true)}.`;
+        actions.append(deadline);
+      } else {
+        button.textContent = "Inscripto";
+        button.disabled = true;
+        const deadline = document.createElement("p");
+        deadline.className = "withdrawal-deadline is-closed";
+        deadline.textContent = "El plazo para darte de baja finalizó (24 horas antes del examen).";
+        actions.append(deadline);
+      }
     } else if (exam.habilitado === false) {
       button.textContent = "No disponible";
       button.disabled = true;
@@ -84,6 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
       button.disabled = false;
       button.textContent = "Inscribirme";
       setStatus(error.message || "No fue posible realizar la inscripción.", "danger");
+    }
+  }
+
+  async function withdrawExam(exam, button) {
+    if (!window.confirm(`¿Querés darte de baja del final de ${exam.materia}?`)) return;
+    button.disabled = true;
+    button.textContent = "Procesando…";
+    try {
+      await AcadionApi.request(`/api/me/examenes/${exam.idExamen}/inscripcion`, { method: "DELETE" });
+      exam.inscripto = false;
+      exam.puedeDarseDeBaja = false;
+      setStatus("Te diste de baja del examen correctamente.", "success");
+      renderDetail(exam);
+      renderExams();
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = "Darme de baja";
+      setStatus(error.message || "No fue posible realizar la baja.", "danger");
     }
   }
 

@@ -579,6 +579,7 @@ public static class PortalEndpoints
             var usuarioId = http.User.ObtenerUsuarioId();
             var habilitadoFinancieramente = await EstaHabilitadoFinancieramenteAsync(usuarioId, context);
             var ahora = DateTime.UtcNow;
+            var ahoraArgentina = ObtenerAhoraArgentina();
             var inscripciones = context.EstudianteMaterias.Where(em =>
                 em.IdEstudiante == usuarioId && em.Estado != "Cancelada");
             var examenes = await context.Set<Examen>().AsNoTracking()
@@ -612,6 +613,9 @@ public static class PortalEndpoints
                 e.TipoExamen,
                 e.CicloLectivo,
                 e.Inscripto,
+                PuedeDarseDeBaja = e.Inscripto &&
+                    ahoraArgentina < ConvertirAFechaArgentina(e.Fecha).AddHours(-24),
+                LimiteBaja = ConvertirAFechaArgentina(e.Fecha).AddHours(-24),
                 Habilitado = e.PeriodoAbierto && habilitadoFinancieramente,
                 MotivoBloqueo = !e.PeriodoConfigurado
                     ? "La secretaría todavía no configuró el período de inscripción a finales."
@@ -671,6 +675,37 @@ public static class PortalEndpoints
                 inscripcion.Estado,
                 inscripcion.FechaInscripcionUtc
             });
+        });
+
+        me.MapDelete("/examenes/{examenId:int}/inscripcion", async (int examenId,
+            HttpContext http, AppDbContext context) =>
+        {
+            if (!http.User.IsInRole(RolesSistema.Estudiante)) return Results.Forbid();
+
+            var usuarioId = http.User.ObtenerUsuarioId();
+            var inscripcion = await context.InscripcionesExamenes
+                .Include(i => i.Examen)
+                .SingleOrDefaultAsync(i => i.ExamenId == examenId && i.EstudianteId == usuarioId);
+            if (inscripcion is null)
+                return Results.NotFound(new { mensaje = "No estás inscripto en este examen." });
+            if (!EsFinal(inscripcion.Examen))
+                return Results.BadRequest(new { mensaje = "Solo es posible gestionar inscripciones a exámenes finales." });
+
+            var limiteBaja = ConvertirAFechaArgentina(inscripcion.Examen.Fecha).AddHours(-24);
+            if (ObtenerAhoraArgentina() >= limiteBaja)
+            {
+                return Results.Conflict(new
+                {
+                    mensaje = $"El plazo para darte de baja finalizó el {limiteBaja:dd/MM/yyyy 'a las' HH:mm}."
+                });
+            }
+
+            context.InscripcionesExamenes.Remove(inscripcion);
+            await context.NotificacionesGenerales
+                .Where(n => n.ClaveAutomatica == $"AUTO:EXAMEN:{examenId}:ESTUDIANTE:{usuarioId}")
+                .ExecuteDeleteAsync();
+            await context.SaveChangesAsync();
+            return Results.Ok(new { mensaje = "Te diste de baja del examen correctamente." });
         });
 
         me.MapGet("/notas", async (HttpContext http, AppDbContext context) =>
@@ -1220,5 +1255,23 @@ public static class PortalEndpoints
         if (!tieneCuotaActualHabilitada) return false;
         return !await cuotasVencidas.AnyAsync(c =>
             c.Estado != EstadoPago.AlDia && c.Estado != EstadoPago.Exentado);
+    }
+
+    private static DateTime ObtenerAhoraArgentina() =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ObtenerZonaArgentina());
+
+    // Las fechas de mesa se cargan como horario local argentino, sin zona horaria.
+    private static DateTime ConvertirAFechaArgentina(DateTime fecha) =>
+        fecha.Kind == DateTimeKind.Utc
+            ? TimeZoneInfo.ConvertTimeFromUtc(fecha, ObtenerZonaArgentina())
+            : DateTime.SpecifyKind(fecha, DateTimeKind.Unspecified);
+
+    private static TimeZoneInfo ObtenerZonaArgentina()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Argentina Standard Time"); }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+        }
     }
 }
