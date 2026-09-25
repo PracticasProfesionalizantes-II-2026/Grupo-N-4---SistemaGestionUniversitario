@@ -13,7 +13,7 @@ public interface IUsuarioRepositorio : IRepositorio<Usuario>
 {
     Task<Usuario?> GetByNombreUsuarioAsync(string nombreUsuario);
     Task<Usuario?> GetByEmailInstitucionalAsync(string email);
-    Task<IEnumerable<Usuario>> GetByRolAsync(Rol rol);
+    Task<IEnumerable<Usuario>> GetByRolAsync(int rolId);
     Task<IEnumerable<Usuario>> GetByEstadoAsync(EstadoUsuario estado);
     Task<IEnumerable<Usuario>> GetEstudiantesAsync();
     Task<IEnumerable<Usuario>> GetDocentesAsync();

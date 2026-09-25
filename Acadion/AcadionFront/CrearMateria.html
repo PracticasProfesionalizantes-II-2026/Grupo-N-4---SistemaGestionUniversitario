@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Crear materia</title>
+  <link rel="stylesheet" href="CrearMateria.css">
+  <link rel="stylesheet" href="Admin.css">
+</head>
+<body data-section="admin" data-page="CrearMateria">
+  <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
+    <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+    <section class="page-content">
+      <div class="admin-heading"><div><p class="section-kicker">Plan de estudios</p><h1>Crear materia</h1><p>Agregá una materia a una carrera con sus horarios y correlatividades.</p></div><a class="secondary-button" href="GestionMaterias.html">Administrar materias</a></div>
+      <section class="panel">
+        <div class="panel-heading"><div><p class="section-kicker">Nueva materia</p><h2>Datos académicos</h2></div></div>
+        <form id="subjectForm">
+          <div class="inline-grid">
+            <label class="form-field">Carrera<select name="idCarrera" id="subjectCareer" required><option value="">Seleccionar carrera</option></select></label>
+            <label class="form-field">Año de cursado<select name="idAnio" id="subjectYear" required disabled><option value="">Seleccionar año</option></select></label>
+            <label class="form-field">Nombre de la materia<input name="nombre" required maxlength="150" placeholder="Ej. Matemática II"></label>
+            <label class="form-field">Modalidad<select name="modalidad" required><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Híbrida">Híbrida</option></select></label>
+            <label class="form-field">Estado<select name="estado"><option value="Activa">Activa</option><option value="Inactiva">Inactiva</option></select></label>
+            <label class="form-field">Duración de la materia<select name="tipoCursada" id="subjectType" required><option value="Anual">Anual</option><option value="Cuatrimestral">Cuatrimestral</option><option value="Bimestral">Bimestral</option></select></label>
+            <label class="form-field">Período<select name="numeroPeriodo" id="subjectPeriod" disabled><option value="">No corresponde</option></select></label>
+            <label class="form-field">Correlativas requeridas<select name="correlativas" id="subjectPrerequisites" multiple disabled></select></label>
+            <p class="field-help span-2">Solo se muestran materias de años anteriores de la carrera seleccionada. Podés elegir varias con Ctrl + clic.</p>
+          </div>
+          <div class="panel-heading schedule-heading"><div><p class="section-kicker">Cursado</p><h2>Horarios</h2></div><button id="addSchedule" class="secondary-button" type="button">+ Agregar horario</button></div>
+          <div id="scheduleList"></div>
+          <div class="form-actions"><button id="saveSubject" class="primary-button" type="submit">Crear materia</button></div>
+          <p class="status-message" id="subjectMessage" role="status"></p>
+        </form>
+      </section>
+    </section>
+  </main></div>
+  <script src="Api.js"></script><script src="Comun.js"></script><script src="CrearMateria.js"></script>
+</body>
+</html>

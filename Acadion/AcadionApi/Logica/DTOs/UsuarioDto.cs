@@ -39,10 +39,10 @@ namespace AcadionApi.DTOs
         public string Email { get; set; } = string.Empty;
         public string Rol { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
+        public string FotoPerfilUrl { get; set; } = string.Empty;
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaUltimoAcceso { get; set; }
         public string TelefonoContacto { get; set; } = string.Empty;
-        // Estudiante
         public string Matricula { get; set; } = string.Empty;
         public string Legajo { get; set; } = string.Empty;
         public double PromedioGeneral { get; set; }
@@ -61,6 +61,7 @@ namespace AcadionApi.DTOs
         public string Apellido { get; set; } = string.Empty;
         public string Rol { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
+        public string FotoPerfilUrl { get; set; } = string.Empty;
     }
 
     // =========================
@@ -73,9 +74,6 @@ namespace AcadionApi.DTOs
         public int Rol { get; set; }
         public int Estado { get; set; }
         public string TelefonoContacto { get; set; } = string.Empty;
-        // Estudiante
-        public string Matricula { get; set; } = string.Empty;
-        public string Legajo { get; set; } = string.Empty;
         public double PromedioGeneral { get; set; }
         // Docente
         public string Especialidad { get; set; } = string.Empty;

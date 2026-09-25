@@ -18,7 +18,9 @@ public class Examen
     public Usuario? Docente { get; set; }
 
     public DateTime Fecha { get; set; }
-    public string TipoExamen { get; set; } = "Parcial"; // "Parcial", "Final", "Recuperatorio"
+    public string TipoExamen { get; set; } = "Parcial";
+    public decimal NotaMinimaRegularizacion { get; set; } = 6;
+    public decimal? NotaMinimaPromocion { get; set; }
 
     public List<NotaExamen> Notas { get; set; } = new List<NotaExamen>();
 }

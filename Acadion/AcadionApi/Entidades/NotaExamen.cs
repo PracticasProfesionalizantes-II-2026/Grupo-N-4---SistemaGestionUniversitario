@@ -19,6 +19,9 @@ public class NotaExamen
     // Datos de la calificación según tu diagrama
     public decimal Nota { get; set; }       // Ejemplo: Nota final (7.5, 8.0, 10)
 
+    [MaxLength(30)]
+    public string Condicion { get; set; } = "Desaprobó";
+
     // Opcional: Podrías agregar observaciones por si el alumno dejó el examen incompleto, etc.
     public string? Observaciones { get; set; } 
 }

@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapNotaExamenEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/notas");
+            var group = routes.MapGroup("/notas")
+                .RequierePermiso(PermisosSistema.InscripcionesGestionar);
 
             group.MapGet("/", async (INotaExamenLogica notaLogica) =>
             {
@@ -49,6 +51,10 @@ namespace AcadionApi.Endpoints
                 catch (ArgumentException ex)
                 {
                     return Results.BadRequest(ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
                 }
                 catch (Exception)
                 {

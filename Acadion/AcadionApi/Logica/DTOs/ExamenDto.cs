@@ -19,6 +19,8 @@ namespace AcadionApi.DTOs
         public int IdDocente { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoExamen { get; set; } = string.Empty;
+        public decimal NotaMinimaRegularizacion { get; set; }
+        public decimal? NotaMinimaPromocion { get; set; }
     }
 
     public class ExamenActualizarDto
@@ -28,5 +30,16 @@ namespace AcadionApi.DTOs
         public int IdDocente { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoExamen { get; set; } = "Parcial";
+    }
+
+    public class ExamenFechaActualizarDto
+    {
+        public DateTime Fecha { get; set; }
+    }
+
+    public class CriteriosEvaluacionDto
+    {
+        public decimal NotaMinimaRegularizacion { get; set; }
+        public decimal? NotaMinimaPromocion { get; set; }
     }
 }

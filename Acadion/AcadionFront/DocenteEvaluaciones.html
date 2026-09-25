@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Evaluaciones y notas</title>
+  <link rel="stylesheet" href="Docente.css">
+</head>
+<body data-section="teacher" data-page="DocenteEvaluaciones">
+  <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
+    <header class="topbar"><a class="back-button" href="PanelDocente.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="DocentePerfil.html" aria-label="Mi perfil"></a></div></header>
+    <section class="page-content">
+      <div class="admin-heading"><div><p class="section-kicker">Planificación docente</p><h1>Evaluaciones y notas</h1><p>Gestioná las evaluaciones de cursada y las actas de exámenes finales.</p></div><button id="toggleEvaluationForm" class="primary-button" type="button">+ Crear evaluación</button></div>
+      <div id="evaluationMessage" class="notice-strip" hidden></div>
+
+      <section id="evaluationCreatePanel" class="panel evaluation-create-panel" hidden>
+        <div class="panel-heading"><div><p class="section-kicker">Nueva evaluación de cursada</p><h2>Datos de la evaluación</h2><p class="muted">Usá este formulario para parciales, trabajos prácticos, presentaciones y recuperatorios.</p></div><button id="closeEvaluationForm" class="secondary-button compact-button" type="button">Cerrar</button></div>
+        <form id="evaluationForm"><div class="inline-grid"><label class="form-field span-2">Materia<select id="evaluationSubject" required></select></label><label class="form-field">Tipo<select name="tipoExamen" required><option value="Parcial">Parcial</option><option value="TrabajoPractico">Trabajo práctico</option><option value="Presentacion">Presentación</option><option value="Recuperatorio">Recuperatorio</option></select></label><label class="form-field">Fecha<input name="fecha" type="date" required></label></div><div class="form-actions"><button id="cancelEvaluation" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Crear evaluación</button></div></form>
+      </section>
+
+      <section id="examEditPanel" class="panel compact-edit-panel" hidden>
+        <div><p class="section-kicker">Modificar fecha</p><h2 id="editExamTitle">Evaluación</h2></div>
+        <form id="examEditForm" class="edit-date-form"><label class="form-field">Nueva fecha<input id="editExamDate" type="date" required></label><button class="secondary-button" id="cancelExamEdit" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar fecha</button></form>
+      </section>
+
+      <section class="panel exam-list-panel"><div class="panel-heading"><div><p class="section-kicker">Cursada</p><h2>Evaluaciones creadas</h2><p class="muted">Solo se muestran parciales, trabajos prácticos, presentaciones y recuperatorios.</p></div><div class="evaluation-toolbar"><label class="form-field">Materia<select id="examSubjectFilter"></select></label><button id="refreshEvaluations" class="secondary-button compact-button" type="button">Actualizar</button></div></div><div class="table-wrapper"><table><thead><tr><th>Evaluación</th><th>Materia</th><th>Fecha</th><th>Ciclo</th><th>Notas cargadas</th><th></th></tr></thead><tbody id="evaluationTableBody"><tr><td colspan="6" class="empty-state">Cargando evaluaciones...</td></tr></tbody></table></div></section>
+
+      <section class="panel finals-panel">
+        <div class="panel-heading"><div><p class="section-kicker">Mesas de examen</p><h2>Exámenes finales</h2><p class="muted">Cada materia muestra sus mesas y únicamente los estudiantes que se inscribieron al final.</p></div><button id="toggleFinalForm" class="primary-button" type="button">+ Programar final</button></div>
+        <form id="finalForm" class="final-create-form" hidden><div class="inline-grid"><label class="form-field span-2">Materia<select id="finalSubject" required></select></label><label class="form-field">Fecha<input name="fecha" type="date" required></label></div><div class="form-actions"><button id="cancelFinal" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Programar final</button></div></form>
+        <div id="finalSubjectList" class="final-subject-list"><p class="empty-state">Cargando materias...</p></div>
+      </section>
+
+      <section id="gradePanel" class="panel grade-panel" hidden>
+        <div class="panel-heading"><div><p class="section-kicker">Calificaciones</p><h2 id="gradeTitle">Asignar notas</h2><p id="gradeSubtitle" class="muted"></p></div><button id="closeGradePanel" class="secondary-button compact-button" type="button">Cerrar</button></div>
+        <div class="grading-criteria">
+          <label class="form-field">Nota para regularizar<input id="regularGrade" type="number" min="0" max="10" step="0.01" required></label>
+          <label id="promotionToggleField" class="promotion-toggle"><input id="enablePromotion" type="checkbox"> Habilitar promoción</label>
+          <label id="promotionGradeField" class="form-field" hidden>Nota para promocionar<input id="promotionGrade" type="number" min="0" max="10" step="0.01"></label>
+          <p id="gradeDeadline" class="grading-deadline"></p>
+        </div>
+        <div class="table-wrapper"><table><thead><tr><th>Estudiante</th><th>Nota</th><th>Condición</th><th>Observaciones</th></tr></thead><tbody id="gradeBody"><tr><td colspan="4" class="empty-state">Cargando estudiantes...</td></tr></tbody></table></div><div class="form-actions"><button id="saveGrades" class="primary-button" type="button" disabled>Guardar criterios y notas</button></div>
+      </section>
+    </section>
+  </main></div>
+  <script src="Api.js"></script><script src="Comun.js"></script><script src="DocenteEvaluaciones.js"></script>
+</body>
+</html>

@@ -29,6 +29,11 @@ namespace AcadionApi.Logica
                 IdDocente = dto.IdDocente,
                 Fecha = dto.Fecha,
                 Tipo = dto.Tipo,
+                TipoClase = dto.TipoClase,
+                TemaDictado = dto.TemaDictado,
+                CantidadInasistencias = dto.Tipo.Equals("Ausente", StringComparison.OrdinalIgnoreCase)
+                    ? Math.Max(1, dto.CantidadInasistencias)
+                    : 0,
                 Observaciones = dto.Observaciones
             };
 
@@ -42,6 +47,10 @@ namespace AcadionApi.Logica
                 IdDocente = nuevaAsistencia.IdDocente,
                 Fecha = nuevaAsistencia.Fecha,
                 Tipo = nuevaAsistencia.Tipo,
+                TipoClase = nuevaAsistencia.TipoClase,
+                TemaDictado = nuevaAsistencia.TemaDictado,
+                Justificada = nuevaAsistencia.Justificada,
+                CantidadInasistencias = nuevaAsistencia.CantidadInasistencias,
                 Observaciones = nuevaAsistencia.Observaciones
             };
         }
@@ -56,6 +65,10 @@ namespace AcadionApi.Logica
                 IdDocente = a.IdDocente,
                 Fecha = a.Fecha,
                 Tipo = a.Tipo,
+                TipoClase = a.TipoClase,
+                TemaDictado = a.TemaDictado,
+                Justificada = a.Justificada,
+                CantidadInasistencias = a.CantidadInasistencias,
                 Observaciones = a.Observaciones
             });
         }
@@ -72,6 +85,10 @@ namespace AcadionApi.Logica
                 IdDocente = a.IdDocente,
                 Fecha = a.Fecha,
                 Tipo = a.Tipo,
+                TipoClase = a.TipoClase,
+                TemaDictado = a.TemaDictado,
+                Justificada = a.Justificada,
+                CantidadInasistencias = a.CantidadInasistencias,
                 Observaciones = a.Observaciones
             };
         }
@@ -86,6 +103,13 @@ namespace AcadionApi.Logica
             a.IdDocente = dto.IdDocente;
             a.Fecha = dto.Fecha;
             a.Tipo = dto.Tipo;
+            a.TipoClase = dto.TipoClase;
+            a.TemaDictado = dto.TemaDictado;
+            a.CantidadInasistencias = dto.Tipo.Equals("Ausente", StringComparison.OrdinalIgnoreCase)
+                ? Math.Max(1, dto.CantidadInasistencias)
+                : 0;
+            if (!dto.Tipo.Equals("Ausente", StringComparison.OrdinalIgnoreCase))
+                a.Justificada = false;
             a.Observaciones = dto.Observaciones;
 
             await _unitOfWork.Asistencias.UpdateAsync(a);

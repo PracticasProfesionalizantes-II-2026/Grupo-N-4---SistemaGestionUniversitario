@@ -4,16 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Repositorios;
+using AcadionApi.Datos;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcadionApi.Logica
 {
     public class ExamenLogica : IExamenLogica
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly AppDbContext _context;
 
-        public ExamenLogica(IUnitOfWork unitOfWork)
+        public ExamenLogica(IUnitOfWork unitOfWork, AppDbContext context)
         {
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<ExamenDto> RegistrarExamenAsync(ExamenCrearDto dto)
@@ -22,6 +26,11 @@ namespace AcadionApi.Logica
             {
                 throw new ArgumentException("La materia y el tipo de examen son requeridos.");
             }
+
+            if (!await _context.DocentesMaterias.AnyAsync(dm =>
+                dm.IdDocente == dto.IdDocente && dm.IdMateria == dto.IdMateria &&
+                dm.CicloLectivo == dto.CicloLectivo && dm.Activa))
+                throw new ArgumentException("El docente no está asignado a esa materia y ciclo lectivo.");
 
             var nuevoExamen = new Examen
             {
@@ -42,7 +51,9 @@ namespace AcadionApi.Logica
                 CicloLectivo = nuevoExamen.CicloLectivo,
                 IdDocente = nuevoExamen.IdDocente,
                 Fecha = nuevoExamen.Fecha,
-                TipoExamen = nuevoExamen.TipoExamen
+                TipoExamen = nuevoExamen.TipoExamen,
+                NotaMinimaRegularizacion = nuevoExamen.NotaMinimaRegularizacion,
+                NotaMinimaPromocion = nuevoExamen.NotaMinimaPromocion
             };
         }
 
@@ -56,7 +67,9 @@ namespace AcadionApi.Logica
                 CicloLectivo = e.CicloLectivo,
                 IdDocente = e.IdDocente,
                 Fecha = e.Fecha,
-                TipoExamen = e.TipoExamen
+                TipoExamen = e.TipoExamen,
+                NotaMinimaRegularizacion = e.NotaMinimaRegularizacion,
+                NotaMinimaPromocion = e.NotaMinimaPromocion
             });
         }
 
@@ -72,7 +85,9 @@ namespace AcadionApi.Logica
                 CicloLectivo = e.CicloLectivo,
                 IdDocente = e.IdDocente,
                 Fecha = e.Fecha,
-                TipoExamen = e.TipoExamen
+                TipoExamen = e.TipoExamen,
+                NotaMinimaRegularizacion = e.NotaMinimaRegularizacion,
+                NotaMinimaPromocion = e.NotaMinimaPromocion
             };
         }
 

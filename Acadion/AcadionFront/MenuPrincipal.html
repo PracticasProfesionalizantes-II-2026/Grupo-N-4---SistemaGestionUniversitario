@@ -1,0 +1,144 @@
+<!-- inicio.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Inicio</title>
+  <link rel="stylesheet" href="MenuPrincipal.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div>
+        <a class="logo" href="MenuPrincipal.html">Acadion<span>.</span></a>
+
+        <nav class="menu" aria-label="Menú principal">
+          <a class="menu-item active" href="MenuPrincipal.html">
+            <span class="menu-icon">⌂</span>
+            Inicio
+          </a>
+          <a class="menu-item" href="InscripcionAMateria.html">
+            <span class="menu-icon">▣</span>
+            Inscripción a materias
+          </a>
+          <a class="menu-item" href="InscripcionAExamen.html">
+            <span class="menu-icon">▤</span>
+            Inscripción a exámenes
+          </a>
+          <a class="menu-item" href="MateriasEnCurso.html">
+            <span class="menu-icon">◫</span>
+            Reportes
+          </a>
+          <a class="menu-item" href="MisDatosPersonales.html">
+            <span class="menu-icon">♙</span>
+            Mis datos personales
+          </a>
+        </nav>
+      </div>
+
+      <button id="logoutButton" class="logout-button" type="button">
+        Cerrar sesión
+      </button>
+    </aside>
+
+    <main class="main-content">
+      <header class="welcome-card">
+        <div class="welcome-copy">
+          <p class="eyebrow">INICIO</p>
+          <h1 id="welcomeTitle">¡Hola, estudiante!</h1>
+          <p class="welcome-text">Bienvenido/a a tu espacio académico.</p>
+          <p id="studentProposal" class="proposal">Propuesta: Carrera sin informar</p>
+        </div>
+
+        <div class="header-actions">
+          <button class="notification-button" type="button" aria-label="Notificaciones">
+            ♧
+            <span class="notification-dot"></span>
+          </button>
+          <img
+            id="profileImage"
+            class="profile-image"
+            src="https://ui-avatars.com/api/?name=Estudiante&background=ff7a00&color=fff&bold=true"
+            alt="Foto de perfil"
+          >
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <section class="schedule-card">
+          <div class="card-heading">
+            <div>
+              <h2>Horarios académicos</h2>
+              <p>Tu cronograma semanal de cursada</p>
+            </div>
+            <label class="search-box">
+              <span>⌕</span>
+              <input id="subjectSearch" type="search" placeholder="Buscar por materia">
+            </label>
+          </div>
+
+          <div class="schedule-table-wrapper">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Horario</th>
+                  <th>Lunes</th>
+                  <th>Martes</th>
+                  <th>Miércoles</th>
+                  <th>Jueves</th>
+                  <th>Viernes</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleBody">
+                <tr><td colspan="6" class="schedule-empty">Cargando tus horarios…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <span id="scheduleCount">Cargando materias…</span>
+            <div>
+              <button type="button" disabled>‹</button>
+              <button class="page-active" type="button">1</button>
+              <button type="button" disabled>›</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="transport-card">
+          <div class="transport-header">
+            <div>
+              <h2>Horarios de transporte</h2>
+              <p>Servicio escolar</p>
+            </div>
+          </div>
+
+          <div class="transport-table-wrapper">
+            <table class="transport-table">
+              <thead>
+                <tr>
+                  <th>Salida desde terminal</th>
+                  <th>Llegada escuela</th>
+                  <th>Llegada terminal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>07:15</td><td>07:45</td><td>12:30</td></tr>
+                <tr><td>08:30</td><td>09:00</td><td>14:15</td></tr>
+                <tr><td>11:45</td><td>12:15</td><td>17:30</td></tr>
+                <tr><td>13:30</td><td>14:00</td><td>19:15</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="transport-note">Los horarios pueden variar según el recorrido.</p>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="Api.js"></script>
+  <script src="MenuPrincipal.js"></script>
+</body>
+</html>

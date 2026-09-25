@@ -1,0 +1,42 @@
+@import url("Comun.css");
+
+.attendance-workspace { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(420px, 1.4fr); gap: 20px; align-items: start; }
+.teacher-directory, .attendance-panel { margin: 0; }
+.teacher-search { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 0 14px; border: 1px solid #d8d8d8; border-radius: 11px; background: #f7f7f7; }
+.teacher-search:focus-within { border-color: var(--naranja); box-shadow: 0 0 0 3px #ffae001f; background: white; }
+.teacher-search span { color: #777; font-size: 20px; }
+.teacher-search input { width: 100%; min-height: 44px; border: 0; outline: 0; background: transparent; font: inherit; }
+.teachers-list { display: grid; gap: 9px; max-height: 525px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+.teacher-card { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px; border: 1px solid #e3e3e3; border-radius: 13px; background: white; color: #171717; text-align: left; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.teacher-card:hover { transform: translateY(-1px); border-color: #b9b9b9; background: #fafafa; }
+.teacher-card.active { border-color: var(--naranja); background: #fff8e8; box-shadow: inset 3px 0 var(--naranja); }
+.teacher-avatar { display: grid; flex: 0 0 42px; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: #171717; color: white; font-size: 13px; font-weight: 800; }
+.teacher-card.active .teacher-avatar { background: var(--naranja); color: #171717; }
+.teacher-card-copy { display: grid; min-width: 0; gap: 3px; }
+.teacher-card-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-card-copy small { color: #696969; }
+.selected-teacher { display: flex; align-items: center; gap: 14px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1px solid #e7e7e7; }
+.selected-teacher .teacher-avatar { width: 52px; height: 52px; flex-basis: 52px; border-radius: 15px; background: var(--naranja); color: #171717; }
+.selected-teacher h2 { margin: 2px 0 4px; }
+.attendance-status { min-width: 0; padding: 0; border: 0; }
+.attendance-status legend { margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+.status-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.status-options label { cursor: pointer; }
+.status-options input { position: absolute; opacity: 0; pointer-events: none; }
+.status-options span { display: grid; min-height: 42px; place-items: center; border: 1px solid #d5d5d5; border-radius: 10px; background: white; font-weight: 700; }
+.status-options input:checked + span { border-color: var(--naranja); background: #fff2cf; box-shadow: inset 0 0 0 1px var(--naranja); }
+.status-options label:last-child input:checked + span { border-color: #d25b5b; background: #fff0f0; box-shadow: inset 0 0 0 1px #d25b5b; color: #9b2828; }
+.attendance-panel[hidden] { display: none; }
+.attendance-state { display: inline-flex; padding: 5px 10px; border-radius: 99px; font-size: 12px; font-weight: 800; }
+.attendance-state.present { background: #dff5e8; color: #17643a; }
+.attendance-state.absent { background: #ffe7e7; color: #a32d2d; }
+.table-panel .compact-button { min-width: 0; padding: 8px 12px; white-space: nowrap; }
+
+@media (max-width: 1050px) {
+  .attendance-workspace { grid-template-columns: 1fr; }
+  .teachers-list { max-height: 360px; }
+}
+
+@media (max-width: 620px) {
+  .status-options { grid-template-columns: 1fr; }
+}

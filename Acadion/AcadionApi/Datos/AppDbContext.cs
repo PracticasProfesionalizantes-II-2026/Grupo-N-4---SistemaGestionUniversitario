@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using AcadionApi.Seguridad;
 
 
 namespace AcadionApi.Datos;
@@ -12,6 +13,19 @@ public class AppDbContext : DbContext
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Materia> Materias { get; set; }
     public DbSet<EstudianteMateria> EstudianteMaterias { get; set; }
+    public DbSet<Rol> Roles { get; set; }
+    public DbSet<Permiso> Permisos { get; set; }
+    public DbSet<RolPermiso> RolesPermisos { get; set; }
+    public DbSet<RegistroAsistenciaPersonal> RegistrosAsistenciaPersonal { get; set; }
+    public DbSet<DocenteMateria> DocentesMaterias { get; set; }
+    public DbSet<NotificacionGeneral> NotificacionesGenerales { get; set; }
+    public DbSet<PerfilFinanciamiento> PerfilesFinanciamiento { get; set; }
+    public DbSet<Allegado> Allegados { get; set; }
+    public DbSet<MatriculaInicial> MatriculasIniciales { get; set; }
+    public DbSet<CuotaMensual> CuotasMensuales { get; set; }
+    public DbSet<InscripcionExamen> InscripcionesExamenes { get; set; }
+    public DbSet<PeriodoInscripcionMateria> PeriodosInscripcionMaterias { get; set; }
+    public DbSet<PeriodoInscripcionExamen> PeriodosInscripcionExamenes { get; set; }
     
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,6 +35,52 @@ public class AppDbContext : DbContext
     // Indicamos que queremos tablas separadas para la herencia
     modelBuilder.Entity<Persona>().ToTable("Personas");
     modelBuilder.Entity<Usuario>().ToTable("Usuarios");
+
+    modelBuilder.Entity<Usuario>()
+        .Property(u => u.RolId)
+        .HasColumnName("Rol");
+
+    modelBuilder.Entity<Usuario>()
+        .HasOne(u => u.Rol)
+        .WithMany(r => r.Usuarios)
+        .HasForeignKey(u => u.RolId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Usuario>()
+        .HasIndex(u => u.NombreUsuario)
+        .IsUnique();
+
+    modelBuilder.Entity<Usuario>()
+        .HasIndex(u => u.Legajo)
+        .HasFilter("[Legajo] <> ''")
+        .IsUnique();
+
+    modelBuilder.Entity<Usuario>()
+        .HasOne(u => u.Carrera)
+        .WithMany(c => c.AlumnosInscritos)
+        .HasForeignKey(u => u.CarreraId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Persona>()
+        .HasIndex(p => p.Dni)
+        .IsUnique();
+
+    modelBuilder.Entity<Permiso>()
+        .HasIndex(p => p.Codigo)
+        .IsUnique();
+
+    modelBuilder.Entity<RolPermiso>()
+        .HasKey(rp => new { rp.RolId, rp.PermisoId });
+
+    modelBuilder.Entity<RolPermiso>()
+        .HasOne(rp => rp.Rol)
+        .WithMany(r => r.RolPermisos)
+        .HasForeignKey(rp => rp.RolId);
+
+    modelBuilder.Entity<RolPermiso>()
+        .HasOne(rp => rp.Permiso)
+        .WithMany(p => p.RolPermisos)
+        .HasForeignKey(rp => rp.PermisoId);
 
     // Configuración de la relación entre Usuario y EstudianteMateria
     modelBuilder.Entity<EstudianteMateria>()
@@ -43,6 +103,10 @@ public class AppDbContext : DbContext
         .HasForeignKey(em => em.IdDocente)
         .OnDelete(DeleteBehavior.Restrict);
 
+    modelBuilder.Entity<EstudianteMateria>()
+        .HasIndex(em => new { em.IdEstudiante, em.IdMateria, em.CicloLectivo })
+        .IsUnique();
+
     // Configuración de Asistencia
     // Relación con EstudianteMateria
     modelBuilder.Entity<Asistencia>()
@@ -57,6 +121,10 @@ public class AppDbContext : DbContext
         .WithMany()
         .HasForeignKey(a => a.IdDocente)
         .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Asistencia>()
+        .HasIndex(a => new { a.IdEstudianteMateria, a.Fecha })
+        .IsUnique();
 
     // Configuración de Examen
     // Relación con Materia
@@ -86,7 +154,11 @@ public class AppDbContext : DbContext
         .HasMany(c => c.AniosAcademicos)
         .WithOne(a => a.Carrera)
         .HasForeignKey(a => a.IdCarrera)
-        .OnDelete(DeleteBehavior.Cascade);
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Carrera>()
+        .HasIndex(c => new { c.Nombre, c.PlanEstudios })
+        .IsUnique();
 
     // Configuración de Materia
     // Relación con HorarioMateria
@@ -113,5 +185,248 @@ public class AppDbContext : DbContext
         .WithMany()
         .HasForeignKey(n => n.IdEstudiante)
         .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<NotaExamen>()
+        .HasIndex(n => new { n.IdExamen, n.IdEstudiante })
+        .IsUnique();
+
+    modelBuilder.Entity<NotaExamen>()
+        .Property(n => n.Nota)
+        .HasPrecision(4, 2);
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasOne(r => r.Usuario)
+        .WithMany()
+        .HasForeignKey(r => r.UsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasOne(r => r.RegistradoPor)
+        .WithMany()
+        .HasForeignKey(r => r.RegistradoPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasOne(r => r.Materia)
+        .WithMany()
+        .HasForeignKey(r => r.MateriaId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasIndex(r => new { r.UsuarioId, r.Fecha })
+        .HasFilter("[MateriaId] IS NULL")
+        .IsUnique();
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasIndex(r => new { r.UsuarioId, r.MateriaId, r.Fecha })
+        .HasFilter("[MateriaId] IS NOT NULL")
+        .IsUnique();
+
+    modelBuilder.Entity<DocenteMateria>()
+        .HasOne(dm => dm.Docente)
+        .WithMany()
+        .HasForeignKey(dm => dm.IdDocente)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<DocenteMateria>()
+        .HasOne(dm => dm.Materia)
+        .WithMany()
+        .HasForeignKey(dm => dm.IdMateria)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<DocenteMateria>()
+        .HasIndex(dm => new { dm.IdDocente, dm.IdMateria, dm.CicloLectivo, dm.Cuatrimestre })
+        .IsUnique();
+
+    modelBuilder.Entity<NotificacionGeneral>()
+        .HasOne(n => n.RolDestino)
+        .WithMany()
+        .HasForeignKey(n => n.RolDestinoId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<NotificacionGeneral>()
+        .HasOne(n => n.CreadaPor)
+        .WithMany()
+        .HasForeignKey(n => n.CreadaPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<NotificacionGeneral>()
+        .HasOne(n => n.UsuarioDestino)
+        .WithMany()
+        .HasForeignKey(n => n.UsuarioDestinoId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<NotificacionGeneral>()
+        .HasIndex(n => n.ClaveAutomatica)
+        .HasFilter("[ClaveAutomatica] IS NOT NULL")
+        .IsUnique();
+
+    modelBuilder.Entity<PerfilFinanciamiento>()
+        .HasOne(p => p.Usuario)
+        .WithOne()
+        .HasForeignKey<PerfilFinanciamiento>(p => p.UsuarioId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Examen>()
+        .Property(e => e.NotaMinimaRegularizacion)
+        .HasPrecision(4, 2);
+
+    modelBuilder.Entity<Examen>()
+        .Property(e => e.NotaMinimaPromocion)
+        .HasPrecision(4, 2);
+
+    modelBuilder.Entity<Anio>()
+        .HasIndex(a => new { a.IdCarrera, a.NumeroAnio })
+        .IsUnique();
+
+    // Una materia puede ser correlativa de muchas materias y cada materia puede
+    // requerir varias correlativas. La tabla intermedia evita la relación 1:N
+    // implícita que impedía reutilizar una correlativa en distintos niveles.
+    modelBuilder.Entity<Materia>()
+        .HasMany(m => m.Correlativas)
+        .WithMany()
+        .UsingEntity<Dictionary<string, object>>(
+            "MateriaCorrelativa",
+            derecha => derecha.HasOne<Materia>().WithMany()
+                .HasForeignKey("IdCorrelativa").OnDelete(DeleteBehavior.Restrict),
+            izquierda => izquierda.HasOne<Materia>().WithMany()
+                .HasForeignKey("IdMateria").OnDelete(DeleteBehavior.Cascade),
+            relacion =>
+            {
+                relacion.HasKey("IdMateria", "IdCorrelativa");
+                relacion.ToTable("MateriaCorrelativa");
+            });
+
+    modelBuilder.Entity<Allegado>()
+        .HasOne(a => a.Estudiante)
+        .WithMany()
+        .HasForeignKey(a => a.EstudianteId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Allegado>()
+        .HasIndex(a => new { a.EstudianteId, a.NombreApellido });
+
+    modelBuilder.Entity<MatriculaInicial>()
+        .HasOne(m => m.Estudiante)
+        .WithMany()
+        .HasForeignKey(m => m.EstudianteId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<MatriculaInicial>()
+        .HasIndex(m => new { m.EstudianteId, m.PeriodoLectivo })
+        .IsUnique();
+
+    modelBuilder.Entity<MatriculaInicial>()
+        .Property(m => m.Estado)
+        .HasConversion<string>();
+
+    modelBuilder.Entity<CuotaMensual>()
+        .HasOne(c => c.Estudiante)
+        .WithMany()
+        .HasForeignKey(c => c.EstudianteId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<CuotaMensual>()
+        .HasIndex(c => new { c.EstudianteId, c.Anio, c.Mes })
+        .IsUnique();
+
+    modelBuilder.Entity<CuotaMensual>()
+        .Property(c => c.Estado)
+        .HasConversion<string>();
+
+    modelBuilder.Entity<InscripcionExamen>()
+        .HasOne(i => i.Examen)
+        .WithMany()
+        .HasForeignKey(i => i.ExamenId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<InscripcionExamen>()
+        .HasOne(i => i.Estudiante)
+        .WithMany()
+        .HasForeignKey(i => i.EstudianteId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<InscripcionExamen>()
+        .HasIndex(i => new { i.ExamenId, i.EstudianteId })
+        .IsUnique();
+
+    modelBuilder.Entity<PeriodoInscripcionMateria>()
+        .HasOne(p => p.Carrera)
+        .WithMany()
+        .HasForeignKey(p => p.CarreraId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PeriodoInscripcionMateria>()
+        .HasOne(p => p.Materia)
+        .WithMany()
+        .HasForeignKey(p => p.MateriaId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PeriodoInscripcionMateria>()
+        .HasOne(p => p.ModificadoPor)
+        .WithMany()
+        .HasForeignKey(p => p.ModificadoPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PeriodoInscripcionMateria>()
+        .HasIndex(p => new { p.CarreraId, p.CicloLectivo })
+        .HasFilter("[MateriaId] IS NULL")
+        .IsUnique();
+
+    modelBuilder.Entity<PeriodoInscripcionExamen>()
+        .HasOne(p => p.ModificadoPor)
+        .WithMany()
+        .HasForeignKey(p => p.ModificadoPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PeriodoInscripcionExamen>()
+        .HasIndex(p => p.CicloLectivo)
+        .IsUnique();
+
+    modelBuilder.Entity<PeriodoInscripcionMateria>()
+        .HasIndex(p => new { p.MateriaId, p.CicloLectivo })
+        .HasFilter("[MateriaId] IS NOT NULL")
+        .IsUnique();
+
+    SembrarRolesYPermisos(modelBuilder);
+    }
+
+    private static void SembrarRolesYPermisos(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Rol>().HasData(
+            new Rol { Id = RolesSistema.EstudianteId, Nombre = RolesSistema.Estudiante, Descripcion = "Acceso únicamente a su información académica." },
+            new Rol { Id = RolesSistema.DocenteId, Nombre = RolesSistema.Docente, Descripcion = "Gestión de sus comisiones, asistencias, evaluaciones y notas." },
+            new Rol { Id = RolesSistema.SecretarioId, Nombre = RolesSistema.Secretario, Descripcion = "Administración académica y de cuentas institucionales." },
+            new Rol { Id = RolesSistema.DirectivoId, Nombre = RolesSistema.Directivo, Descripcion = "Consulta institucional y reportes." });
+
+        modelBuilder.Entity<Permiso>().HasData(
+            new Permiso { Id = 1, Codigo = PermisosSistema.UsuariosLeer, Descripcion = "Consultar usuarios." },
+            new Permiso { Id = 2, Codigo = PermisosSistema.UsuariosGestionar, Descripcion = "Crear y administrar cuentas." },
+            new Permiso { Id = 3, Codigo = PermisosSistema.AcademicoLeer, Descripcion = "Consultar carreras, años y materias." },
+            new Permiso { Id = 4, Codigo = PermisosSistema.AcademicoGestionar, Descripcion = "Administrar la estructura académica." },
+            new Permiso { Id = 5, Codigo = PermisosSistema.InscripcionesPropiasLeer, Descripcion = "Consultar sus materias." },
+            new Permiso { Id = 6, Codigo = PermisosSistema.InscripcionesGestionar, Descripcion = "Administrar inscripciones y asignaciones." },
+            new Permiso { Id = 7, Codigo = PermisosSistema.DocenciaGestionar, Descripcion = "Gestionar las comisiones asignadas." },
+            new Permiso { Id = 8, Codigo = PermisosSistema.AsistenciasPropiasLeer, Descripcion = "Consultar sus asistencias." },
+            new Permiso { Id = 9, Codigo = PermisosSistema.AsistenciaPersonalGestionar, Descripcion = "Registrar fichado del personal." },
+            new Permiso { Id = 10, Codigo = PermisosSistema.ExamenesPropiosLeer, Descripcion = "Consultar sus evaluaciones." },
+            new Permiso { Id = 11, Codigo = PermisosSistema.NotasPropiasLeer, Descripcion = "Consultar sus calificaciones." },
+            new Permiso { Id = 12, Codigo = PermisosSistema.ReportesLeer, Descripcion = "Consultar reportes institucionales." },
+            new Permiso { Id = 13, Codigo = PermisosSistema.NotificacionesGestionar, Descripcion = "Publicar y administrar notificaciones generales." });
+
+        modelBuilder.Entity<RolPermiso>().HasData(
+            new { RolId = 1, PermisoId = 5 },
+            new { RolId = 1, PermisoId = 8 }, new { RolId = 1, PermisoId = 10 },
+            new { RolId = 1, PermisoId = 11 },
+            new { RolId = 2, PermisoId = 3 }, new { RolId = 2, PermisoId = 7 },
+            new { RolId = 3, PermisoId = 1 }, new { RolId = 3, PermisoId = 2 },
+            new { RolId = 3, PermisoId = 3 }, new { RolId = 3, PermisoId = 4 },
+            new { RolId = 3, PermisoId = 5 }, new { RolId = 3, PermisoId = 6 },
+            new { RolId = 3, PermisoId = 7 }, new { RolId = 3, PermisoId = 8 },
+            new { RolId = 3, PermisoId = 9 }, new { RolId = 3, PermisoId = 10 },
+            new { RolId = 3, PermisoId = 11 }, new { RolId = 3, PermisoId = 12 },
+            new { RolId = 3, PermisoId = 13 },
+            new { RolId = 4, PermisoId = 1 }, new { RolId = 4, PermisoId = 3 },
+            new { RolId = 4, PermisoId = 12 });
     }
 }

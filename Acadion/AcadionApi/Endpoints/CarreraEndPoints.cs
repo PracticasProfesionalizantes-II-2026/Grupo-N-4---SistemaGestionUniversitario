@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapCarreraEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/carreras");
+            var group = routes.MapGroup("/carreras")
+                .RequierePermiso(PermisosSistema.AcademicoLeer);
 
             group.MapGet("/", async (ICarreraLogica carreraLogica) =>
             {
@@ -50,11 +52,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapPut("/{id:int}", async (int id, CarreraActualizarDto dto, ICarreraLogica carreraLogica) =>
             {
@@ -67,11 +73,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapDelete("/{id:int}", async (int id, ICarreraLogica carreraLogica) =>
             {
@@ -80,11 +90,15 @@ namespace AcadionApi.Endpoints
                     var eliminado = await carreraLogica.EliminarCarreraAsync(id);
                     return eliminado ? Results.Ok($"Carrera con ID {id} eliminada.") : Results.NotFound();
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
         }
     }
 }

@@ -1,0 +1,10 @@
+@import url("Comun.css");
+@import url("Admin.css");
+
+.period-filter { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 18px; }
+.period-filter label { display: grid; gap: 5px; color: #555; font-size: .8rem; font-weight: 700; }
+.period-filter input, .period-filter select, .payment-select { min-height: 38px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 8px; background: white; }
+.student-identity { display: flex; align-items: center; gap: 10px; }
+.student-photo { width: 38px; height: 38px; border-radius: 50%; background: #ff7a00; object-fit: cover; }
+.student-identity small { display: block; margin-top: 3px; color: #777; }
+.save-payment { padding: 8px 12px; border: 0; border-radius: 8px; background: var(--naranja); font-weight: 700; }

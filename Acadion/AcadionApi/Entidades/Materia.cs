@@ -13,6 +13,11 @@ public class Materia
     
     // EstadoMateria: "Activa", "Inactiva" (por si cambia el plan de estudios)
     public string Estado { get; set; } = string.Empty;
+
+    // La duración y el período forman parte del plan de estudios, no de la
+    // asignación del docente. NumeroPeriodo es nulo para materias anuales.
+    public string TipoCursada { get; set; } = "Anual";
+    public int? NumeroPeriodo { get; set; }
     
     // Una materia tiene una lista de horarios asignados
     public List<HorarioMateria> Horarios { get; set; } = new List<HorarioMateria>();

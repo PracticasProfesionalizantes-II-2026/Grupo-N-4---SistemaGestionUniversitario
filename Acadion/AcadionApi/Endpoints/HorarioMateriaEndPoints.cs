@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapHorarioMateriaEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/horarios");
+            var group = routes.MapGroup("/horarios")
+                .RequierePermiso(PermisosSistema.AcademicoLeer);
 
             group.MapGet("/", async (IHorarioMateriaLogica horarioLogica) =>
             {
@@ -50,11 +52,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapPut("/{id:int}", async (int id, HorarioMateriaActualizarDto dto, IHorarioMateriaLogica horarioLogica) =>
             {
@@ -67,11 +73,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapDelete("/{id:int}", async (int id, IHorarioMateriaLogica horarioLogica) =>
             {
@@ -84,7 +94,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
         }
     }
 }

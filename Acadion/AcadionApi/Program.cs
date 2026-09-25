@@ -4,11 +4,50 @@ using AcadionApi.Datos;
 using AcadionApi.Endpoints;
 using AcadionApi.Logica;
 using AcadionApi.Repositorios;
+using AcadionApi.Seguridad;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Evita depender del registro de eventos de Windows (requiere privilegios elevados).
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Servicios
 builder.Services.AddOpenApi();
+
+var jwt = builder.Configuration.GetSection(JwtOptions.Seccion).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Falta la configuración JWT.");
+if (Encoding.UTF8.GetByteCount(jwt.Key) < 32)
+    throw new InvalidOperationException("Jwt:Key debe tener al menos 32 caracteres.");
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Seccion));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
+builder.Services.AddAuthorization();
+var permitirArchivosLocales = builder.Environment.IsDevelopment();
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .SetIsOriginAllowed(origin =>
+        (permitirArchivosLocales && origin == "null") ||
+        (Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback))
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
@@ -29,6 +68,8 @@ builder.Services.AddScoped<IPersonaLogica, PersonaLogica>();
 builder.Services.AddScoped<IPersonaRepositorio, PersonaRepositorio>();
 // --- LOGIN ---
 builder.Services.AddScoped<ILoginLogica, LoginLogica>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IGestionUsuariosService, GestionUsuariosService>();
 // --- MATERIAS ---
 builder.Services.AddScoped<IMateriaLogica, MateriaLogica>();
 builder.Services.AddScoped<IMateriaRepositorio, MateriaRepositorio>();
@@ -65,13 +106,14 @@ if (app.Environment.IsDevelopment())
 
 app.MapScalarApiReference();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+if (!app.Environment.IsDevelopment())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild",
-    "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    app.UseHttpsRedirection();
+}
+app.UseCors();
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 // Endpoints
@@ -97,10 +139,25 @@ app.MapExamenEndpoints();
 app.MapNotaExamenEndpoints();
 // Horarios
 app.MapHorarioMateriaEndpoints();
+// Gestión segura de cuentas, estructura académica y portales por rol
+app.MapGestionUsuariosEndpoints();
+app.MapGestionAcademicaEndpoints();
+app.MapAsistenciaPersonalEndpoints();
+app.MapPortalEndpoints();
+app.MapRolesEndpoints();
+app.MapNotificacionesEndpoints();
+app.MapPagosEndpoints();
+
+try
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await NotificacionAutomaticaService.ReprogramarPendientesAsync(context);
+}
+catch (Exception error)
+{
+    app.Logger.LogWarning(error,
+        "No fue posible reconciliar las notificaciones automáticas al iniciar. Se reintentará cuando se actualicen períodos o evaluaciones.");
+}
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

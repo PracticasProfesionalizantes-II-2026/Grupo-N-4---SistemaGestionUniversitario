@@ -1,5 +1,7 @@
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Logica.DTOs;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,16 +14,39 @@ namespace AcadionApi.Endpoints
                     LoginDto dto,
                     ILoginLogica LoginLogica) =>
                 {
-                    var loginCorrecto =
-                        await LoginLogica.LoginAsync(dto);
-
-                    if (!loginCorrecto)
+                    try
                     {
-                        return Results.Unauthorized();
-                    }
+                        var loginResultado = await LoginLogica.LoginAsync(dto);
 
-                    return Results.Ok("Login exitoso");
+                        if (loginResultado is null)
+                            return Results.Unauthorized();
+
+                        return Results.Ok(loginResultado);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.Json(new { mensaje = ex.Message }, statusCode: StatusCodes.Status403Forbidden);
+                    }
                 });
+
+            app.MapPost("/api/auth/cambiar-password",
+                async (CambiarPasswordDto dto, HttpContext context, ILoginLogica loginLogica) =>
+                {
+                    try
+                    {
+                        var actualizado = await loginLogica.CambiarPasswordAsync(
+                            context.User.ObtenerUsuarioId(), dto);
+
+                        return actualizado
+                            ? Results.NoContent()
+                            : Results.BadRequest(new { mensaje = "La contraseña actual no es correcta." });
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { mensaje = ex.Message });
+                    }
+                })
+                .RequireAuthorization();
         }
     }
 }

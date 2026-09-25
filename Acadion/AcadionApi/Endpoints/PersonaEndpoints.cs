@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapPersonaEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/personas");
+            var group = routes.MapGroup("/personas")
+                .RequierePermiso(PermisosSistema.UsuariosLeer);
 
             group.MapGet("/", async (IPersonaLogica personaLogica) =>
             {
@@ -58,7 +60,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
 
             group.MapPut("/{id:int}", async (int id, PersonaActualizarDto dto, IPersonaLogica personaLogica) =>
             {
@@ -75,7 +77,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
 
             group.MapDelete("/{id:int}", async (int id, IPersonaLogica personaLogica) =>
             {
@@ -88,7 +90,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
         }
     }
 }

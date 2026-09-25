@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapAnioEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/anios");
+            var group = routes.MapGroup("/anios")
+                .RequierePermiso(PermisosSistema.AcademicoLeer);
 
             group.MapGet("/", async (IAnioLogica anioLogica) =>
             {
@@ -54,7 +56,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapPut("/{id:int}", async (int id, AnioActualizarDto dto, IAnioLogica anioLogica) =>
             {
@@ -71,7 +73,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapDelete("/{id:int}", async (int id, IAnioLogica anioLogica) =>
             {
@@ -84,7 +86,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
         }
     }
 }

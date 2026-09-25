@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,13 +13,14 @@ namespace AcadionApi.Endpoints
     {
         public static void MapMateriaEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/materias");
+            var group = routes.MapGroup("/materias")
+                .RequierePermiso(PermisosSistema.AcademicoLeer);
 
-            group.MapGet("/", async (IMateriaLogica materiaLogica) =>
+            group.MapGet("/", async (int? carreraId, int? numeroAnio, IMateriaLogica materiaLogica) =>
             {
                 try
                 {
-                    return Results.Ok(await materiaLogica.ObtenerMateriasAsync());
+                    return Results.Ok(await materiaLogica.ObtenerMateriasAsync(carreraId, numeroAnio));
                 }
                 catch (Exception)
                 {
@@ -50,11 +52,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapPut("/{id:int}", async (int id, MateriaActualizarDto dto, IMateriaLogica materiaLogica) =>
             {
@@ -67,11 +73,15 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
             group.MapDelete("/{id:int}", async (int id, IMateriaLogica materiaLogica) =>
             {
@@ -80,11 +90,15 @@ namespace AcadionApi.Endpoints
                     var eliminado = await materiaLogica.EliminarMateriaAsync(id);
                     return eliminado ? Results.Ok($"Materia con ID {id} eliminada.") : Results.NotFound();
                 }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.Conflict(ex.Message);
+                }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
         }
     }
 }

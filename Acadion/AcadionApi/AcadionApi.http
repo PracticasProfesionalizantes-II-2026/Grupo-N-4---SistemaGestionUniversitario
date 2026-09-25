@@ -1,6 +1,40 @@
 @AcadionApi_HostAddress = http://localhost:5050
+@Token = PEGAR_TOKEN_AQUI
 
-GET {{AcadionApi_HostAddress}}/weatherforecast/
+### Inicialización: disponible únicamente mientras no exista ningún usuario
+POST {{AcadionApi_HostAddress}}/api/auth/bootstrap-secretario
+Content-Type: application/json
+
+{
+  "nombre": "Secretaria",
+  "apellido": "Acadion",
+  "dni": 30000000,
+  "fechaNacimiento": "1990-01-01",
+  "emailPersonal": "secretaria@example.com",
+  "emailInstitucional": "secretaria@acadion.edu.ar"
+}
+
+###
+POST {{AcadionApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "nombreUsuario": "secretaria.acadion",
+  "password": "30000000"
+}
+
+###
+GET {{AcadionApi_HostAddress}}/api/me/perfil
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ###
+
+POST {{AcadionApi_HostAddress}}/api/auth/cambiar-password
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "passwordActual": "30000000",
+  "passwordNueva": "UnaClaveSegura2026"
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acadion | Notificaciones</title>
+  <link rel="stylesheet" href="Notificaciones.css" /><link rel="stylesheet" href="Admin.css" />
+</head>
+<body data-section="student" data-page="Notificaciones">
+  <div class="app-layout"><aside id="sidebar" class="sidebar"></aside>
+  <main class="main-content">
+    <header class="topbar">
+      <a class="back-button" href="MenuPrincipal.html" aria-label="Volver">←</a>
+      <div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div>
+    </header>
+    <section class="page-content">
+      <p class="eyebrow">CENTRO DE AVISOS</p>
+      <h1>Notificaciones</h1>
+      <div id="notificationList"><section class="panel"><p>Cargando notificaciones...</p></section></div>
+    </section>
+  </main></div>
+  <dialog id="statusDialog"><p id="dialogMessage"></p><button id="closeDialog" type="button">Cerrar</button></dialog>
+  <script src="Api.js"></script><script src="Comun.js"></script>
+  <script src="Notificaciones.js"></script>
+</body>
+</html>

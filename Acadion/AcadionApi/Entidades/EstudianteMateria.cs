@@ -16,7 +16,7 @@ public class EstudianteMateria
     public Materia? Materia { get; set; }
 
     // Qué docente dicta esta cursada este año
-    public int IdDocente { get; set; }
+    public int? IdDocente { get; set; }
     public Usuario? Docente { get; set; }
 
     // Contexto temporal 

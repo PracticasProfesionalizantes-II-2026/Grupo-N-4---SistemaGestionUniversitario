@@ -20,18 +20,24 @@ public class UsuarioRepositorio : Repositorio<Usuario>, IUsuarioRepositorio
     {
     return await _context.Usuarios
         .Include(u => u.Persona)
+        .Include(u => u.Rol)
         .ToListAsync();
     }
     public override async Task<Usuario?> GetByIdAsync(int id)
     {
     return await _context.Usuarios
         .Include(u => u.Persona)
+        .Include(u => u.Rol)
         .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<Usuario?> GetByNombreUsuarioAsync(string nombreUsuario)
     {
         return await _context.Usuarios
+            .Include(u => u.Persona)
+            .Include(u => u.Rol)
+                .ThenInclude(r => r.RolPermisos)
+                    .ThenInclude(rp => rp.Permiso)
             .FirstOrDefaultAsync(u =>
                 u.NombreUsuario == nombreUsuario);
     }
@@ -41,9 +47,14 @@ public class UsuarioRepositorio : Repositorio<Usuario>, IUsuarioRepositorio
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.EmailInstitucional == email);
     }
 
-    public async Task<IEnumerable<Usuario>> GetByRolAsync(Rol rol)
+    public async Task<IEnumerable<Usuario>> GetByRolAsync(int rolId)
     {
-        return await _context.Usuarios.Where(u => u.Rol == rol).ToListAsync();
+        return await _context.Usuarios
+            .Include(u => u.Persona)
+            .Where(u => u.RolId == rolId)
+            .OrderBy(u => u.Persona.Apellido)
+            .ThenBy(u => u.Persona.Nombre)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Usuario>> GetByEstadoAsync(EstadoUsuario estado)
@@ -53,12 +64,12 @@ public class UsuarioRepositorio : Repositorio<Usuario>, IUsuarioRepositorio
 
     public async Task<IEnumerable<Usuario>> GetEstudiantesAsync()
     {
-        return await GetByRolAsync(Rol.Estudiante);
+        return await GetByRolAsync(AcadionApi.Seguridad.RolesSistema.EstudianteId);
     }
 
     public async Task<IEnumerable<Usuario>> GetDocentesAsync()
     {
-        return await GetByRolAsync(Rol.Docente);
+        return await GetByRolAsync(AcadionApi.Seguridad.RolesSistema.DocenteId);
     }
 
     public async Task<IEnumerable<Usuario>> GetActivosAsync()

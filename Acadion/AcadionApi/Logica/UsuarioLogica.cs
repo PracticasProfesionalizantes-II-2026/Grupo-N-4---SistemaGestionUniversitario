@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Repositorios; 
 using Microsoft.AspNetCore.Identity;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Logica
 {
@@ -22,6 +23,9 @@ namespace AcadionApi.Logica
         // =========================
         public async Task<UsuarioDto> RegistrarUsuarioAsync(UsuarioCrearDto dto)
         {
+            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.DirectivoId))
+                throw new ArgumentException("Sólo pueden crearse cuentas de estudiantes, docentes o directivos desde esta operación.");
+
             // Validar persona existente
             var personaExistente =
                 await _unitOfWork.Personas.GetByIdAsync(dto.PersonaId);
@@ -48,7 +52,7 @@ namespace AcadionApi.Logica
                 // Datos propios del usuario
                 NombreUsuario = dto.NombreUsuario,
 
-                Rol = (Rol)dto.Rol,
+                RolId = dto.Rol,
 
                 Estado = (EstadoUsuario)dto.Estado,
 
@@ -98,7 +102,7 @@ namespace AcadionApi.Logica
                 // Datos Usuario
                 Email = nuevoUsuario.EmailInstitucional,
 
-                Rol = nuevoUsuario.Rol.ToString(),
+                Rol = nuevoUsuario.Rol?.Nombre ?? string.Empty,
 
                 Estado = nuevoUsuario.Estado.ToString(),
 
@@ -109,6 +113,7 @@ namespace AcadionApi.Logica
 
                 TelefonoContacto =
                     nuevoUsuario.TelefonoContacto,
+                FotoPerfilUrl = nuevoUsuario.FotoPerfilUrl,
 
                 // Estudiante
                 Matricula = nuevoUsuario.Matricula,
@@ -157,15 +162,22 @@ namespace AcadionApi.Logica
         {
         var usuarios = await _unitOfWork.Usuarios.GetAllAsync();
 
-        return usuarios.Select(u => new UsuarioListaDto
+        return usuarios
+            .OrderBy(u => u.RolId == RolesSistema.DirectivoId ? 0 :
+                u.RolId == RolesSistema.DocenteId ? 1 :
+                u.RolId == RolesSistema.EstudianteId ? 2 : 3)
+            .ThenBy(u => u.Persona?.Apellido)
+            .ThenBy(u => u.Persona?.Nombre)
+            .Select(u => new UsuarioListaDto
         {
         Id = u.Id,
         NombreUsuario = u.NombreUsuario,
         // Evitamos el NullReferenceException usando el operador ?.
         Nombre = u.Persona?.Nombre ?? "Sin Nombre",
         Apellido = u.Persona?.Apellido ?? "Sin Apellido",
-        Rol = u.Rol.ToString(),
-        Estado = u.Estado.ToString()
+        Rol = u.Rol.Nombre,
+        Estado = u.Estado.ToString(),
+        FotoPerfilUrl = u.FotoPerfilUrl
         });
         }
 
@@ -193,11 +205,12 @@ namespace AcadionApi.Logica
 
         // Datos Usuario
         Email = usuario.EmailInstitucional,
-        Rol = usuario.Rol.ToString(),
+        Rol = usuario.Rol.Nombre,
         Estado = usuario.Estado.ToString(),
         FechaCreacion = usuario.FechaCreacion,
         FechaUltimoAcceso = usuario.FechaUltimoAcceso,
         TelefonoContacto = usuario.TelefonoContacto,
+        FotoPerfilUrl = usuario.FotoPerfilUrl,
 
         // Estudiante
         Matricula = usuario.Matricula,
@@ -222,6 +235,9 @@ namespace AcadionApi.Logica
                 throw new ArgumentException(
                     "Los datos de actualización no pueden ser nulos.");
 
+            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.DirectivoId))
+                throw new ArgumentException("Sólo pueden asignarse los roles Estudiante, Docente o Directivo.");
+
             var usuarioExistente =
                 await _unitOfWork.Usuarios.GetByIdAsync(id);
 
@@ -234,8 +250,7 @@ namespace AcadionApi.Logica
             usuarioExistente.EmailInstitucional =
                 dto.Email;
 
-            usuarioExistente.Rol =
-                (Rol)dto.Rol;
+            usuarioExistente.RolId = dto.Rol;
 
             usuarioExistente.Estado =
                 (EstadoUsuario)dto.Estado;
@@ -244,12 +259,6 @@ namespace AcadionApi.Logica
                 dto.TelefonoContacto;
 
             // Estudiante
-            usuarioExistente.Matricula =
-                dto.Matricula;
-
-            usuarioExistente.Legajo =
-                dto.Legajo;
-
             usuarioExistente.PromedioGeneral =
                 dto.PromedioGeneral;
 
@@ -280,8 +289,11 @@ namespace AcadionApi.Logica
             if (usuario == null)
                 return false;
 
+            // Las cuentas institucionales no se eliminan físicamente porque están
+            // referenciadas por notas, asistencias e inscripciones.
+            usuario.Estado = EstadoUsuario.Inactivo;
             await _unitOfWork.Usuarios
-                .DeleteAsync(usuario);
+                .UpdateAsync(usuario);
 
             await _unitOfWork.SaveChangesAsync();
 

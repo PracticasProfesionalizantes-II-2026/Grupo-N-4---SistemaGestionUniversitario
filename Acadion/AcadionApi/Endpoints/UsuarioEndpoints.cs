@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -13,7 +14,8 @@ namespace AcadionApi.Endpoints
         // Método de extensión para registrar todas las rutas de usuarios juntas
         public static void MapUsuarioEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/usuarios");
+            var group = routes.MapGroup("/usuarios")
+                .RequierePermiso(PermisosSistema.UsuariosLeer);
 
             // GET /usuarios
             group.MapGet("/", async (IUsuarioLogica usuarioLogica) =>
@@ -63,7 +65,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
 
             // PUT /usuarios/{id}
             group.MapPut("/{id:int}", async (int id, UsuarioActualizarDto dto, IUsuarioLogica usuarioLogica) =>
@@ -81,7 +83,7 @@ namespace AcadionApi.Endpoints
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
 
             // DELETE /usuarios/{id}
             group.MapDelete("/{id:int}", async (int id, IUsuarioLogica usuarioLogica) =>
@@ -89,13 +91,13 @@ namespace AcadionApi.Endpoints
                 try
                 {
                     var eliminado = await usuarioLogica.EliminarUsuarioAsync(id);
-                    return eliminado ? Results.Ok($"Usuario con ID {id} eliminado.") : Results.NotFound();
+                    return eliminado ? Results.Ok($"Usuario con ID {id} desactivado.") : Results.NotFound();
                 }
                 catch (Exception)
                 {
                     return Results.StatusCode(500);
                 }
-            });
+            }).RequierePermiso(PermisosSistema.UsuariosGestionar);
         }
     }
 }

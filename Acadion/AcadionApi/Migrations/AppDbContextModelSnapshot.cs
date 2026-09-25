@@ -22,6 +22,39 @@ namespace AcadionApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Allegado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EstudianteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NombreApellido")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Relacion")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstudianteId", "NombreApellido");
+
+                    b.ToTable("Allegados");
+                });
+
             modelBuilder.Entity("Anio", b =>
                 {
                     b.Property<int>("IdAnio")
@@ -42,7 +75,8 @@ namespace AcadionApi.Migrations
 
                     b.HasKey("IdAnio");
 
-                    b.HasIndex("IdCarrera");
+                    b.HasIndex("IdCarrera", "NumeroAnio")
+                        .IsUnique();
 
                     b.ToTable("Anio");
                 });
@@ -55,6 +89,9 @@ namespace AcadionApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAsistencia"));
 
+                    b.Property<int>("CantidadInasistencias")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
@@ -64,10 +101,21 @@ namespace AcadionApi.Migrations
                     b.Property<int>("IdEstudianteMateria")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Justificada")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Observaciones")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TemaDictado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TipoClase")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -75,7 +123,8 @@ namespace AcadionApi.Migrations
 
                     b.HasIndex("IdDocente");
 
-                    b.HasIndex("IdEstudianteMateria");
+                    b.HasIndex("IdEstudianteMateria", "Fecha")
+                        .IsUnique();
 
                     b.ToTable("Asistencia");
                 });
@@ -88,17 +137,113 @@ namespace AcadionApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCarrera"));
 
+                    b.Property<int>("CapacidadMaximaEstudiantes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DuracionAnios")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("PlanEstudios")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("IdCarrera");
 
+                    b.HasIndex("Nombre", "PlanEstudios")
+                        .IsUnique();
+
                     b.ToTable("Carrera");
+                });
+
+            modelBuilder.Entity("CuotaMensual", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Anio")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ComprobanteUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EstudianteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Mes")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstudianteId", "Anio", "Mes")
+                        .IsUnique();
+
+                    b.ToTable("CuotasMensuales");
+                });
+
+            modelBuilder.Entity("DocenteMateria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CicloLectivo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Cuatrimestre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("FechaAsignacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdDocente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdMateria")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdMateria");
+
+                    b.HasIndex("IdDocente", "IdMateria", "CicloLectivo", "Cuatrimestre")
+                        .IsUnique();
+
+                    b.ToTable("DocentesMaterias");
                 });
 
             modelBuilder.Entity("EstudianteMateria", b =>
@@ -123,7 +268,7 @@ namespace AcadionApi.Migrations
                     b.Property<DateTime>("FechaInscripcion")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("IdDocente")
+                    b.Property<int?>("IdDocente")
                         .HasColumnType("int");
 
                     b.Property<int>("IdEstudiante")
@@ -136,9 +281,10 @@ namespace AcadionApi.Migrations
 
                     b.HasIndex("IdDocente");
 
-                    b.HasIndex("IdEstudiante");
-
                     b.HasIndex("IdMateria");
+
+                    b.HasIndex("IdEstudiante", "IdMateria", "CicloLectivo")
+                        .IsUnique();
 
                     b.ToTable("EstudianteMaterias");
                 });
@@ -162,6 +308,14 @@ namespace AcadionApi.Migrations
 
                     b.Property<int>("IdMateria")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("NotaMinimaPromocion")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("NotaMinimaRegularizacion")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("TipoExamen")
                         .IsRequired()
@@ -204,6 +358,38 @@ namespace AcadionApi.Migrations
                     b.ToTable("HorarioMateria");
                 });
 
+            modelBuilder.Entity("InscripcionExamen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("EstudianteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamenId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaInscripcionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstudianteId");
+
+                    b.HasIndex("ExamenId", "EstudianteId")
+                        .IsUnique();
+
+                    b.ToTable("InscripcionesExamenes");
+                });
+
             modelBuilder.Entity("Materia", b =>
                 {
                     b.Property<int>("IdMateria")
@@ -219,9 +405,6 @@ namespace AcadionApi.Migrations
                     b.Property<int>("IdAnio")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MateriaIdMateria")
-                        .HasColumnType("int");
-
                     b.Property<string>("Modalidad")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -230,13 +413,70 @@ namespace AcadionApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("NumeroPeriodo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TipoCursada")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("IdMateria");
 
                     b.HasIndex("IdAnio");
 
-                    b.HasIndex("MateriaIdMateria");
-
                     b.ToTable("Materias");
+                });
+
+            modelBuilder.Entity("MateriaCorrelativa", b =>
+                {
+                    b.Property<int>("IdMateria")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdCorrelativa")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdMateria", "IdCorrelativa");
+
+                    b.HasIndex("IdCorrelativa");
+
+                    b.ToTable("MateriaCorrelativa", (string)null);
+                });
+
+            modelBuilder.Entity("MatriculaInicial", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ComprobanteUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EstudianteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PeriodoLectivo")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstudianteId", "PeriodoLectivo")
+                        .IsUnique();
+
+                    b.ToTable("MatriculasIniciales");
                 });
 
             modelBuilder.Entity("NotaExamen", b =>
@@ -247,6 +487,11 @@ namespace AcadionApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdNota"));
 
+                    b.Property<string>("Condicion")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<int>("IdEstudiante")
                         .HasColumnType("int");
 
@@ -254,7 +499,8 @@ namespace AcadionApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Nota")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("Observaciones")
                         .HasColumnType("nvarchar(max)");
@@ -263,9 +509,273 @@ namespace AcadionApi.Migrations
 
                     b.HasIndex("IdEstudiante");
 
-                    b.HasIndex("IdExamen");
+                    b.HasIndex("IdExamen", "IdEstudiante")
+                        .IsUnique();
 
                     b.ToTable("NotaExamen");
+                });
+
+            modelBuilder.Entity("NotificacionGeneral", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ClaveAutomatica")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<int?>("CreadaPorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaExpiracionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaPublicacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Prioridad")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("RolDestinoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UsuarioDestinoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClaveAutomatica")
+                        .IsUnique()
+                        .HasFilter("[ClaveAutomatica] IS NOT NULL");
+
+                    b.HasIndex("CreadaPorUsuarioId");
+
+                    b.HasIndex("RolDestinoId");
+
+                    b.HasIndex("UsuarioDestinoId");
+
+                    b.ToTable("NotificacionesGenerales");
+                });
+
+            modelBuilder.Entity("PerfilFinanciamiento", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("AporteFamiliares")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Beca")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("OtraFuente")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PlanesSociales")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Trabajo")
+                        .HasColumnType("bit");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("PerfilesFinanciamiento");
+                });
+
+            modelBuilder.Entity("PeriodoInscripcionExamen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CicloLectivo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaFinUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicioUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaModificacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ModificadoPorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CicloLectivo")
+                        .IsUnique();
+
+                    b.HasIndex("ModificadoPorUsuarioId");
+
+                    b.ToTable("PeriodosInscripcionExamenes");
+                });
+
+            modelBuilder.Entity("PeriodoInscripcionMateria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CarreraId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CicloLectivo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaFinUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicioUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaModificacionUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MateriaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ModificadoPorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModificadoPorUsuarioId");
+
+                    b.HasIndex("CarreraId", "CicloLectivo")
+                        .IsUnique()
+                        .HasFilter("[MateriaId] IS NULL");
+
+                    b.HasIndex("MateriaId", "CicloLectivo")
+                        .IsUnique()
+                        .HasFilter("[MateriaId] IS NOT NULL");
+
+                    b.ToTable("PeriodosInscripcionMaterias");
+                });
+
+            modelBuilder.Entity("Permiso", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Permisos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Codigo = "usuarios.leer",
+                            Descripcion = "Consultar usuarios."
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Codigo = "usuarios.gestionar",
+                            Descripcion = "Crear y administrar cuentas."
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Codigo = "academico.leer",
+                            Descripcion = "Consultar carreras, años y materias."
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Codigo = "academico.gestionar",
+                            Descripcion = "Administrar la estructura académica."
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Codigo = "inscripciones.propias.leer",
+                            Descripcion = "Consultar sus materias."
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Codigo = "inscripciones.gestionar",
+                            Descripcion = "Administrar inscripciones y asignaciones."
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Codigo = "docencia.gestionar",
+                            Descripcion = "Gestionar las comisiones asignadas."
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Codigo = "asistencias.propias.leer",
+                            Descripcion = "Consultar sus asistencias."
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Codigo = "asistencia-personal.gestionar",
+                            Descripcion = "Registrar fichado del personal."
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Codigo = "examenes.propios.leer",
+                            Descripcion = "Consultar sus evaluaciones."
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Codigo = "notas.propias.leer",
+                            Descripcion = "Consultar sus calificaciones."
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Codigo = "reportes.leer",
+                            Descripcion = "Consultar reportes institucionales."
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Codigo = "notificaciones.gestionar",
+                            Descripcion = "Publicar y administrar notificaciones generales."
+                        });
                 });
 
             modelBuilder.Entity("Persona", b =>
@@ -307,7 +817,240 @@ namespace AcadionApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Dni")
+                        .IsUnique();
+
                     b.ToTable("Personas", (string)null);
+                });
+
+            modelBuilder.Entity("RegistroAsistenciaPersonal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("FechaRegistroUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeOnly?>("HoraEntrada")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly?>("HoraSalida")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("Justificada")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MateriaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RegistradoPorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MateriaId");
+
+                    b.HasIndex("RegistradoPorUsuarioId");
+
+                    b.HasIndex("UsuarioId", "Fecha")
+                        .IsUnique()
+                        .HasFilter("[MateriaId] IS NULL");
+
+                    b.HasIndex("UsuarioId", "MateriaId", "Fecha")
+                        .IsUnique()
+                        .HasFilter("[MateriaId] IS NOT NULL");
+
+                    b.ToTable("RegistrosAsistenciaPersonal");
+                });
+
+            modelBuilder.Entity("Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Descripcion = "Acceso únicamente a su información académica.",
+                            Nombre = "Estudiante"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Descripcion = "Gestión de sus comisiones, asistencias, evaluaciones y notas.",
+                            Nombre = "Docente"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Descripcion = "Administración académica y de cuentas institucionales.",
+                            Nombre = "Secretario"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Descripcion = "Consulta institucional y reportes.",
+                            Nombre = "Directivo"
+                        });
+                });
+
+            modelBuilder.Entity("RolPermiso", b =>
+                {
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermisoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RolId", "PermisoId");
+
+                    b.HasIndex("PermisoId");
+
+                    b.ToTable("RolesPermisos");
+
+                    b.HasData(
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 5
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 8
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 10
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 11
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 3
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 7
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 1
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 2
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 3
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 4
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 5
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 6
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 7
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 8
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 9
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 10
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 11
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 12
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 13
+                        },
+                        new
+                        {
+                            RolId = 4,
+                            PermisoId = 1
+                        },
+                        new
+                        {
+                            RolId = 4,
+                            PermisoId = 3
+                        },
+                        new
+                        {
+                            RolId = 4,
+                            PermisoId = 12
+                        });
                 });
 
             modelBuilder.Entity("Usuario", b =>
@@ -318,8 +1061,11 @@ namespace AcadionApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CarreraIdCarrera")
+                    b.Property<int?>("CarreraId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("DebeCambiarPassword")
+                        .HasColumnType("bit");
 
                     b.Property<string>("EmailInstitucional")
                         .IsRequired()
@@ -338,9 +1084,13 @@ namespace AcadionApi.Migrations
                     b.Property<DateTime?>("FechaUltimoAcceso")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Legajo")
+                    b.Property<string>("FotoPerfilUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Legajo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Matricula")
                         .IsRequired()
@@ -348,7 +1098,7 @@ namespace AcadionApi.Migrations
 
                     b.Property<string>("NombreUsuario")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -360,8 +1110,9 @@ namespace AcadionApi.Migrations
                     b.Property<double>("PromedioGeneral")
                         .HasColumnType("float");
 
-                    b.Property<int>("Rol")
-                        .HasColumnType("int");
+                    b.Property<int>("RolId")
+                        .HasColumnType("int")
+                        .HasColumnName("Rol");
 
                     b.Property<string>("TelefonoContacto")
                         .IsRequired()
@@ -373,11 +1124,31 @@ namespace AcadionApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CarreraIdCarrera");
+                    b.HasIndex("CarreraId");
+
+                    b.HasIndex("Legajo")
+                        .IsUnique()
+                        .HasFilter("[Legajo] <> ''");
+
+                    b.HasIndex("NombreUsuario")
+                        .IsUnique();
 
                     b.HasIndex("PersonaId");
 
+                    b.HasIndex("RolId");
+
                     b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("Allegado", b =>
+                {
+                    b.HasOne("Usuario", "Estudiante")
+                        .WithMany()
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estudiante");
                 });
 
             modelBuilder.Entity("Anio", b =>
@@ -385,7 +1156,7 @@ namespace AcadionApi.Migrations
                     b.HasOne("Carrera", "Carrera")
                         .WithMany("AniosAcademicos")
                         .HasForeignKey("IdCarrera")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Carrera");
@@ -410,13 +1181,42 @@ namespace AcadionApi.Migrations
                     b.Navigation("Inscripcion");
                 });
 
-            modelBuilder.Entity("EstudianteMateria", b =>
+            modelBuilder.Entity("CuotaMensual", b =>
+                {
+                    b.HasOne("Usuario", "Estudiante")
+                        .WithMany()
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estudiante");
+                });
+
+            modelBuilder.Entity("DocenteMateria", b =>
                 {
                     b.HasOne("Usuario", "Docente")
                         .WithMany()
                         .HasForeignKey("IdDocente")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Materia", "Materia")
+                        .WithMany()
+                        .HasForeignKey("IdMateria")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Docente");
+
+                    b.Navigation("Materia");
+                });
+
+            modelBuilder.Entity("EstudianteMateria", b =>
+                {
+                    b.HasOne("Usuario", "Docente")
+                        .WithMany()
+                        .HasForeignKey("IdDocente")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Usuario", "Estudiante")
                         .WithMany()
@@ -465,6 +1265,25 @@ namespace AcadionApi.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("InscripcionExamen", b =>
+                {
+                    b.HasOne("Usuario", "Estudiante")
+                        .WithMany()
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Examen", "Examen")
+                        .WithMany()
+                        .HasForeignKey("ExamenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estudiante");
+
+                    b.Navigation("Examen");
+                });
+
             modelBuilder.Entity("Materia", b =>
                 {
                     b.HasOne("Anio", "AnioCursada")
@@ -473,11 +1292,33 @@ namespace AcadionApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Materia", null)
-                        .WithMany("Correlativas")
-                        .HasForeignKey("MateriaIdMateria");
-
                     b.Navigation("AnioCursada");
+                });
+
+            modelBuilder.Entity("MateriaCorrelativa", b =>
+                {
+                    b.HasOne("Materia", null)
+                        .WithMany()
+                        .HasForeignKey("IdCorrelativa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Materia", null)
+                        .WithMany()
+                        .HasForeignKey("IdMateria")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MatriculaInicial", b =>
+                {
+                    b.HasOne("Usuario", "Estudiante")
+                        .WithMany()
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estudiante");
                 });
 
             modelBuilder.Entity("NotaExamen", b =>
@@ -499,11 +1340,128 @@ namespace AcadionApi.Migrations
                     b.Navigation("Examen");
                 });
 
+            modelBuilder.Entity("NotificacionGeneral", b =>
+                {
+                    b.HasOne("Usuario", "CreadaPor")
+                        .WithMany()
+                        .HasForeignKey("CreadaPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Rol", "RolDestino")
+                        .WithMany()
+                        .HasForeignKey("RolDestinoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Usuario", "UsuarioDestino")
+                        .WithMany()
+                        .HasForeignKey("UsuarioDestinoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreadaPor");
+
+                    b.Navigation("RolDestino");
+
+                    b.Navigation("UsuarioDestino");
+                });
+
+            modelBuilder.Entity("PerfilFinanciamiento", b =>
+                {
+                    b.HasOne("Usuario", "Usuario")
+                        .WithOne()
+                        .HasForeignKey("PerfilFinanciamiento", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("PeriodoInscripcionExamen", b =>
+                {
+                    b.HasOne("Usuario", "ModificadoPor")
+                        .WithMany()
+                        .HasForeignKey("ModificadoPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ModificadoPor");
+                });
+
+            modelBuilder.Entity("PeriodoInscripcionMateria", b =>
+                {
+                    b.HasOne("Carrera", "Carrera")
+                        .WithMany()
+                        .HasForeignKey("CarreraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Materia", "Materia")
+                        .WithMany()
+                        .HasForeignKey("MateriaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Usuario", "ModificadoPor")
+                        .WithMany()
+                        .HasForeignKey("ModificadoPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Carrera");
+
+                    b.Navigation("Materia");
+
+                    b.Navigation("ModificadoPor");
+                });
+
+            modelBuilder.Entity("RegistroAsistenciaPersonal", b =>
+                {
+                    b.HasOne("Materia", "Materia")
+                        .WithMany()
+                        .HasForeignKey("MateriaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Usuario", "RegistradoPor")
+                        .WithMany()
+                        .HasForeignKey("RegistradoPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Materia");
+
+                    b.Navigation("RegistradoPor");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("RolPermiso", b =>
+                {
+                    b.HasOne("Permiso", "Permiso")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("PermisoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Rol", "Rol")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permiso");
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("Usuario", b =>
                 {
-                    b.HasOne("Carrera", null)
+                    b.HasOne("Carrera", "Carrera")
                         .WithMany("AlumnosInscritos")
-                        .HasForeignKey("CarreraIdCarrera");
+                        .HasForeignKey("CarreraId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Persona", "Persona")
                         .WithMany()
@@ -511,7 +1469,17 @@ namespace AcadionApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Rol", "Rol")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Carrera");
+
                     b.Navigation("Persona");
+
+                    b.Navigation("Rol");
                 });
 
             modelBuilder.Entity("Anio", b =>
@@ -533,9 +1501,19 @@ namespace AcadionApi.Migrations
 
             modelBuilder.Entity("Materia", b =>
                 {
-                    b.Navigation("Correlativas");
-
                     b.Navigation("Horarios");
+                });
+
+            modelBuilder.Entity("Permiso", b =>
+                {
+                    b.Navigation("RolPermisos");
+                });
+
+            modelBuilder.Entity("Rol", b =>
+                {
+                    b.Navigation("RolPermisos");
+
+                    b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
         }

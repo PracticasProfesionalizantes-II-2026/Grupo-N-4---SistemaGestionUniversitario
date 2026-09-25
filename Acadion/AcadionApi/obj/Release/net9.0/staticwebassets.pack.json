@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---SistemaGestionUniversitario\\Acadion\\AcadionApi\\wwwroot\\uploads\\perfiles\\perfil-2-e35c195aa0844bc583c65dcc5382fe4a.jpg",
+      "PackagePath": "staticwebassets\\uploads\\perfiles\\perfil-2-e35c195aa0844bc583c65dcc5382fe4a.jpg"
+    },
+    {
+      "Id": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---SistemaGestionUniversitario\\Acadion\\AcadionApi\\wwwroot\\uploads\\perfiles\\perfil-3-2e4394bb766a42158721c3112beabb0c.jpg",
+      "PackagePath": "staticwebassets\\uploads\\perfiles\\perfil-3-2e4394bb766a42158721c3112beabb0c.jpg"
+    },
+    {
+      "Id": "C:\\Users\\mkevi\\OneDrive\\Documentos\\GitHub\\Grupo-N-4---SistemaGestionUniversitario\\Acadion\\AcadionApi\\wwwroot\\uploads\\perfiles\\perfil-4-ab83f8dac2fa475eab39841926990d7f.jpg",
+      "PackagePath": "staticwebassets\\uploads\\perfiles\\perfil-4-ab83f8dac2fa475eab39841926990d7f.jpg"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\staticwebassets\\msbuild.AcadionApi.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\staticwebassets\\msbuild.AcadionApi.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\staticwebassets\\msbuild.build.AcadionApi.props",
+      "PackagePath": "build\\AcadionApi.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\staticwebassets\\msbuild.buildMultiTargeting.AcadionApi.props",
+      "PackagePath": "buildMultiTargeting\\AcadionApi.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\staticwebassets\\msbuild.buildTransitive.AcadionApi.props",
+      "PackagePath": "buildTransitive\\AcadionApi.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

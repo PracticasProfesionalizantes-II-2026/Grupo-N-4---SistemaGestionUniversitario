@@ -15,6 +15,7 @@ namespace AcadionApi.DTOs
         public int IdEstudiante { get; set; }
         public decimal Nota { get; set; }
         public string? Observaciones { get; set; }
+        public string Condicion { get; set; } = string.Empty;
     }
 
     public class NotaExamenActualizarDto

@@ -21,8 +21,11 @@ public class Asistencia
     // Datos de la Asistencia
     public DateTime Fecha { get; set; } = DateTime.Today; // Guarda la fecha del día actual
     
-    // Tipo: "Presente", "Ausente" o "Justificada"
+    // Estado registrado por el docente: "Presente", "Ausente" o "Tardanza".
     public string Tipo { get; set; } = string.Empty; 
-    
-    public string? Observaciones { get; set; } // Por si hay que aclarar por qué se justificó la falta
+    public string TipoClase { get; set; } = "Presencial";
+    public string TemaDictado { get; set; } = string.Empty;
+    public bool Justificada { get; set; }
+    public int CantidadInasistencias { get; set; }
+    public string? Observaciones { get; set; }
 }

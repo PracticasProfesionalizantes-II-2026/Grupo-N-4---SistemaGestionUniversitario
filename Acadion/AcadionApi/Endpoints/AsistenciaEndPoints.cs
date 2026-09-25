@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using AcadionApi.DTOs;
 using AcadionApi.Logica;
+using AcadionApi.Seguridad;
 
 namespace AcadionApi.Endpoints
 {
@@ -12,7 +13,8 @@ namespace AcadionApi.Endpoints
     {
         public static void MapAsistenciaEndpoints(this IEndpointRouteBuilder routes)
         {
-            var group = routes.MapGroup("/asistencias");
+            var group = routes.MapGroup("/asistencias")
+                .RequierePermiso(PermisosSistema.InscripcionesGestionar);
 
             group.MapGet("/", async (IAsistenciaLogica asistenciaLogica) =>
             {

@@ -1,0 +1,58 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-2-e35c195aa0844bc583c65dcc5382fe4a.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>AcadionApi</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/AcadionApi</BasePath>
+      <RelativePath>uploads/perfiles/perfil-2-e35c195aa0844bc583c65dcc5382fe4a.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>s3vpbnakbb</Fingerprint>
+      <Integrity>SE90Gqpq1n/aLAYoNN0ugnZy/lnPu556JGKyKdhRyYo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-2-e35c195aa0844bc583c65dcc5382fe4a.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-3-2e4394bb766a42158721c3112beabb0c.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>AcadionApi</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/AcadionApi</BasePath>
+      <RelativePath>uploads/perfiles/perfil-3-2e4394bb766a42158721c3112beabb0c.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>9uvzaz7l85</Fingerprint>
+      <Integrity>Dw5RxZ3IFJbcjo91fPpfTJsGKtwOyYnd3cRyva+gUVo=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-3-2e4394bb766a42158721c3112beabb0c.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-4-ab83f8dac2fa475eab39841926990d7f.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>AcadionApi</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/AcadionApi</BasePath>
+      <RelativePath>uploads/perfiles/perfil-4-ab83f8dac2fa475eab39841926990d7f.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>10sgv1a56d</Fingerprint>
+      <Integrity>wfR4pnbUDwxwrT/ots1PI3Lk3GWj+S3GA7z453azNuM=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\perfiles\perfil-4-ab83f8dac2fa475eab39841926990d7f.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>

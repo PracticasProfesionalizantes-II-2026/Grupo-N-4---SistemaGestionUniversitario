@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Crear reunión</title>
+  <link rel="stylesheet" href="CrearReunion.css">
+</head>
+<body data-section="admin" data-page="CrearReunion">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a href="Ajustes.html">Ajustes</a><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
+      <section class="page-content">
+        <h1>Crear reunión</h1><section class="panel"><h2>Reunión</h2><form class="local-form" data-return="Reuniones.html"><label class="form-field">Tema<input name="tema" type="text" value="" required></label><label class="form-field">Fecha<input name="fecha" type="date" value="" required></label><label class="form-field">Horario<input name="horario" type="time" value="" required></label><label class="form-field">Participantes<input name="participantes" type="text" value="" required></label><button class="primary-button">Guardar</button></form></section>
+      </section>
+    </main>
+  </div>
+  <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
+  <script src="Comun.js"></script>
+  <script src="CrearReunion.js"></script>
+</body>
+</html>
+
