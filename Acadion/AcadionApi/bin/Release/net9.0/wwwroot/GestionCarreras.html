@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Administrar carreras</title>
+  <link rel="stylesheet" href="GestionCarreras.css">
+  <link rel="stylesheet" href="Admin.css">
+</head>
+<body data-section="admin" data-page="GestionCarreras">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+      <section class="page-content">
+        <div class="admin-heading"><div><p class="section-kicker">Estructura académica</p><h1>Administrar carreras</h1><p>Consultá la oferta institucional y revisá sus materias, profesores y estudiantes inscriptos.</p></div><a class="primary-button" href="CrearCarrera.html">+ Crear carrera</a></div>
+        <section class="panel enrollment-period-panel">
+          <div class="panel-heading"><div><p class="section-kicker">Calendario académico</p><h2>Inscripción a materias por carrera</h2><p class="muted">El período habilita al mismo tiempo todas las materias activas de la carrera seleccionada.</p></div><span id="careerPeriodStatus" class="badge inactive">Sin configurar</span></div>
+          <form id="careerPeriodForm">
+            <div class="career-period-grid">
+              <label class="form-field">Carrera<select id="careerPeriodCareer" required><option value="">Seleccionar carrera</option></select></label>
+              <label class="form-field">Ciclo lectivo<input id="careerPeriodCycle" type="number" min="2020" max="2100" required></label>
+              <label class="form-field">Desde<input name="fechaInicio" type="date" required></label>
+              <label class="form-field">Hasta<input name="fechaFin" type="date" required></label>
+              <button class="primary-button" type="submit">Guardar período</button>
+            </div>
+            <p id="careerPeriodMessage" class="status-message" role="status"></p>
+          </form>
+        </section>
+        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Oferta institucional</p><h2>Carreras registradas</h2></div><button id="refreshCareers" class="secondary-button" type="button">Actualizar</button></div><div class="table-wrapper"><table><thead><tr><th>Carrera</th><th>Tipo</th><th>Plan</th><th>Duración</th><th>Cupo</th><th></th></tr></thead><tbody id="careersBody"><tr><td colspan="6" class="empty-state">Cargando carreras...</td></tr></tbody></table></div></section>
+        <section id="careerEditPanel" class="panel career-edit-panel" hidden>
+          <div class="panel-heading"><div><p class="section-kicker" id="formKicker">Edición</p><h2 id="formTitle">Editar carrera</h2></div><button id="cancelEdit" class="secondary-button compact-button" type="button">Cerrar</button></div>
+          <form id="careerForm">
+            <label class="form-field">Nombre<input name="nombre" required maxlength="150"></label>
+            <div class="inline-grid">
+              <label class="form-field">Tipo<select name="tipo" required><option value="Tecnicatura">Tecnicatura</option><option value="Licenciatura">Licenciatura</option><option value="Ingeniería">Ingeniería</option></select></label>
+              <label class="form-field">Plan de estudios<input name="planEstudios" required maxlength="80"></label>
+              <label class="form-field">Años de cursado<input name="duracionAnios" type="number" min="1" max="10" required></label>
+              <label class="form-field">Capacidad máxima<input name="capacidadMaximaEstudiantes" type="number" min="1" required></label>
+            </div>
+            <p class="field-help">Si aumentás la duración, Acadion agregará los años académicos faltantes.</p>
+            <div class="form-actions"><button id="saveCareer" class="primary-button" type="submit">Guardar cambios</button></div>
+            <p class="status-message" id="careerMessage" role="status"></p>
+          </form>
+        </section>
+        <section id="careerAdminPanel" class="panel career-admin-panel" hidden>
+          <div class="panel-heading career-admin-heading">
+            <div><p class="section-kicker">Administración de carrera</p><h2 id="careerAdminTitle">Materias de la carrera</h2><p id="careerAdminSummary" class="career-admin-summary"></p></div>
+            <button id="closeCareerAdmin" class="secondary-button compact-button" type="button">Cerrar</button>
+          </div>
+          <div class="career-admin-toolbar">
+            <label class="form-field">Ciclo lectivo<input id="careerAdminCycle" type="number" min="2020" max="2100"></label>
+            <button id="refreshCareerAdmin" class="secondary-button compact-button" type="button">Actualizar listado</button>
+          </div>
+          <div id="careerSubjects"><p class="empty-state">Seleccioná una carrera para ver sus materias.</p></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js"></script><script src="Comun.js"></script><script src="GestionCarreras.js"></script>
+</body>
+</html>

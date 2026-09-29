@@ -1,0 +1,27 @@
+@import url("Docente.css");
+
+.student-profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.profile-card { min-height: 100%; }
+.profile-form fieldset { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
+.profile-edit-panel[hidden], .password-panel[hidden] { display: none; }
+.inline-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; }
+.finance-form { display: grid; gap: 12px; }
+.finance-form label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #f6f6f6; }
+.finance-form input { width: 17px; height: 17px; accent-color: var(--naranja); }
+.compact-data { grid-template-columns: 1fr; }
+.relatives-card { grid-column: 1 / -1; }
+.relatives-list { display: grid; gap: 10px; }
+.relative-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; align-items: end; gap: 11px; padding: 14px; border: 1px solid #e1e1e1; border-radius: 12px; background: #fafafa; }
+.relative-row label { display: grid; gap: 6px; color: #444; font-size: 12px; font-weight: 700; }
+.relative-row input, .relative-row select { width: 100%; min-width: 0; padding: 10px; border: 1px solid #ccc; border-radius: 9px; background: white; }
+.remove-relative { min-height: 41px; padding: 0 13px; border: 1px solid #cf9b9b; border-radius: 9px; background: #fff5f5; color: #971f1f; font-weight: 700; cursor: pointer; }
+.section-empty { margin: 0; padding: 24px; border: 1px dashed #ccc; border-radius: 12px; color: #666; text-align: center; }
+.notice-strip[hidden] { display: none; }
+
+@media (max-width: 900px) {
+  .student-profile-grid { grid-template-columns: 1fr; }
+  .relative-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .relative-row { grid-template-columns: 1fr; }
+}

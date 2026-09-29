@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Inscripción a materias</title>
+  <link rel="stylesheet" href="InscripcionAMateria.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div>
+        <a class="logo" href="MenuPrincipal.html">Acadion<span>.</span></a>
+        <nav class="menu" aria-label="Menú principal">
+          <a class="menu-item" href="MenuPrincipal.html"><span class="menu-icon">⌂</span>Inicio</a>
+          <a class="menu-item active" href="InscripcionAMateria.html" aria-current="page"><span class="menu-icon">▣</span>Inscripción a materias</a>
+          <a class="menu-item" href="InscripcionAExamen.html"><span class="menu-icon">▤</span>Inscripción a exámenes</a>
+          <a class="menu-item" href="MateriasEnCurso.html"><span class="menu-icon">◫</span>Reportes</a>
+          <a class="menu-item" href="MisDatosPersonales.html"><span class="menu-icon">♙</span>Mis datos personales</a>
+        </nav>
+      </div>
+      <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
+    </aside>
+
+    <main class="main-content enrollment-main">
+      <header class="enrollment-topbar">
+        <a class="back-to-home" href="MenuPrincipal.html" aria-label="Volver al menú principal">←</a>
+        <div class="topbar-actions">
+          <button class="notification-button" type="button" aria-label="Notificaciones">♧<span class="notification-dot"></span></button>
+          <img id="profileImage" class="profile-image" src="https://ui-avatars.com/api/?name=Estudiante&background=ff7a00&color=fff&bold=true" alt="Foto de perfil">
+        </div>
+      </header>
+
+      <section class="enrollment-panel">
+        <div class="page-heading">
+          <p class="eyebrow">GESTIÓN ACADÉMICA</p>
+          <h1>Inscripción a materias</h1>
+          <p>Seleccioná las materias disponibles para tu próximo cursado.</p>
+          <p id="enrollmentWindow" class="enrollment-window">Consultando el período de inscripción...</p>
+        </div>
+
+        <section class="subjects-section" aria-labelledby="subjects-title">
+          <div class="section-header">
+            <div>
+              <h2 id="subjects-title">Materias disponibles</h2>
+              <p id="subjectsCount">Cargando materias...</p>
+            </div>
+          </div>
+
+          <div id="loadingState" class="loading-state"><span class="loader" aria-hidden="true"></span>Cargando materias disponibles...</div>
+          <div id="subjectsList" class="subjects-list" aria-live="polite"></div>
+          <div id="emptyState" class="empty-state is-hidden">
+            <div class="empty-icon">○</div>
+            <h3>No hay materias disponibles para inscribirse</h3>
+            <p id="emptyMessage">Actualmente no tenés materias habilitadas para inscripción.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="alertModal" class="modal-backdrop is-hidden" role="presentation">
+    <section id="alertBox" class="alert-modal" role="alertdialog" aria-modal="true" aria-labelledby="alertTitle">
+      <button id="closeAlert" class="modal-close" type="button" aria-label="Cerrar alerta">×</button>
+      <div id="alertIcon" class="alert-icon">!</div>
+      <h2 id="alertTitle">No fue posible realizar la inscripción</h2>
+      <p id="alertMessage"></p>
+      <button id="acceptAlert" class="accept-button" type="button">Entendido</button>
+    </section>
+  </div>
+
+  <script src="Api.js"></script>
+  <script src="InscripcionAMateria.js"></script>
+</body>
+</html>

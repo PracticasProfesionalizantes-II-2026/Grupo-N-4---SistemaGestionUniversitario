@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACADION | Iniciar Sesión</title>
+  <link rel="stylesheet" href="Login.css">
+</head>
+<body>
+  <main class="login-page">
+    <section class="branding-panel" aria-label="ACADION">
+      <div class="branding-content">
+        <svg class="education-icon" viewBox="0 0 120 120" aria-hidden="true">
+          <path d="M15 43 60 20l45 23-45 23L15 43Z" fill="#f58220"/>
+          <path d="M32 57v22c0 12 56 12 56 0V57L60 72 32 57Z" fill="#ffffff"/>
+          <path d="M104 44v32" stroke="#f58220" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="104" cy="80" r="5" fill="#f58220"/>
+        </svg>
+        <h1>ACADION</h1>
+        <p>Sistema de Gestión Universitario</p>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <form id="loginForm" class="login-form" novalidate>
+        <h2>Iniciar Sesión</h2>
+
+        <p id="errorMessage" class="error-message" role="alert">
+          Usuario o contraseña incorrecta
+        </p>
+
+        <div class="input-group">
+          <label class="sr-only" for="usuario">Usuario</label>
+          <input
+            type="text"
+            id="usuario"
+            name="usuario"
+            placeholder="Usuario"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="input-group password-group">
+          <label class="sr-only" for="password">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            required
+          >
+          <button
+            type="button"
+            id="togglePassword"
+            class="toggle-password"
+            aria-label="Mostrar contraseña"
+            aria-pressed="false"
+          >
+            <svg id="eyeIcon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+              <circle cx="12" cy="12" r="2.8"></circle>
+            </svg>
+          </button>
+        </div>
+
+        <a class="forgot-password" href="RecuperarContrasena.html">¿Olvidaste tu contraseña?</a>
+
+        <button type="submit" id="submitButton" class="submit-button">
+          Continuar
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <script src="Api.js"></script>
+  <script src="Login.js"></script>
+</body>
+</html>

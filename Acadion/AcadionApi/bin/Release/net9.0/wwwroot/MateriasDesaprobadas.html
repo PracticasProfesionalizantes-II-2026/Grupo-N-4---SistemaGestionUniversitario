@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Materias desaprobadas</title>
+  <link rel="stylesheet" href="MateriasDesaprobadas.css">
+</head>
+<body data-section="student" data-page="MateriasDesaprobadas">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar">
+        <a class="back-button" href="MenuPrincipal.html" aria-label="Volver a la pantalla anterior">←</a>
+        <div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mis datos personales"></a></div>
+      </header>
+      <section class="page-content">
+        <div class="history-title"><span data-current-year>2026</span><br>Reportes</div>
+        <label class="filter">Filtrar <select id="yearFilter"><option>2026</option></select></label>
+        <div id="reportContent"><p class="report-empty">Cargando materias desaprobadas…</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js"></script>
+  <script src="Comun.js"></script>
+  <script src="Reportes.js"></script>
+</body>
+</html>

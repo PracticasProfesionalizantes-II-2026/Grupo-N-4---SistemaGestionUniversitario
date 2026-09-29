@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Asistencia docente</title>
+  <link rel="stylesheet" href="AsistenciaProfesores.css">
+  <link rel="stylesheet" href="Admin.css">
+</head>
+<body data-section="admin" data-page="AsistenciaProfesores">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a></header>
+      <section class="page-content">
+        <div class="admin-heading"><div><p class="section-kicker">Seguimiento académico</p><h1>Asistencia de profesores</h1><p>Seleccioná al docente y la materia para registrar su asistencia a clase.</p></div></div>
+
+        <div class="attendance-workspace">
+          <section class="panel teacher-directory">
+            <div class="panel-heading"><div><p class="section-kicker">Plantel docente</p><h2>Profesores</h2></div><span id="teachersCount" class="badge">0 docentes</span></div>
+            <label class="teacher-search"><span aria-hidden="true">⌕</span><input id="teacherSearch" type="search" placeholder="Buscar por nombre o DNI" autocomplete="off"></label>
+            <div id="teachersList" class="teachers-list"><p class="empty-state">Cargando profesores...</p></div>
+          </section>
+
+          <section id="attendancePanel" class="panel attendance-panel" hidden>
+            <div class="selected-teacher">
+              <span id="selectedTeacherInitials" class="teacher-avatar" aria-hidden="true">--</span>
+              <div><p class="section-kicker">Docente seleccionado</p><h2 id="selectedTeacherName">Seleccioná un profesor</h2><p id="selectedTeacherDetails" class="muted"></p></div>
+            </div>
+            <form id="attendanceForm">
+              <div class="inline-grid">
+                <label class="form-field span-2">Materia<select name="materiaId" id="subjectSelect" required disabled><option value="">Seleccionar materia</option></select></label>
+                <label class="form-field">Fecha<input name="fecha" id="attendanceDate" type="date" required></label>
+                <fieldset class="attendance-status"><legend>Asistencia</legend><div class="status-options"><label><input type="radio" name="estado" value="Presente" checked><span>✓ Presente</span></label><label><input type="radio" name="estado" value="Ausente"><span>× Ausente</span></label></div></fieldset>
+                <label class="form-field span-2">Observaciones<textarea name="observaciones" rows="3" maxlength="500" placeholder="Información adicional (opcional)"></textarea></label>
+              </div>
+              <p id="subjectHelp" class="field-help"></p>
+              <div class="form-actions"><button id="saveAttendance" class="primary-button" type="submit">Guardar asistencia</button></div>
+              <p id="attendanceMessage" class="status-message" role="status"></p>
+            </form>
+          </section>
+        </div>
+
+        <section class="panel table-panel">
+          <div class="panel-heading"><div><p class="section-kicker">Historial</p><h2>Asistencias e inasistencias docentes</h2><p class="muted">Desde este listado podés justificar o quitar la justificación de cada ausencia.</p></div><button id="refreshAttendance" class="secondary-button" type="button">Actualizar</button></div>
+          <div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Profesor</th><th>Materia</th><th>Carrera</th><th>Estado</th><th>Justificada</th><th>Observaciones</th><th></th></tr></thead><tbody id="attendanceBody"><tr><td colspan="8" class="empty-state">Cargando registros...</td></tr></tbody></table></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js"></script><script src="Comun.js"></script><script src="AsistenciaProfesores.js"></script>
+</body>
+</html>

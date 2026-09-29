@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AcadionApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4085a77c7e2047a44c5856be16cad2dd52f8638e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac82301f1bb3950ccda4352a6f238244e64f2122")]
 [assembly: System.Reflection.AssemblyProductAttribute("AcadionApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AcadionApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

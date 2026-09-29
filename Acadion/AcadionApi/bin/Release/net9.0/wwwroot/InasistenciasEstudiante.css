@@ -1,0 +1,27 @@
+@import url("Comun.css");
+
+.student-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.student-summary-avatar { display: grid; flex: 0 0 54px; width: 54px; height: 54px; place-items: center; border-radius: 16px; background: var(--naranja); color: #111; font-weight: 900; }
+.student-summary h2 { margin: 2px 0 5px; }
+.cycle-filter { width: 180px; margin: 0 0 0 auto; }
+.absences-content { display: grid; gap: 20px; }
+.academic-year { margin: 0; }
+.academic-year-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid #e4e4e4; }
+.academic-year-heading h2 { margin: 0; }
+.academic-year-heading span { color: #6a6a6a; font-size: 13px; }
+.subject-absence { overflow: hidden; margin-top: 14px; border: 1px solid #dddddd; border-radius: 14px; }
+.subject-absence:first-of-type { margin-top: 0; }
+.subject-absence h3 { margin: 0; padding: 14px 17px; border-bottom: 1px solid #dddddd; background: #171717; color: white; font-size: 17px; }
+.subject-absence .table-wrapper { border-radius: 0; }
+.subject-absence table { margin: 0; }
+.subject-absence tbody tr:last-child td { border-bottom: 0; }
+.justification-select { min-width: 92px; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 8px; background: white; font: inherit; font-weight: 700; }
+.justification-select.is-justified { border-color: #4a9a69; background: #e6f6ec; color: #17643a; }
+.absence-count { display: inline-grid; min-width: 34px; height: 28px; place-items: center; border-radius: 8px; background: #fff0d0; color: #815600; font-weight: 800; }
+.notice-strip { padding: 13px 16px; margin-bottom: 18px; border-left: 4px solid var(--naranja); border-radius: 10px; background: #fff7e4; color: #5c470f; }
+.notice-strip.error { border-color: #b02121; background: #fff0f0; color: #8b1d1d; }
+
+@media (max-width: 700px) {
+  .student-summary { align-items: flex-start; flex-wrap: wrap; }
+  .cycle-filter { width: 100%; margin-left: 0; }
+}

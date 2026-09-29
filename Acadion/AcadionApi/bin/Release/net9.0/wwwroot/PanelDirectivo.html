@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Bienvenido</title>
+  <link rel="stylesheet" href="PanelDirectivo.css"><link rel="stylesheet" href="Admin.css">
+</head>
+<body data-section="admin" data-page="PanelDirectivo">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
+      <section class="page-content">
+        <div class="admin-heading"><div><p class="section-kicker">Administración académica</p><h1>Panel de gestión</h1><p>Accesos principales para organizar la actividad institucional.</p></div></div>
+        <div class="quick-actions">
+          <a class="quick-action" href="CrearCarrera.html"><span class="action-icon">+</span><h2>Crear carrera</h2><p>Registrar una nueva propuesta académica, su plan, duración y cupo.</p></a>
+          <a class="quick-action" href="GestionCarreras.html"><span class="action-icon">C</span><h2>Administrar carreras</h2><p><strong data-count="careers">—</strong> carreras registradas. Consultá materias, profesores y estudiantes.</p></a>
+          <a class="quick-action" href="CrearMateria.html"><span class="action-icon">+</span><h2>Crear materia</h2><p>Agregar una materia con su carrera, año, horarios y correlatividades.</p></a>
+          <a class="quick-action" href="GestionMaterias.html"><span class="action-icon">M</span><h2>Administrar materias</h2><p><strong data-count="subjects">—</strong> materias registradas. Editá la información y asigná profesores.</p></a>
+          <a class="quick-action" href="SeleccionarRol.html"><span class="action-icon">+</span><h2>Crear usuario</h2><p>Dar de alta estudiantes, profesores y directivos.</p></a>
+          <a class="quick-action" href="GestionUsuarios.html"><span class="action-icon">U</span><h2>Administrar usuarios</h2><p><strong data-count="users">—</strong> cuentas registradas. Consultá y editá sus datos.</p></a>
+          <a class="quick-action" href="AsistenciaProfesores.html"><span class="action-icon">A</span><h2>Asistencia docentes</h2><p>Registrar presentes y ausentes por profesor, materia y fecha.</p></a>
+          <a class="quick-action" href="GestionPagos.html"><span class="action-icon">$</span><h2>Matrículas y cuotas</h2><p>Controlar la situación financiera y la habilitación de estudiantes.</p></a>
+          <a class="quick-action full-row" href="GestionNotificaciones.html"><span class="action-icon">N</span><h2>Notificaciones generales</h2><p><strong data-count="notifications">—</strong> avisos publicados para la comunidad académica.</p></a>
+        </div>
+      </section>
+    </main>
+  </div>
+  <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
+  <script src="Api.js"></script><script src="Comun.js"></script>
+  <script src="PanelDirectivo.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Añadir</title>
+  <link rel="stylesheet" href="SeleccionarRol.css"><link rel="stylesheet" href="Admin.css">
+</head>
+<body data-section="admin" data-page="SeleccionarRol">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
+      <section class="page-content">
+        <div class="admin-heading"><div><p class="section-kicker">Gestión de usuarios</p><h1>Crear usuario</h1><p>Elegí el tipo de cuenta institucional que vas a registrar.</p></div></div><div class="quick-actions"><a class="quick-action" href="CrearEstudiante.html"><span class="action-icon">E</span><h2>Estudiante</h2><p>Datos personales, contacto, matrícula y legajo.</p></a><a class="quick-action" href="CrearProfesor.html"><span class="action-icon">P</span><h2>Profesor</h2><p>Datos personales, contacto y perfil académico.</p></a><a class="quick-action" href="CrearDirectivo.html"><span class="action-icon">D</span><h2>Directivo</h2><p>Cuenta institucional con acceso de consulta y reportes.</p></a></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
+  <script src="Api.js"></script><script src="Comun.js"></script>
+  <script src="SeleccionarRol.js"></script>
+</body>
+</html>
