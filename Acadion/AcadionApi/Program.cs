@@ -51,7 +51,11 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 8,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
 
 // =======================================================
 // SERVICIOS (INJECCIÓN DE DEPENDENCIAS)
