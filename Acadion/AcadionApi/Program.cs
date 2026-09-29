@@ -110,6 +110,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+app.UseDefaultFiles();
 app.UseCors();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -152,12 +153,14 @@ try
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
     await NotificacionAutomaticaService.ReprogramarPendientesAsync(context);
 }
 catch (Exception error)
 {
-    app.Logger.LogWarning(error,
-        "No fue posible reconciliar las notificaciones automáticas al iniciar. Se reintentará cuando se actualicen períodos o evaluaciones.");
+    app.Logger.LogCritical(error,
+        "No fue posible aplicar las migraciones o reconciliar las notificaciones automáticas al iniciar.");
+    throw;
 }
 
 app.Run();

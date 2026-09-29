@@ -1,5 +1,7 @@
 window.AcadionApi = (() => {
-  const baseUrl = "http://localhost:5050";
+  // Localmente el frontend usa la API de desarrollo; en Azure ambas partes comparten origen.
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const baseUrl = isLocal ? "http://localhost:5050" : window.location.origin;
   const sessionKey = "acadion_session";
 
   function getSession() {
@@ -44,7 +46,7 @@ window.AcadionApi = (() => {
     try {
       response = await fetch(`${baseUrl}${path}`, { ...options, headers });
     } catch {
-      throw new Error("No se pudo conectar con la API en http://localhost:5050.");
+      throw new Error("No se pudo conectar con el servidor.");
     }
 
     if (response.status === 401) {
