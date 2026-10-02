@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         statusCell.append(status);
         const justified = row.insertCell();
         const isAbsent = record.estado?.toLowerCase() === "ausente";
-        justified.textContent = isAbsent ? (record.justificada ? "Sí" : "No") : "—";
+        justified.textContent = isAbsent ? (record.justificada ? `Sí${record.justificadaPor ? ` · ${record.justificadaPor}` : ""}` : "No") : "—";
         const observations = row.insertCell();
         observations.textContent = record.observaciones || "—";
         const actions = row.insertCell();
@@ -144,6 +144,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
           actions.append(toggle);
+          if (record.tieneJustificativo) {
+            const link = document.createElement("a"); link.className = "secondary-button compact-button"; link.target = "_blank"; link.textContent = "Ver archivo"; link.href = `${AcadionApi.baseUrl}/api/asistencia-personal/${record.id}/justificativo`; actions.append(link);
+          }
+          const file = document.createElement("input"); file.type = "file"; file.accept = "application/pdf,image/jpeg,image/png"; file.hidden = true;
+          const attach = document.createElement("button"); attach.type = "button"; attach.className = "secondary-button compact-button"; attach.textContent = record.tieneJustificativo ? "Reemplazar archivo" : "Adjuntar justificativo";
+          attach.addEventListener("click", () => file.click());
+          file.addEventListener("change", async () => {
+            if (!file.files[0]) return; attach.disabled = true;
+            const data = new FormData(); data.append("archivo", file.files[0]);
+            try { const result = await AcadionApi.request(`/api/asistencia-personal/${record.id}/justificacion-archivo`, { method:"POST", body:data }); showMessage(result.mensaje,true); await loadAttendance(); }
+            catch(error){ showMessage(error.message); attach.disabled=false; }
+          });
+          actions.append(file, attach);
         }
       });
     } catch (error) {

@@ -41,6 +41,24 @@ namespace AcadionApi.Logica
                 throw new ArgumentException("La materia indicada no está disponible para inscripción.");
             if (!estudiante.CarreraId.HasValue || materia.AnioCursada?.IdCarrera != estudiante.CarreraId)
                 throw new InvalidOperationException("La materia no pertenece a la carrera del estudiante.");
+            if (estudiante.PlanEstudioId.HasValue && materia.PlanEstudioId != estudiante.PlanEstudioId)
+                throw new InvalidOperationException("La materia no pertenece al plan de estudios del estudiante.");
+
+            Comision? comision = null;
+            if (dto.ComisionId.HasValue)
+            {
+                comision = await _context.Comisiones
+                    .Include(c => c.Horarios)
+                    .SingleOrDefaultAsync(c => c.Id == dto.ComisionId.Value);
+                if (comision is null || !comision.Activa || comision.MateriaId != dto.IdMateria ||
+                    comision.CicloLectivo != dto.CicloLectivo)
+                    throw new ArgumentException("La comisión seleccionada no está disponible para esta materia y ciclo.");
+                var ocupados = await _context.EstudianteMaterias.CountAsync(i =>
+                    i.ComisionId == comision.Id && i.Estado != "Cancelada");
+                if (!PoliticasAcademicas.HayVacante(comision.Cupo, ocupados))
+                    throw new InvalidOperationException("La comisión alcanzó su cupo. Podés solicitar un lugar en la lista de espera.");
+                dto.IdDocente = comision.DocenteId;
+            }
 
             if (dto.IdDocente.HasValue)
             {
@@ -59,18 +77,19 @@ namespace AcadionApi.Logica
                 em.CicloLectivo == dto.CicloLectivo))
                 throw new InvalidOperationException("El estudiante ya está inscripto en esa materia y ciclo lectivo.");
 
-            var estadosQueHabilitan = new[]
-            {
-                "Regular", "Regularizada", "Regularizado", "Aprobada", "Aprobado", "Promocionada", "Promocionado"
-            };
             var materiasRegularizadas = await _context.EstudianteMaterias
                 .Where(em => em.IdEstudiante == dto.IdEstudiante &&
-                    estadosQueHabilitan.Contains(em.Estado))
-                .Select(em => em.IdMateria)
+                    em.Estado != "Cancelada")
+                .Select(em => new { em.IdMateria, em.Estado })
                 .Distinct()
                 .ToListAsync();
+            var idsHabilitados = materiasRegularizadas
+                .Where(em => PoliticasAcademicas.EstadoHabilitaCorrelativa(em.Estado))
+                .Select(em => em.IdMateria);
+            var idsPendientes = PoliticasAcademicas.CorrelativasPendientes(
+                materia.Correlativas.Select(c => c.IdMateria), idsHabilitados);
             var correlativasPendientes = materia.Correlativas
-                .Where(c => !materiasRegularizadas.Contains(c.IdMateria))
+                .Where(c => idsPendientes.Contains(c.IdMateria))
                 .Select(c => c.Nombre)
                 .OrderBy(nombre => nombre)
                 .ToList();
@@ -84,9 +103,13 @@ namespace AcadionApi.Logica
                 .Include(em => em.Materia).ThenInclude(m => m!.Horarios)
                 .SelectMany(em => em.Materia!.Horarios)
                 .ToListAsync();
-            var existeSuperposicion = materia.Horarios.Any(nuevo => horariosActuales.Any(actual =>
+            var horariosNuevos = comision is null
+                ? materia.Horarios.Select(h => new { h.DiaSemana, h.HoraInicio, h.HoraFin }).ToList()
+                : comision.Horarios.Select(h => new { h.DiaSemana, h.HoraInicio, h.HoraFin }).ToList();
+            var existeSuperposicion = horariosNuevos.Any(nuevo => horariosActuales.Any(actual =>
                 actual.DiaSemana == nuevo.DiaSemana &&
-                nuevo.HoraInicio < actual.HoraFin && actual.HoraInicio < nuevo.HoraFin));
+                PoliticasAcademicas.HorariosSeSuperponen(
+                    nuevo.HoraInicio, nuevo.HoraFin, actual.HoraInicio, actual.HoraFin)));
             if (existeSuperposicion)
                 throw new InvalidOperationException(
                     "No es posible inscribirse porque el horario se superpone con otra materia que ya cursás.");
@@ -95,6 +118,7 @@ namespace AcadionApi.Logica
             {
                 IdEstudiante = dto.IdEstudiante,
                 IdMateria = dto.IdMateria,
+                ComisionId = dto.ComisionId,
                 IdDocente = dto.IdDocente,
                 CicloLectivo = dto.CicloLectivo,
                 Cuatrimestre = materia.TipoCursada switch
@@ -115,6 +139,7 @@ namespace AcadionApi.Logica
                 IdEstudianteMateria = nuevaInscripcion.IdEstudianteMateria,
                 IdEstudiante = nuevaInscripcion.IdEstudiante,
                 IdMateria = nuevaInscripcion.IdMateria,
+                ComisionId = nuevaInscripcion.ComisionId,
                 IdDocente = nuevaInscripcion.IdDocente,
                 CicloLectivo = nuevaInscripcion.CicloLectivo,
                 Cuatrimestre = nuevaInscripcion.Cuatrimestre,
@@ -131,6 +156,7 @@ namespace AcadionApi.Logica
                 IdEstudianteMateria = i.IdEstudianteMateria,
                 IdEstudiante = i.IdEstudiante,
                 IdMateria = i.IdMateria,
+                ComisionId = i.ComisionId,
                 IdDocente = i.IdDocente,
                 CicloLectivo = i.CicloLectivo,
                 Cuatrimestre = i.Cuatrimestre,
@@ -149,6 +175,7 @@ namespace AcadionApi.Logica
                 IdEstudianteMateria = i.IdEstudianteMateria,
                 IdEstudiante = i.IdEstudiante,
                 IdMateria = i.IdMateria,
+                ComisionId = i.ComisionId,
                 IdDocente = i.IdDocente,
                 CicloLectivo = i.CicloLectivo,
                 Cuatrimestre = i.Cuatrimestre,

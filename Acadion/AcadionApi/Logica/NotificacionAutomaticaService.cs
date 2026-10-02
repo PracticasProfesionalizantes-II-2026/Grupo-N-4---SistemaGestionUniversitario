@@ -140,6 +140,39 @@ public static class NotificacionAutomaticaService
     public static Task EliminarRecordatoriosExamenAsync(int examenId, AppDbContext context) =>
         EliminarPorPrefijoAsync($"AUTO:EXAMEN:{examenId}:", context);
 
+    public static async Task NotificarNotaCargadaAsync(Examen examen, int estudianteId,
+        bool esActualizacion, AppDbContext context)
+    {
+        var clave = $"AUTO:NOTA:{examen.IdExamen}:ESTUDIANTE:{estudianteId}";
+        var tipo = FormatearTipo(examen.TipoExamen);
+        var materia = examen.Materia?.Nombre ?? "tu materia";
+        var titulo = esActualizacion ? "Se actualizó una nota" : "Se cargó una nueva nota";
+        var mensaje = esActualizacion
+            ? $"El docente actualizó tu nota de {tipo} de {materia}. Consultala en Reportes."
+            : $"El docente cargó tu nota de {tipo} de {materia}. Consultala en Reportes.";
+        var ahora = DateTime.UtcNow;
+        var existente = await context.NotificacionesGenerales
+            .SingleOrDefaultAsync(n => n.ClaveAutomatica == clave);
+        if (existente is null)
+        {
+            Agregar(context, clave, titulo, mensaje, ahora, null, examen.IdDocente,
+                null, estudianteId, "Alta");
+            return;
+        }
+
+        existente.Titulo = titulo;
+        existente.Mensaje = mensaje;
+        existente.Prioridad = "Alta";
+        existente.FechaPublicacionUtc = ahora;
+        existente.FechaExpiracionUtc = null;
+        existente.CreadaPorUsuarioId = examen.IdDocente;
+        existente.Activa = true;
+        var lecturas = await context.NotificacionesLecturas
+            .Where(l => l.NotificacionId == existente.Id && l.UsuarioId == estudianteId)
+            .ToListAsync();
+        context.NotificacionesLecturas.RemoveRange(lecturas);
+    }
+
     private static void Agregar(AppDbContext context, string clave, string titulo, string mensaje,
         DateTime publicacionUtc, DateTime? expiracionUtc, int? creadorId, int? rolId,
         int? usuarioId, string prioridad)
@@ -162,9 +195,10 @@ public static class NotificacionAutomaticaService
 
     private static async Task EliminarPorPrefijoAsync(string prefijo, AppDbContext context)
     {
-        await context.NotificacionesGenerales
+        var existentes = await context.NotificacionesGenerales
             .Where(n => n.ClaveAutomatica != null && n.ClaveAutomatica.StartsWith(prefijo))
-            .ExecuteDeleteAsync();
+            .ToListAsync();
+        context.NotificacionesGenerales.RemoveRange(existentes);
     }
 
     private static DateTime MedianocheAnteriorUtc(DateTime fecha)

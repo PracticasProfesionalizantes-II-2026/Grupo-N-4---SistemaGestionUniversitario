@@ -10,15 +10,13 @@
   <div class="app-layout">
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
-      <header class="topbar"><a class="back-button" href="MenuPrincipal.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a href="Ajustes.html">Ajustes</a><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
       <section class="page-content">
-        <h1>¿Olvidaste tu contraseña?</h1><p>Ingresá tu E-mail para poder cambiar tu contraseña.</p><form class="recovery-form" data-next="IngresarCodigo.html"><label class="form-field">Cuenta de Gmail<input name="gmail" type="email" value="" required></label><button class="primary-button">Continuar</button><p id="formMessage" role="status"></p></form><a href="Login.html">← Atrás</a>
+        <h1>¿Olvidaste tu contraseña?</h1><p>Ingresá el correo personal o institucional asociado a tu cuenta.</p><form id="recoveryRequestForm" class="recovery-form"><label class="form-field">Correo electrónico<input name="email" type="email" autocomplete="email" maxlength="254" required></label><button class="primary-button" type="submit">Enviar código</button><p id="formMessage" role="status"></p></form><a href="Login.html">← Atrás</a>
       </section>
     </main>
   </div>
   <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
-  <script src="Comun.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script>
   <script src="RecuperarContrasena.js"></script>
 </body>
 </html>
-

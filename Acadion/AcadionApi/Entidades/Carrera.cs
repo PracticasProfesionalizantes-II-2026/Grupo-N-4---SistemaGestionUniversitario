@@ -25,6 +25,9 @@ public class Carrera
     // Cupo total de estudiantes que pueden estar asignados a la carrera.
     public int CapacidadMaximaEstudiantes { get; set; }
 
+    // Las carreras se conservan para no perder su historial académico.
+    public bool Activa { get; set; } = true;
+
     // 4. Relación estructural: Una carrera se divide en varios años académicos (1°, 2°, 3°...)
     // De esta lista se desprenden luego las materias correspondientes a cada nivel.
     public List<Anio> AniosAcademicos { get; set; } = new List<Anio>();
@@ -32,4 +35,8 @@ public class Carrera
     // 5. Lista de alumnos inscritos globalmente en esta carrera
     // Útil para métricas institucionales (saber cuántos alumnos activos tiene la carrera)
     public List<Usuario> AlumnosInscritos { get; set; } = new List<Usuario>();
+
+    // Versiones históricas del plan. PlanEstudios se conserva como nombre del
+    // plan vigente para mantener compatibilidad con las pantallas existentes.
+    public List<PlanEstudio> PlanesEstudio { get; set; } = new List<PlanEstudio>();
 }

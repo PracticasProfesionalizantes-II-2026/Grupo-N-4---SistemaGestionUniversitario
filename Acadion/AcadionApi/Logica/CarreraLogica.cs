@@ -32,7 +32,17 @@ public class CarreraLogica : ICarreraLogica
             Tipo = NormalizarTipo(dto.Tipo),
             DuracionAnios = dto.DuracionAnios,
             CapacidadMaximaEstudiantes = dto.CapacidadMaximaEstudiantes,
-            AniosAcademicos = CrearAnios(1, dto.DuracionAnios)
+            Activa = true,
+            AniosAcademicos = CrearAnios(1, dto.DuracionAnios),
+            PlanesEstudio =
+            [
+                new PlanEstudio
+                {
+                    Codigo = plan,
+                    VigenteDesde = ExtraerVigencia(plan),
+                    Activo = true
+                }
+            ]
         };
         _context.Add(carrera);
         await _context.SaveChangesAsync();
@@ -44,6 +54,8 @@ public class CarreraLogica : ICarreraLogica
         var carreras = await _context.Set<Carrera>().AsNoTracking()
             .Include(c => c.AniosAcademicos)
             .Include(c => c.AlumnosInscritos)
+            .Include(c => c.PlanesEstudio).ThenInclude(p => p.Materias)
+            .Include(c => c.PlanesEstudio).ThenInclude(p => p.Estudiantes)
             .OrderBy(c => c.Nombre)
             .ThenBy(c => c.PlanEstudios)
             .ToListAsync();
@@ -55,6 +67,8 @@ public class CarreraLogica : ICarreraLogica
         var carrera = await _context.Set<Carrera>().AsNoTracking()
             .Include(c => c.AniosAcademicos)
             .Include(c => c.AlumnosInscritos)
+            .Include(c => c.PlanesEstudio).ThenInclude(p => p.Materias)
+            .Include(c => c.PlanesEstudio).ThenInclude(p => p.Estudiantes)
             .SingleOrDefaultAsync(c => c.IdCarrera == id);
         return carrera is null ? null : Mapear(carrera);
     }
@@ -66,6 +80,7 @@ public class CarreraLogica : ICarreraLogica
         var carrera = await _context.Set<Carrera>()
             .Include(c => c.AniosAcademicos)
             .Include(c => c.AlumnosInscritos)
+            .Include(c => c.PlanesEstudio)
             .SingleOrDefaultAsync(c => c.IdCarrera == id);
         if (carrera is null) return false;
 
@@ -84,10 +99,37 @@ public class CarreraLogica : ICarreraLogica
             throw new InvalidOperationException("Ya existe esa carrera con el mismo plan de estudios.");
 
         carrera.Nombre = nombre;
+        if (!string.Equals(carrera.PlanEstudios, plan, StringComparison.OrdinalIgnoreCase))
+        {
+            var nuevaVigencia = ExtraerVigencia(plan);
+            foreach (var anterior in carrera.PlanesEstudio.Where(p => p.Activo))
+            {
+                anterior.Activo = false;
+                anterior.VigenteHasta ??= Math.Max(anterior.VigenteDesde, nuevaVigencia - 1);
+            }
+            if (!carrera.PlanesEstudio.Any(p =>
+                string.Equals(p.Codigo, plan, StringComparison.OrdinalIgnoreCase)))
+            {
+                carrera.PlanesEstudio.Add(new PlanEstudio
+                {
+                    Codigo = plan,
+                    VigenteDesde = nuevaVigencia,
+                    Activo = true
+                });
+            }
+            else
+            {
+                var existente = carrera.PlanesEstudio.Single(p =>
+                    string.Equals(p.Codigo, plan, StringComparison.OrdinalIgnoreCase));
+                existente.Activo = true;
+                existente.VigenteHasta = null;
+            }
+        }
         carrera.PlanEstudios = plan;
         carrera.Tipo = NormalizarTipo(dto.Tipo);
         carrera.DuracionAnios = dto.DuracionAnios;
         carrera.CapacidadMaximaEstudiantes = dto.CapacidadMaximaEstudiantes;
+        carrera.Activa = dto.Activa ?? carrera.Activa;
         if (dto.DuracionAnios > maximoExistente)
             carrera.AniosAcademicos.AddRange(CrearAnios(maximoExistente + 1, dto.DuracionAnios));
 
@@ -130,13 +172,27 @@ public class CarreraLogica : ICarreraLogica
         Tipo = carrera.Tipo,
         DuracionAnios = carrera.DuracionAnios,
         CapacidadMaximaEstudiantes = carrera.CapacidadMaximaEstudiantes,
+        Activa = carrera.Activa,
         EstudiantesInscriptos = carrera.AlumnosInscritos.Count,
         Anios = carrera.AniosAcademicos.OrderBy(a => a.NumeroAnio).Select(a => new AnioCarreraDto
         {
             IdAnio = a.IdAnio,
             NumeroAnio = a.NumeroAnio,
             NombreAnio = a.NombreAnio
-        }).ToList()
+        }).ToList(),
+        Planes = carrera.PlanesEstudio.OrderByDescending(p => p.Activo)
+            .ThenByDescending(p => p.VigenteDesde)
+            .Select(p => new PlanEstudioDto
+            {
+                Id = p.Id,
+                CarreraId = p.CarreraId,
+                Codigo = p.Codigo,
+                VigenteDesde = p.VigenteDesde,
+                VigenteHasta = p.VigenteHasta,
+                Activo = p.Activo,
+                CantidadMaterias = p.Materias.Count,
+                CantidadEstudiantes = p.Estudiantes.Count
+            }).ToList()
     };
 
     private static void Validar(string nombre, string plan, string tipo, int duracion, int capacidad)
@@ -161,4 +217,12 @@ public class CarreraLogica : ICarreraLogica
 
     private static string NormalizarTipo(string tipo) => TiposPermitidos.Single(t =>
         string.Equals(t, tipo.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private static int ExtraerVigencia(string codigo)
+    {
+        var anio = System.Text.RegularExpressions.Regex.Match(codigo, @"\b(20\d{2}|21\d{2})\b");
+        return anio.Success && int.TryParse(anio.Value, out var valor)
+            ? valor
+            : DateTime.UtcNow.Year;
+    }
 }

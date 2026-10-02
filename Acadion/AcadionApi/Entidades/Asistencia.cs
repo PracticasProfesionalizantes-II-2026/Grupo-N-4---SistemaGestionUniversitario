@@ -18,6 +18,9 @@ public class Asistencia
     public int IdDocente { get; set; }
     public Usuario? Docente { get; set; } 
 
+    public int? ClaseId { get; set; }
+    public ClaseAcademica? Clase { get; set; }
+
     // Datos de la Asistencia
     public DateTime Fecha { get; set; } = DateTime.Today; // Guarda la fecha del día actual
     
@@ -26,6 +29,11 @@ public class Asistencia
     public string TipoClase { get; set; } = "Presencial";
     public string TemaDictado { get; set; } = string.Empty;
     public bool Justificada { get; set; }
+    [MaxLength(500)]
+    public string JustificativoArchivo { get; set; } = string.Empty;
+    public int? JustificadaPorUsuarioId { get; set; }
+    public Usuario? JustificadaPor { get; set; }
+    public DateTime? FechaJustificacionUtc { get; set; }
     public int CantidadInasistencias { get; set; }
     public string? Observaciones { get; set; }
 }

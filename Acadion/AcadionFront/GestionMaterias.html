@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acadion | Administrar materias</title>
-  <link rel="stylesheet" href="GestionMaterias.css">
-  <link rel="stylesheet" href="Admin.css">
+  <link rel="stylesheet" href="GestionMaterias.css?v=20260930-6">
+  <link rel="stylesheet" href="Admin.css?v=20260930-6">
 </head>
 <body data-section="admin" data-page="GestionMaterias">
   <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
-    <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+    <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver">←</a></header>
     <section class="page-content">
       <div class="admin-heading"><div><p class="section-kicker">Estructura académica</p><h1>Administrar materias</h1><p>Consultá y editá materias, horarios, correlatividades, períodos de inscripción y profesores.</p></div><a class="primary-button" href="CrearMateria.html">+ Crear materia</a></div>
       <section class="panel enrollment-period-panel">
@@ -19,6 +19,25 @@
       <section class="panel">
         <div class="panel-heading"><div><p class="section-kicker">Equipo docente</p><h2>Asignar profesor a una materia</h2><p class="muted">La materia aparecerá automáticamente en el portal del profesor.</p></div></div>
         <form id="teacherAssignmentForm"><div class="inline-grid"><label class="form-field">Profesor<select id="assignmentTeacher" required><option value="">Seleccionar profesor</option></select></label><label class="form-field">Materia<select id="assignmentSubject" required><option value="">Seleccionar materia</option></select></label><label class="form-field">Ciclo lectivo<input id="assignmentCycle" type="number" min="2020" max="2100" required></label></div><p class="field-help">La duración y el período se toman automáticamente de la materia.</p><div class="form-actions"><button class="primary-button" type="submit">Asignar profesor</button></div><p id="assignmentMessage" class="status-message" role="status"></p></form>
+      </section>
+      <section class="panel" id="commissionsPanel">
+        <div class="panel-heading"><div><p class="section-kicker">Oferta de cursado</p><h2>Comisiones y lista de espera</h2><p class="muted">Creá turnos con docente, cupo y horario propios. Al completarse el cupo, los alumnos quedan en espera.</p></div><button id="toggleCommissionForm" class="secondary-button" type="button">+ Nueva comisión</button></div>
+        <form id="commissionForm" hidden>
+          <div class="inline-grid">
+            <label class="form-field">Materia<select name="materiaId" id="commissionSubject" required><option value="">Seleccionar materia</option></select></label>
+            <label class="form-field">Nombre<input name="nombre" placeholder="Comisión A" maxlength="80" required></label>
+            <label class="form-field">Turno<select name="turno" required><option>Mañana</option><option>Tarde</option><option>Noche</option></select></label>
+            <label class="form-field">Ciclo lectivo<input name="cicloLectivo" type="number" min="2020" max="2100" required></label>
+            <label class="form-field">Cupo<input name="cupo" type="number" min="1" required></label>
+            <label class="form-field">Profesor<select name="docenteId" id="commissionTeacher"><option value="">A confirmar</option></select></label>
+            <label class="form-field">Día<select name="diaSemana"><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option></select></label>
+            <label class="form-field">Desde<input name="horaInicio" type="time" required></label>
+            <label class="form-field">Hasta<input name="horaFin" type="time" required></label>
+          </div>
+          <div class="form-actions"><button id="cancelCommission" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Crear comisión</button></div>
+          <p id="commissionMessage" class="status-message" role="status"></p>
+        </form>
+        <div id="commissionsList"><p class="empty-state">Cargando comisiones del ciclo actual...</p></div>
       </section>
       <section id="subjectEditPanel" class="panel subject-edit-panel" hidden>
         <div class="panel-heading"><div><p class="section-kicker" id="subjectKicker">Edición de materia</p><h2 id="subjectTitle">Datos académicos</h2></div><button id="cancelSubjectEdit" class="secondary-button" type="button">Cerrar</button></div>
@@ -47,6 +66,6 @@
       </section>
     </section>
   </main></div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="GestionMaterias.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20260930-6"></script><script src="GestionMaterias.js?v=20260930-6"></script>
 </body>
 </html>

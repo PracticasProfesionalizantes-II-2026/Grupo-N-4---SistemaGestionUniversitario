@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Historial de actividad</title>
+  <link rel="stylesheet" href="HistorialActividad.css?v=20261001-2">
+</head>
+<body data-section="admin" data-page="HistorialActividad">
+  <div class="app-layout">
+    <aside id="sidebar" class="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver">←</a></header>
+      <section class="page-content audit-page">
+        <div class="admin-heading audit-heading">
+          <div>
+            <p class="section-kicker">Seguridad y trazabilidad</p>
+            <h1>Historial de actividad</h1>
+            <p>Consultá quién realizó cada cambio y cuándo ocurrió.</p>
+          </div>
+          <span class="readonly-badge">Solo lectura</span>
+        </div>
+
+        <section class="panel audit-filters" aria-label="Filtros del historial">
+          <label>Desde<input id="dateFrom" type="date"></label>
+          <label>Hasta<input id="dateTo" type="date"></label>
+          <label>Usuario<input id="userFilter" type="search" placeholder="Nombre de usuario"></label>
+          <label>Acción
+            <select id="actionFilter">
+              <option value="">Todas</option>
+              <option value="notas">Notas</option>
+              <option value="justificacion">Justificaciones</option>
+              <option value="pagos">Pagos</option>
+              <option value="usuarios">Usuarios</option>
+              <option value="materias">Materias</option>
+              <option value="carreras">Carreras</option>
+            </select>
+          </label>
+          <button id="searchAudit" class="primary-button" type="button">Consultar</button>
+        </section>
+
+        <p id="auditMessage" class="status-message" role="status"></p>
+        <section class="panel table-panel">
+          <div class="audit-table-heading">
+            <div><p class="section-kicker">Registro institucional</p><h2>Operaciones recientes</h2></div>
+            <span id="auditTotal" class="audit-total">0 registros</span>
+          </div>
+          <div class="table-wrapper audit-table-wrapper">
+            <table class="audit-table">
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Resultado</th><th>Detalle</th></tr></thead>
+              <tbody id="auditBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button id="previousPage" class="secondary-button" type="button">Anterior</button>
+            <span id="pageInfo"></span>
+            <button id="nextPage" class="secondary-button" type="button">Siguiente</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-2"></script>
+  <script src="HistorialActividad.js?v=20261001-2"></script>
+</body>
+</html>

@@ -10,15 +10,13 @@
   <div class="app-layout">
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
-      <header class="topbar"><a class="back-button" href="MenuPrincipal.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a href="Ajustes.html">Ajustes</a><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
       <section class="page-content">
-        <h1>Ingresar código</h1><p>Se ha enviado un código a tu cuenta de Gmail</p><form class="recovery-form" data-next="NuevaContrasena.html"><label class="form-field">Código<input name="codigo" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" placeholder="_ _ _ _ _ _" required></label><button type="button" id="resendCode" class="text-button">Reenviar código</button><button class="primary-button">Continuar</button><p id="formMessage" role="status"></p></form><a href="RecuperarContrasena.html">← Atrás</a>
+        <h1>Ingresar código</h1><p>Enviamos un código de seis números a <strong id="recoveryDestination"></strong>. Vence en 10 minutos.</p><form id="recoveryCodeForm" class="recovery-form"><label class="form-field">Código<input name="codigo" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="_ _ _ _ _ _" required></label><button type="button" id="resendCode" class="text-button">Reenviar código</button><button class="primary-button" type="submit">Verificar código</button><p id="formMessage" role="status"></p></form><a href="RecuperarContrasena.html">← Atrás</a>
       </section>
     </main>
   </div>
   <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
-  <script src="Comun.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script>
   <script src="IngresarCodigo.js"></script>
 </body>
 </html>
-

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Ajustes de la cuenta</title>
+  <link rel="stylesheet" href="AjustesDirectivo.css">
+</head>
+<body data-section="director" data-page="AjustesDirectivo">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><a class="back-button" href="PanelInstitucional.html" aria-label="Volver al panel institucional">←</a><span></span></header>
+      <section class="page-content">
+        <div class="settings-heading">
+          <p class="section-kicker">Cuenta institucional</p>
+          <h1>Ajustes</h1>
+          <p>Actualizá la foto de perfil o la contraseña de tu cuenta.</p>
+        </div>
+
+        <p id="settingsMessage" class="notice-strip" role="status" hidden></p>
+
+        <section class="settings-grid" aria-label="Opciones de la cuenta">
+          <article class="panel photo-panel">
+            <div class="panel-heading">
+              <div><p class="section-kicker">Perfil</p><h2>Cambiar foto de perfil</h2></div>
+            </div>
+            <div class="profile-preview">
+              <div id="profileVisual" class="profile-initials" aria-hidden="true">DI</div>
+              <div><strong id="profileName">Directivo</strong><span id="profileUsername">Cuenta institucional</span></div>
+            </div>
+            <p class="setting-description">Usá una imagen JPEG, PNG o WebP de hasta 5 MB.</p>
+            <label class="primary-button file-button">Seleccionar nueva foto<input id="profilePhoto" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+          </article>
+
+          <article class="panel password-panel">
+            <div class="panel-heading">
+              <div><p class="section-kicker">Seguridad</p><h2>Cambiar contraseña</h2></div>
+            </div>
+            <p class="setting-description">La nueva contraseña debe tener al menos 10 caracteres y combinar mayúsculas, minúsculas, números y símbolos.</p>
+            <form id="directorPasswordForm">
+              <label class="form-field">Contraseña actual<input name="actual" type="password" autocomplete="current-password" required></label>
+              <label class="form-field">Nueva contraseña<input name="nueva" type="password" minlength="10" autocomplete="new-password" required></label>
+              <label class="form-field">Confirmar contraseña<input name="confirmacion" type="password" minlength="10" autocomplete="new-password" required></label>
+              <div class="form-actions"><button class="primary-button" type="submit">Actualizar contraseña</button></div>
+            </form>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script><script src="AjustesDirectivo.js"></script>
+</body>
+</html>

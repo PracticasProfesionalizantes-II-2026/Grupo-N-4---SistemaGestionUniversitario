@@ -23,8 +23,8 @@ namespace AcadionApi.Logica
         // =========================
         public async Task<UsuarioDto> RegistrarUsuarioAsync(UsuarioCrearDto dto)
         {
-            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.DirectivoId))
-                throw new ArgumentException("Sólo pueden crearse cuentas de estudiantes, docentes o directivos desde esta operación.");
+            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.SecretarioId or RolesSistema.DirectivoId))
+                throw new ArgumentException("Sólo pueden crearse cuentas de estudiantes, docentes, secretarios o directivos desde esta operación.");
 
             // Validar persona existente
             var personaExistente =
@@ -235,8 +235,8 @@ namespace AcadionApi.Logica
                 throw new ArgumentException(
                     "Los datos de actualización no pueden ser nulos.");
 
-            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.DirectivoId))
-                throw new ArgumentException("Sólo pueden asignarse los roles Estudiante, Docente o Directivo.");
+            if (dto.Rol is not (RolesSistema.EstudianteId or RolesSistema.DocenteId or RolesSistema.SecretarioId or RolesSistema.DirectivoId))
+                throw new ArgumentException("Sólo pueden asignarse los roles Estudiante, Docente, Secretario o Directivo.");
 
             var usuarioExistente =
                 await _unitOfWork.Usuarios.GetByIdAsync(id);

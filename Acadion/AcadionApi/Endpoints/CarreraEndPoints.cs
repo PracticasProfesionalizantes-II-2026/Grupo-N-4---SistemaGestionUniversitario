@@ -83,22 +83,6 @@ namespace AcadionApi.Endpoints
                 }
             }).RequierePermiso(PermisosSistema.AcademicoGestionar);
 
-            group.MapDelete("/{id:int}", async (int id, ICarreraLogica carreraLogica) =>
-            {
-                try
-                {
-                    var eliminado = await carreraLogica.EliminarCarreraAsync(id);
-                    return eliminado ? Results.Ok($"Carrera con ID {id} eliminada.") : Results.NotFound();
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return Results.Conflict(ex.Message);
-                }
-                catch (Exception)
-                {
-                    return Results.StatusCode(500);
-                }
-            }).RequierePermiso(PermisosSistema.AcademicoGestionar);
         }
     }
 }

@@ -4,30 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acadion | Inscripción a exámenes</title>
-  <link rel="stylesheet" href="InscripcionAExamen.css">
+  <link rel="stylesheet" href="Comun.css?v=20261001-2">
+  <link rel="stylesheet" href="InscripcionAExamen.css?v=20261001-2">
 </head>
-<body>
+<body data-section="student" data-page="InscripcionAExamen">
   <div class="app-layout">
-    <aside class="sidebar">
-      <div>
-        <a class="logo" href="MenuPrincipal.html">Acadion<span>.</span></a>
-        <nav class="menu" aria-label="Menú principal">
-          <a class="menu-item" href="MenuPrincipal.html"><span class="menu-icon">⌂</span>Inicio</a>
-          <a class="menu-item" href="InscripcionAMateria.html"><span class="menu-icon">▣</span>Inscripción a materias</a>
-          <a class="menu-item active" href="InscripcionAExamen.html" aria-current="page"><span class="menu-icon">▤</span>Inscripción a exámenes</a>
-          <a class="menu-item" href="MateriasEnCurso.html"><span class="menu-icon">◫</span>Reportes</a>
-          <a class="menu-item" href="MisDatosPersonales.html"><span class="menu-icon">♙</span>Mis datos personales</a>
-        </nav>
-      </div>
-      <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <main class="main-content exam-main">
-      <header class="exam-topbar">
-        <a class="back-to-home" href="MenuPrincipal.html" aria-label="Volver al menú principal">←</a>
-        <div class="topbar-actions">
-          <button class="notification-button" type="button" aria-label="Notificaciones">♧<span class="notification-dot"></span></button>
-          <img id="profileImage" class="profile-image" src="https://ui-avatars.com/api/?name=Estudiante&background=ff7a00&color=fff&bold=true" alt="Foto de perfil">
+      <header class="topbar">
+        <a class="back-button" href="MenuPrincipal.html" aria-label="Volver al menú principal">←</a>
+        <div class="header-actions">
+          <a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mi perfil"></a>
         </div>
       </header>
 
@@ -62,7 +50,8 @@
     </main>
   </div>
 
-  <script src="Api.js"></script>
-  <script src="InscripcionAExamen.js"></script>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-2"></script>
+  <script src="InscripcionAExamen.js?v=20260930-4"></script>
 </body>
 </html>

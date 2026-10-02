@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const addRelativeButton = document.getElementById("addRelative");
   const passwordPanel = document.getElementById("studentPasswordPanel");
   const passwordForm = document.getElementById("studentPasswordForm");
+  document.getElementById("regularCertificate").href = `${AcadionApi.baseUrl}/api/me/documentos/constancia-alumno-regular`;
+  document.getElementById("academicHistory").href = `${AcadionApi.baseUrl}/api/me/documentos/historial-academico`;
+  document.getElementById("approvedSubjectsCertificate").href = `${AcadionApi.baseUrl}/api/me/documentos/materias-aprobadas`;
   let profile = null;
   let relatives = [];
 
@@ -246,11 +249,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("relativesForm").addEventListener("submit", async event => {
     event.preventDefault();
-    if (!event.currentTarget.reportValidity()) return;
+    const cleanedRelatives = relatives.map(relative => ({
+      nombreApellido: String(relative.nombreApellido || "").trim(),
+      relacion: String(relative.relacion || "").trim(),
+      telefono: String(relative.telefono || "").trim()
+    }));
+    const invalid = cleanedRelatives.some(relative =>
+      !relative.nombreApellido || !relative.relacion ||
+      !/^[\p{L}\p{M}]+(?:[ '-][\p{L}\p{M}]+)*$/u.test(relative.nombreApellido) ||
+      (relative.telefono && !/^[0-9+() -]+$/.test(relative.telefono)));
+    if (invalid || !event.currentTarget.reportValidity()) {
+      showStatus("Completá el nombre y la relación de cada allegado. El nombre solo puede contener letras y el teléfono solo números y símbolos telefónicos.", true);
+      return;
+    }
     try {
       await AcadionApi.request("/api/me/allegados", {
         method: "PUT",
-        body: JSON.stringify({ allegados: relatives })
+        body: JSON.stringify({ allegados: cleanedRelatives })
       });
       Acadion.mostrarMensaje("Tus allegados se guardaron correctamente.");
       await loadProfile();

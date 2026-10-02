@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Panel institucional</title>
+  <link rel="stylesheet" href="PanelInstitucional.css">
+</head>
+<body data-section="director" data-page="PanelInstitucional">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar"><span></span><span class="readonly-badge">Solo lectura</span></header>
+      <section class="page-content">
+        <div class="institutional-heading">
+          <div><p class="section-kicker">Dirección institucional</p><h1>Panel institucional</h1><p>Indicadores académicos para acompañar la toma de decisiones.</p></div>
+          <button id="exportCsv" class="secondary-button" type="button" disabled>Exportar informe CSV</button>
+        </div>
+
+        <section class="panel filter-panel" aria-label="Filtros del informe">
+          <label class="form-field">Ciclo lectivo<select id="cycleFilter"></select></label>
+          <label class="form-field">Carrera<select id="careerFilter"><option value="">Todas las carreras</option></select></label>
+          <button id="applyFilters" class="primary-button" type="button">Actualizar informe</button>
+        </section>
+        <p id="dashboardMessage" class="status-message" role="status"></p>
+
+        <section class="summary-grid" aria-label="Resumen institucional">
+          <article class="summary-card"><span>Estudiantes activos</span><strong id="activeStudents">—</strong></article>
+          <article class="summary-card"><span>Docentes activos</span><strong id="activeTeachers">—</strong></article>
+          <article class="summary-card"><span>Carreras vigentes</span><strong id="activeCareers">—</strong></article>
+          <article class="summary-card"><span>Materias activas</span><strong id="activeSubjects">—</strong></article>
+          <article class="summary-card accent"><span>Finales próximos</span><strong id="upcomingFinals">—</strong></article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="panel dashboard-card span-2"><div class="panel-heading"><div><p class="section-kicker">Oferta académica</p><h2>Alumnos y ocupación por carrera</h2></div></div><div id="careerChart" class="bar-chart"></div></article>
+          <article class="panel dashboard-card"><div class="panel-heading"><div><p class="section-kicker">Trayectoria</p><h2>Condición académica</h2></div></div><p class="chart-help">Distribución de las inscripciones del ciclo seleccionado.</p><div id="conditionChart" class="bar-chart compact"></div></article>
+          <article class="panel dashboard-card"><div class="panel-heading"><div><p class="section-kicker">Situación general</p><h2>Estado de cuotas</h2></div></div><div id="paymentSummary" class="distribution-grid"></div></article>
+          <article class="panel dashboard-card"><div class="panel-heading"><div><p class="section-kicker">Personal docente</p><h2>Asistencia docente</h2></div></div><div id="teacherAttendance" class="distribution-grid"></div></article>
+          <article class="panel dashboard-card"><div class="panel-heading"><div><p class="section-kicker">Seguimiento</p><h2>Inasistencias por materia</h2></div></div><div id="absenceChart" class="bar-chart compact"></div></article>
+        </section>
+
+        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Demanda académica</p><h2>Materias con más estudiantes</h2></div></div><div class="table-wrapper"><table><thead><tr><th>Materia</th><th>Carrera</th><th>Estudiantes inscriptos</th></tr></thead><tbody id="popularSubjectsBody"></tbody></table></div></section>
+        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Mesas de examen</p><h2>Próximos finales</h2></div></div><div class="table-wrapper"><table><thead><tr><th>Materia</th><th>Fecha</th><th>Inscriptos</th></tr></thead><tbody id="finalsBody"></tbody></table></div></section>
+        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Asistencia del personal</p><h2>Docentes con ausencias</h2></div></div><div class="table-wrapper"><table><thead><tr><th>Docente</th><th>Ausencias</th><th>Justificadas</th></tr></thead><tbody id="teacherAbsencesBody"></tbody></table></div></section>
+      </section>
+    </main>
+  </div>
+  <dialog id="detailDialog" class="detail-dialog"><div class="detail-heading"><div><p class="section-kicker">Detalle de solo lectura</p><h2 id="detailTitle"></h2><p id="detailSubtitle"></p></div><button id="closeDetail" type="button" aria-label="Cerrar">×</button></div><div id="detailContent" class="table-wrapper"></div></dialog>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script><script src="PanelInstitucional.js"></script>
+</body>
+</html>

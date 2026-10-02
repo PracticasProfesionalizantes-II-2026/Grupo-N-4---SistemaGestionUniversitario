@@ -10,15 +10,13 @@
   <div class="app-layout">
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
-      <header class="topbar"><a class="back-button" href="MenuPrincipal.html" aria-label="Volver al inicio">←</a><div class="header-actions"><a href="Ajustes.html">Ajustes</a><a class="profile-avatar" href="MisDatosPersonales.html">FM</a></div></header>
       <section class="page-content">
-        <h1>Nueva contraseña</h1><form class="recovery-form" data-next="ContrasenaCambiada.html"><label class="form-field">Nueva contraseña<input name="nueva" type="password" value="" required></label><label class="form-field">Confirmar contraseña<input name="confirmacion" type="password" value="" required></label><button class="primary-button">Continuar</button><p id="formMessage" role="status"></p></form>
+        <h1>Nueva contraseña</h1><p>Usá al menos 10 caracteres con mayúsculas, minúsculas y números.</p><form id="newPasswordForm" class="recovery-form"><label class="form-field">Nueva contraseña<input name="nueva" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label><label class="form-field">Confirmar contraseña<input name="confirmacion" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label><button class="primary-button" type="submit">Cambiar contraseña</button><p id="formMessage" role="status"></p></form>
       </section>
     </main>
   </div>
   <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
-  <script src="Comun.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script>
   <script src="NuevaContrasena.js"></script>
 </body>
 </html>
-

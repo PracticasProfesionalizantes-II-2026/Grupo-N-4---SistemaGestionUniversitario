@@ -15,7 +15,7 @@
 
       <section id="evaluationCreatePanel" class="panel evaluation-create-panel" hidden>
         <div class="panel-heading"><div><p class="section-kicker">Nueva evaluación de cursada</p><h2>Datos de la evaluación</h2><p class="muted">Usá este formulario para parciales, trabajos prácticos, presentaciones y recuperatorios.</p></div><button id="closeEvaluationForm" class="secondary-button compact-button" type="button">Cerrar</button></div>
-        <form id="evaluationForm"><div class="inline-grid"><label class="form-field span-2">Materia<select id="evaluationSubject" required></select></label><label class="form-field">Tipo<select name="tipoExamen" required><option value="Parcial">Parcial</option><option value="TrabajoPractico">Trabajo práctico</option><option value="Presentacion">Presentación</option><option value="Recuperatorio">Recuperatorio</option></select></label><label class="form-field">Fecha<input name="fecha" type="date" required></label></div><div class="form-actions"><button id="cancelEvaluation" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Crear evaluación</button></div></form>
+        <form id="evaluationForm"><div class="inline-grid"><label class="form-field span-2">Materia<select id="evaluationSubject" required></select></label><label class="form-field">Tipo<select name="tipoExamen" required><option value="Parcial">Parcial</option><option value="TrabajoPractico">Trabajo práctico</option><option value="Presentacion">Presentación</option><option value="Recuperatorio">Recuperatorio</option></select></label><label class="form-field">Fecha<input name="fecha" type="date" required></label><label id="recoveryOriginalField" class="form-field span-2" hidden>Evaluación que recupera<select id="recoveryOriginal"><option value="">Seleccionar evaluación</option></select><span class="field-help">La nota del recuperatorio reemplazará esta evaluación al calcular la condición académica.</span></label></div><div class="form-actions"><button id="cancelEvaluation" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Crear evaluación</button></div></form>
       </section>
 
       <section id="examEditPanel" class="panel compact-edit-panel" hidden>
@@ -27,7 +27,7 @@
 
       <section class="panel finals-panel">
         <div class="panel-heading"><div><p class="section-kicker">Mesas de examen</p><h2>Exámenes finales</h2><p class="muted">Cada materia muestra sus mesas y únicamente los estudiantes que se inscribieron al final.</p></div><button id="toggleFinalForm" class="primary-button" type="button">+ Programar final</button></div>
-        <form id="finalForm" class="final-create-form" hidden><div class="inline-grid"><label class="form-field span-2">Materia<select id="finalSubject" required></select></label><label class="form-field">Fecha y hora<input name="fecha" type="datetime-local" required></label></div><div class="form-actions"><button id="cancelFinal" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Programar final</button></div></form>
+        <form id="finalForm" class="final-create-form" hidden><div class="inline-grid"><label class="form-field">Materia<select id="finalSubject" required></select></label><label class="form-field">Turno y llamado<select id="finalTurn" required><option value="">Seleccionar turno</option></select></label><label class="form-field">Fecha y hora<input name="fecha" type="datetime-local" required></label></div><p id="finalTurnHelp" class="muted">Secretaría debe crear el turno en el calendario académico antes de programar la mesa.</p><div class="form-actions"><button id="cancelFinal" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Programar final</button></div></form>
         <div id="finalSubjectList" class="final-subject-list"><p class="empty-state">Cargando materias...</p></div>
       </section>
 
@@ -43,6 +43,6 @@
       </section>
     </section>
   </main></div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="DocenteEvaluaciones.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script><script src="DocenteEvaluaciones.js?v=20261001-3"></script>
 </body>
 </html>

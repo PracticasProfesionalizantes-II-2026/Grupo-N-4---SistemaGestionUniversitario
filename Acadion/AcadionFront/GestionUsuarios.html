@@ -4,17 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acadion | Gestión de usuarios</title>
-  <link rel="stylesheet" href="GestionUsuarios.css">
-  <link rel="stylesheet" href="Admin.css">
+  <link rel="stylesheet" href="Comun.css?v=20260930-6">
+  <link rel="stylesheet" href="GestionUsuarios.css?v=20260930-6">
+  <link rel="stylesheet" href="Admin.css?v=20260930-6">
 </head>
 <body data-section="admin" data-page="GestionUsuarios">
   <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
-    <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+    <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver">←</a></header>
     <section class="page-content">
-      <div class="admin-heading"><div><p class="section-kicker">Administración institucional</p><h1>Usuarios</h1><p>Consultá y actualizá estudiantes, profesores y directivos.</p></div><a class="primary-button" href="SeleccionarRol.html">+ Crear usuario</a></div>
+      <div class="admin-heading"><div><p class="section-kicker">Administración institucional</p><h1>Usuarios</h1><p>Consultá y actualizá estudiantes, profesores, secretarios y directivos.</p></div><a class="primary-button" href="SeleccionarRol.html">+ Crear usuario</a></div>
       <section class="panel">
-        <div class="user-filters"><label class="form-field">Tipo de usuario<select id="roleFilter"><option value="">Todos</option><option value="1">Estudiantes</option><option value="2">Profesores</option><option value="4">Directivos</option></select></label><label class="form-field">Buscar<input id="userSearch" type="search" placeholder="Nombre, DNI, usuario o legajo"></label></div>
-        <div class="table-wrapper"><table><thead><tr><th>Usuario</th><th>Rol</th><th>DNI / legajo</th><th>Carrera o especialidad</th><th>Estado</th><th></th></tr></thead><tbody id="usersBody"><tr><td colspan="6" class="empty-state">Cargando usuarios...</td></tr></tbody></table></div>
+        <div class="user-filters"><label class="form-field">Tipo de usuario<select id="roleFilter"><option value="">Todos</option><option value="4">Directivos</option><option value="3">Secretarios</option><option value="2">Profesores</option><option value="1">Estudiantes</option></select></label><label class="form-field">Buscar<input id="userSearch" type="search" placeholder="Nombre, DNI, usuario o legajo"></label></div>
+        <div class="table-wrapper"><table class="users-table"><thead><tr><th>Nombre</th><th>Rol</th><th>DNI / legajo</th><th>Carrera / especialidad</th><th>Estado</th><th>Editar</th><th>Información</th><th>Inasistencias</th><th>Equivalencias</th></tr></thead><tbody id="usersBody"><tr><td colspan="9" class="empty-state">Cargando usuarios...</td></tr></tbody></table></div>
+        <footer class="pagination"><button id="previousUsers" type="button">Anterior</button><span id="usersPageLabel">Página 1</span><button id="nextUsers" type="button">Siguiente</button></footer>
+      </section>
+
+      <section id="informationPanel" class="panel information-panel" hidden>
+        <div class="panel-heading"><div><p class="section-kicker">Ficha institucional</p><h2 id="informationTitle">Información del estudiante</h2></div><button id="closeInformation" class="secondary-button" type="button">Cerrar</button></div>
+        <div id="informationContent" class="student-information-grid"></div>
       </section>
 
       <section id="editPanel" class="panel edit-panel" hidden>
@@ -29,6 +36,6 @@
       </section>
     </section>
   </main></div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="GestionUsuarios.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20260930-6"></script><script src="GestionUsuarios.js?v=20260930-6"></script>
 </body>
 </html>

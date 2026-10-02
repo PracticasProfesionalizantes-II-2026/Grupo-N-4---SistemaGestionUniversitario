@@ -5,44 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acadion | Inicio</title>
-  <link rel="stylesheet" href="MenuPrincipal.css">
+  <link rel="stylesheet" href="MenuPrincipal.css?v=20261001-2">
 </head>
-<body>
+<body data-section="student" data-page="MenuPrincipal">
   <div class="app-layout">
-    <aside class="sidebar">
-      <div>
-        <a class="logo" href="MenuPrincipal.html">Acadion<span>.</span></a>
-
-        <nav class="menu" aria-label="Menú principal">
-          <a class="menu-item active" href="MenuPrincipal.html">
-            <span class="menu-icon">⌂</span>
-            Inicio
-          </a>
-          <a class="menu-item" href="InscripcionAMateria.html">
-            <span class="menu-icon">▣</span>
-            Inscripción a materias
-          </a>
-          <a class="menu-item" href="InscripcionAExamen.html">
-            <span class="menu-icon">▤</span>
-            Inscripción a exámenes
-          </a>
-          <a class="menu-item" href="MateriasEnCurso.html">
-            <span class="menu-icon">◫</span>
-            Reportes
-          </a>
-          <a class="menu-item" href="MisDatosPersonales.html">
-            <span class="menu-icon">♙</span>
-            Mis datos personales
-          </a>
-        </nav>
-      </div>
-
-      <button id="logoutButton" class="logout-button" type="button">
-        Cerrar sesión
-      </button>
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <main class="main-content">
+      <header class="topbar">
+        <span aria-hidden="true"></span>
+        <div class="header-actions">
+          <a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mi perfil"></a>
+        </div>
+      </header>
       <header class="welcome-card">
         <div class="welcome-copy">
           <p class="eyebrow">INICIO</p>
@@ -51,18 +26,6 @@
           <p id="studentProposal" class="proposal">Propuesta: Carrera sin informar</p>
         </div>
 
-        <div class="header-actions">
-          <button class="notification-button" type="button" aria-label="Notificaciones">
-            ♧
-            <span class="notification-dot"></span>
-          </button>
-          <img
-            id="profileImage"
-            class="profile-image"
-            src="https://ui-avatars.com/api/?name=Estudiante&background=ff7a00&color=fff&bold=true"
-            alt="Foto de perfil"
-          >
-        </div>
       </header>
 
       <section class="dashboard-grid">
@@ -138,7 +101,8 @@
     </main>
   </div>
 
-  <script src="Api.js"></script>
-  <script src="MenuPrincipal.js"></script>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-2"></script>
+  <script src="MenuPrincipal.js?v=20261001-2"></script>
 </body>
 </html>

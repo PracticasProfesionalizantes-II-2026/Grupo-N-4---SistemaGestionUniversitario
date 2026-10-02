@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("subjectCount").textContent = subjects.filter(item => item.cicloLectivo === cycle).length;
   document.getElementById("studentCount").textContent = new Set(students.map(item => item.idEstudiante)).size;
   document.getElementById("examCount").textContent = exams.filter(item => new Date(item.fecha) >= new Date()).length;
-  document.getElementById("notificationCount").textContent = notifications.length;
+  document.getElementById("notificationCount").textContent = notifications.filter(item => !item.leida).length;
   if (results.some(result => result.status === "rejected")) {
     message.hidden = false;
     message.textContent = "Parte del resumen no pudo actualizarse. Podés seguir trabajando desde cada módulo.";

@@ -51,3 +51,42 @@
   .subject-content { padding-left: 18px; }
   .subject-metadata { grid-template-columns: 1fr; }
 }
+.plan-management {
+  margin: 18px 0 24px;
+  padding: 18px;
+  border: 1px solid #e2e2e2;
+  border-radius: 16px;
+  background: #fafafa;
+}
+
+.study-plan-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.study-plan-card {
+  padding: 14px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.study-plan-card.active {
+  border-color: #f5a300;
+  box-shadow: inset 4px 0 #f5a300;
+}
+
+.study-plan-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.study-plan-card p {
+  margin: 9px 0 0;
+  color: #666;
+  font-size: .9rem;
+}

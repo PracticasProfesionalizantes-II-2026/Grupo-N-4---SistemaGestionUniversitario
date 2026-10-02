@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Comprobantes de pago</title>
+  <link rel="stylesheet" href="MisPagos.css?v=20261001-2">
+</head>
+<body data-section="student" data-page="MisPagos">
+  <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
+    <header class="topbar"><a class="back-button" href="MenuPrincipal.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html"></a></div></header>
+    <section class="page-content">
+      <p class="section-kicker">Gestión de pagos</p><h1>Comprobantes de pago</h1>
+      <p class="page-description">Subí un PDF, JPG o PNG. Secretaría revisará el archivo antes de acreditar el pago.</p>
+      <section class="panel period-panel"><label>Año<input id="paymentYear" type="number" min="2020" max="2100"></label><label>Mes<select id="paymentMonth"></select></label><button id="loadPayments" class="secondary-button" type="button">Consultar</button></section>
+      <p id="paymentMessage" class="status-message" role="status"></p>
+      <div class="payment-grid">
+        <form class="panel receipt-card" id="enrollmentForm"><div><p class="section-kicker">Matrícula</p><h2>Matrícula inicial</h2></div><span class="status-badge" id="enrollmentStatus">Pendiente</span><label>Método de pago<select name="metodoPago"><option>Transferencia</option><option>Efectivo</option><option>Tarjeta</option><option>Otro</option></select></label><label>Importe<input name="importe" type="number" min="0" step="0.01"></label><label>Comprobante<input name="archivo" type="file" accept="application/pdf,image/jpeg,image/png" required></label><a id="enrollmentFile" class="file-link" hidden target="_blank">Ver comprobante enviado</a><button class="primary-button" type="submit">Enviar a revisión</button></form>
+        <form class="panel receipt-card" id="feeForm"><div><p class="section-kicker">Cuota mensual</p><h2 id="feeTitle">Cuota</h2></div><span class="status-badge" id="feeStatus">Pendiente</span><label>Método de pago<select name="metodoPago"><option>Transferencia</option><option>Efectivo</option><option>Tarjeta</option><option>Otro</option></select></label><label>Importe<input name="importe" type="number" min="0" step="0.01"></label><label>Comprobante<input name="archivo" type="file" accept="application/pdf,image/jpeg,image/png" required></label><a id="feeFile" class="file-link" hidden target="_blank">Ver comprobante enviado</a><button class="primary-button" type="submit">Enviar a revisión</button></form>
+      </div>
+    </section>
+  </main></div>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20261001-2"></script><script src="MisPagos.js"></script>
+</body></html>

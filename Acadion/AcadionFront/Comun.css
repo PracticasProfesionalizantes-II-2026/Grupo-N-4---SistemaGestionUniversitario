@@ -21,6 +21,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .menu::-webkit-scrollbar { display: none; }
 .menu-item { display: flex; align-items: center; gap: 14px; min-height: 48px; padding: 0 14px; border-radius: 10px; color: #d4d4d4; text-decoration: none; font-size: .94rem; white-space: nowrap; }
 .menu-icon { display: inline-grid; flex: 0 0 21px; width: 21px; place-items: center; font-size: 1.25rem; line-height: 1; }
+.menu-icon svg { width: 20px; height: 20px; }
 .menu-item:hover { background: #2c2c2c; color: white; }
 .menu-item.active { background: white; color: #111; font-weight: bold; }
 .logout-button { display: block; min-height: 48px; margin-top: auto; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: #ff9860; font-weight: 600; text-align: left; }
@@ -31,10 +32,67 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 body[data-section="admin"] .header-actions { display: none; }
 .back-button { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: white; text-decoration: none; box-shadow: 0 2px 4px #ddd; }
 .notification-button { position: relative; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #f5f5f5; color: var(--negro); font-size: 1.45rem; }
-.notification-dot { position: absolute; top: 7px; right: 8px; width: 8px; height: 8px; border: 2px solid white; border-radius: 50%; background: #ff7a00; }
+.notification-glyph { display: block; width: 21px; height: 21px; }
+.notification-button:has(.notification-glyph) { display: grid; place-items: center; }
+body:is([data-section="student"], [data-section="teacher"]) .notification-button {
+  border-radius: 50%;
+  background: transparent;
+  color: #111;
+  box-shadow: none;
+}
+body:is([data-section="student"], [data-section="teacher"]) .notification-button:hover {
+  background: #e8e8e8;
+}
+.notification-dot { position: absolute; top: 3px; right: 3px; min-width: 17px; height: 17px; padding: 0 4px; display: grid; place-items: center; border: 2px solid white; border-radius: 999px; background: #ff7a00; color: white; font-size: .62rem; font-weight: 800; line-height: 1; }
+.notification-dot[hidden] { display: none; }
 .profile-avatar { display: block; width: 42px; height: 42px; overflow: hidden; border: 3px solid #fff0e5; border-radius: 50%; background: #ff7a00; text-decoration: none; }
 .profile-avatar-image { display: block; width: 100%; height: 100%; object-fit: cover; }
 .profile-avatar-initials { display: grid; width: 100%; height: 100%; place-items: center; color: white; font-size: 12px; font-weight: 800; }
+
+/* Encabezado único para todas las pantallas del estudiante. */
+body[data-section="student"] .main-content {
+  padding: 12px 10px;
+}
+
+body[data-section="student"] :is(.topbar, .enrollment-topbar) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 76px;
+  min-height: 76px;
+  margin: 0 0 18px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-section="student"] :is(.header-actions, .topbar-actions) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+body[data-section="student"] :is(.back-button, .back-to-home) {
+  width: 40px;
+  height: 40px;
+}
+
+body[data-section="student"] :is(.notification-button, .profile-avatar, .profile-image) {
+  flex: 0 0 auto;
+}
+
+body[data-section="student"] .notification-button {
+  width: 40px;
+  height: 40px;
+}
+
+body[data-section="student"] :is(.profile-avatar, .profile-image) {
+  width: 42px;
+  height: 42px;
+}
 h1 { margin: 12px 0 26px; font-size: clamp(25px, 3vw, 40px); }
 h2 { margin: 0 0 18px; font-size: 25px; }
 .page-content { max-width: 1180px; margin: 0 auto; }
@@ -44,7 +102,8 @@ h2 { margin: 0 0 18px; font-size: 25px; }
 .course-report header { display: flex; justify-content: space-between; gap: 10px; padding: 4px; background: var(--naranja); }
 .course-report h2 { margin: 0; font-size: 20px; }
 .course-report header span { align-self: center; font-size: 14px; }
-.table-wrapper { overflow-x: auto; }
+.table-wrapper { overflow-x: auto; scrollbar-color: var(--naranja) #e7e7e7; scrollbar-width: thin; }
+.table-wrapper:focus { outline: 2px solid var(--naranja); outline-offset: 3px; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 8px 10px; border-bottom: 1px solid #ccc; text-align: left; }
 th { background: #edfaff; color: #111; font-weight: 600; }
@@ -120,7 +179,12 @@ dialog::backdrop { background: #0008; }
   .menu-item { white-space: normal; }
   .logo { margin: 0 0 20px; }
   .logout-button { margin-top: 20px; }
-  .main-content { padding: 14px; }
+  .main-content, body[data-section="student"] .main-content { padding: 14px; }
+  body[data-section="student"] :is(.topbar, .enrollment-topbar) {
+    height: 66px;
+    min-height: 66px;
+    padding: 8px 4px;
+  }
   .stats-grid, .role-grid, .settings-links { grid-template-columns: 1fr; }
   .progress-list { gap: 18px; }
   .panel { padding: 20px; }

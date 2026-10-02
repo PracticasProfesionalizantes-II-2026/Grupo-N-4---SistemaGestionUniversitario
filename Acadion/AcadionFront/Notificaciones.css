@@ -1,1 +1,15 @@
 @import url("Comun.css");
+
+.notification-heading { display:flex; width:100%; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:24px; }
+.notification-heading > div { min-width:0; }
+.notification-heading h1 { margin:4px 0; }
+.notification-heading .secondary-button { flex:0 0 auto; margin-left:auto; }
+.notification-card { cursor:pointer; border-left:4px solid transparent; transition:background .2s ease; }
+.notification-card.unread { border-left-color:#ff7900; background:#fffaf3; }
+.notification-card.unread h2::after { content:"Nueva"; margin-left:10px; color:#a54e00; background:#ffe4c4; border-radius:999px; padding:3px 8px; font-size:.65rem; vertical-align:middle; }
+.notification-card small { color:#6b7280; }
+
+@media (max-width: 700px) {
+  .notification-heading { align-items:stretch; flex-direction:column; }
+  .notification-heading .secondary-button { width:100%; margin-left:0; }
+}

@@ -81,15 +81,11 @@ namespace AcadionApi.Endpoints
 
             group.MapDelete("/{id:int}", async (int id, IPersonaLogica personaLogica) =>
             {
-                try
+                await Task.CompletedTask;
+                return Results.Conflict(new
                 {
-                    var eliminado = await personaLogica.EliminarPersonaAsync(id);
-                    return eliminado ? Results.Ok($"Persona con ID {id} eliminada.") : Results.NotFound();
-                }
-                catch (Exception)
-                {
-                    return Results.StatusCode(500);
-                }
+                    mensaje = "Las personas no se eliminan porque forman parte del historial institucional. Inactivá la cuenta asociada desde Administrar usuarios."
+                });
             }).RequierePermiso(PermisosSistema.UsuariosGestionar);
         }
     }

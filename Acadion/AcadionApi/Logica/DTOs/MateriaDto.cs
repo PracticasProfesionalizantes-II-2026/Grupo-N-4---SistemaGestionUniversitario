@@ -10,6 +10,7 @@ namespace AcadionApi.DTOs
         public string TipoCursada { get; set; } = "Anual";
         public int? NumeroPeriodo { get; set; }
         public int IdAnio { get; set; }
+        public int? PlanEstudioId { get; set; }
         public List<int> CorrelativasIds { get; set; } = new List<int>();
     }
 
@@ -25,6 +26,8 @@ namespace AcadionApi.DTOs
         public int IdCarrera { get; set; }
         public string Carrera { get; set; } = string.Empty;
         public int NumeroAnio { get; set; }
+        public int? PlanEstudioId { get; set; }
+        public string PlanEstudio { get; set; } = string.Empty;
         public List<MateriaResumenDto> Correlativas { get; set; } = new List<MateriaResumenDto>();
     }
 
@@ -40,6 +43,8 @@ namespace AcadionApi.DTOs
         public int IdCarrera { get; set; }
         public string Carrera { get; set; } = string.Empty;
         public int NumeroAnio { get; set; }
+        public int? PlanEstudioId { get; set; }
+        public string PlanEstudio { get; set; } = string.Empty;
         public List<MateriaResumenDto> Correlativas { get; set; } = new();
     }
 
@@ -51,6 +56,7 @@ namespace AcadionApi.DTOs
         public string TipoCursada { get; set; } = "Anual";
         public int? NumeroPeriodo { get; set; }
         public int IdAnio { get; set; }
+        public int? PlanEstudioId { get; set; }
         public List<int> CorrelativasIds { get; set; } = new List<int>();
     }
 

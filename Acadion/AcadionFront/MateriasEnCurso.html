@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acadion | Materias en curso</title>
-  <link rel="stylesheet" href="MateriasEnCurso.css">
+  <title>Acadion | Cursada actual</title>
+  <link rel="stylesheet" href="MateriasEnCurso.css?v=20261001-4">
 </head>
 <body data-section="student" data-page="MateriasEnCurso">
   <div class="app-layout">
@@ -14,15 +14,22 @@
         <a class="back-button" href="MenuPrincipal.html" aria-label="Volver a la pantalla anterior">←</a>
         <div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mis datos personales"></a></div>
       </header>
-      <section class="page-content">
+      <section class="page-content modern-report-content">
         <div class="history-title"><span data-current-year>2026</span><br>Reportes</div>
-        <label class="filter">Filtrar <select id="yearFilter"><option>2026</option></select></label>
-        <div id="reportContent"><p class="report-empty">Cargando materias en curso…</p></div>
+        <div class="current-heading">
+          <div>
+            <p class="section-kicker">Trayectoria académica</p>
+            <h1>Cursada actual</h1>
+            <p>Consultá las materias del ciclo actual, sus horarios, asistencia y evaluaciones de cursada.</p>
+          </div>
+          <span class="cycle-badge">Ciclo <span data-current-year>2026</span></span>
+        </div>
+        <div id="reportContent"><p class="report-empty">Cargando tu cursada actual…</p></div>
       </section>
     </main>
   </div>
-  <script src="Api.js"></script>
-  <script src="Comun.js"></script>
-  <script src="Reportes.js"></script>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-4"></script>
+  <script src="Reportes.js?v=20261001-6"></script>
 </body>
 </html>

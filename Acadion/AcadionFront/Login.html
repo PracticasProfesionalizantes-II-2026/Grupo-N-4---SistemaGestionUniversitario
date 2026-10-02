@@ -37,6 +37,8 @@
             name="usuario"
             placeholder="Usuario"
             autocomplete="username"
+            minlength="3"
+            maxlength="80"
             required
           >
         </div>
@@ -49,6 +51,7 @@
             name="password"
             placeholder="Contraseña"
             autocomplete="current-password"
+            maxlength="256"
             required
           >
           <button
@@ -65,7 +68,7 @@
           </button>
         </div>
 
-        <a class="forgot-password" href="RecuperarContrasena.html">¿Olvidaste tu contraseña?</a>
+        <a id="forgotPasswordLink" class="forgot-password" href="RecuperarContrasena.html" hidden>¿Olvidaste tu contraseña?</a>
 
         <button type="submit" id="submitButton" class="submit-button">
           Continuar
@@ -74,7 +77,7 @@
     </section>
   </main>
 
-  <script src="Api.js"></script>
+  <script src="Api.js?v=20261001-4"></script>
   <script src="Login.js"></script>
 </body>
 </html>

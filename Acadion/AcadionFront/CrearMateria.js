@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("subjectForm");
   const careerSelect = document.getElementById("subjectCareer");
   const yearSelect = document.getElementById("subjectYear");
+  const planSelect = document.getElementById("subjectPlan");
   const prerequisites = document.getElementById("subjectPrerequisites");
   const scheduleList = document.getElementById("scheduleList");
   const typeSelect = document.getElementById("subjectType");
@@ -53,12 +54,26 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPrerequisites();
   }
 
+  function renderPlans() {
+    const career = selectedCareer();
+    planSelect.replaceChildren(option("", "Seleccionar plan"));
+    (career?.planes || []).forEach(plan => {
+      const item = option(plan.id, `${plan.codigo}${plan.activo ? " · vigente" : " · histórico"}`);
+      item.selected = plan.activo;
+      planSelect.append(item);
+    });
+    planSelect.disabled = !career || !career.planes?.length;
+    renderYears();
+  }
+
   function renderPrerequisites() {
     const career = selectedCareer();
     const year = career?.anios.find(item => item.idAnio === Number(yearSelect.value));
     prerequisites.replaceChildren();
     state.subjects
-      .filter(subject => subject.idCarrera === career?.idCarrera && subject.numeroAnio < (year?.numeroAnio || 0))
+      .filter(subject => subject.idCarrera === career?.idCarrera &&
+        subject.planEstudioId === Number(planSelect.value) &&
+        subject.numeroAnio < (year?.numeroAnio || 0))
       .forEach(subject => prerequisites.append(option(subject.idMateria, `${subject.numeroAnio}.º año · ${subject.nombre}`)));
     prerequisites.disabled = !year || !prerequisites.options.length;
   }
@@ -96,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
         AcadionApi.request("/carreras/"),
         AcadionApi.request("/materias/")
       ]);
+      state.careers = state.careers.filter(career => career.activa !== false);
       careerSelect.replaceChildren(option("", "Seleccionar carrera"));
       state.careers.forEach(career => careerSelect.append(option(career.idCarrera, `${career.nombre} · ${career.planEstudios}`)));
     } catch (error) {
@@ -107,6 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
     form.reset();
     yearSelect.replaceChildren(option("", "Seleccionar año"));
     yearSelect.disabled = true;
+    planSelect.replaceChildren(option("", "Seleccionar plan"));
+    planSelect.disabled = true;
     prerequisites.replaceChildren();
     prerequisites.disabled = true;
     scheduleList.replaceChildren();
@@ -149,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
           tipoCursada: typeSelect.value,
           numeroPeriodo: periodSelect.disabled ? null : Number(periodSelect.value),
           idAnio: Number(form.idAnio.value),
+          planEstudioId: Number(form.planEstudioId.value),
           correlativasIds: [...form.correlativas.selectedOptions].map(item => Number(item.value))
         })
       });
@@ -171,7 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  careerSelect.addEventListener("change", renderYears);
+  careerSelect.addEventListener("change", renderPlans);
+  planSelect.addEventListener("change", renderPrerequisites);
   yearSelect.addEventListener("change", renderPrerequisites);
   typeSelect.addEventListener("change", renderPeriodOptions);
   form.nombre.addEventListener("input", () => {

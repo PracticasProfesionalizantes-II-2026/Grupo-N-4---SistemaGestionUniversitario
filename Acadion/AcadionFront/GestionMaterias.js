@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   Acadion.iniciarPantalla();
-  const state = { careers: [], subjects: [], schedules: [], examPeriod: null, teachers: [], editingId: null };
+  const state = { careers: [], subjects: [], schedules: [], examPeriod: null, teachers: [], commissions: [], editingId: null };
   const form = document.getElementById("subjectForm");
   const editPanel = document.getElementById("subjectEditPanel");
   const scheduleList = document.getElementById("scheduleList");
@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const assignmentCycle = document.getElementById("assignmentCycle");
   const examPeriodForm = document.getElementById("examPeriodForm");
   const examPeriodCycle = document.getElementById("examPeriodCycle");
+  const commissionForm = document.getElementById("commissionForm");
+  const commissionSubject = document.getElementById("commissionSubject");
+  const commissionTeacher = document.getElementById("commissionTeacher");
+  const commissionsList = document.getElementById("commissionsList");
   assignmentCycle.value = new Date().getFullYear();
   examPeriodCycle.value = new Date().getFullYear();
 
@@ -83,6 +87,119 @@ document.addEventListener("DOMContentLoaded", () => {
     assignmentSubject.replaceChildren(option("", "Seleccionar materia"));
     state.subjects.forEach(subject => assignmentSubject.append(option(
       subject.idMateria, `${subject.carrera} · ${subject.numeroAnio}.º año · ${subject.nombre}`)));
+    commissionSubject.replaceChildren(option("", "Seleccionar materia"));
+    state.subjects.filter(subject => subject.estado === "Activa").forEach(subject =>
+      commissionSubject.append(option(subject.idMateria,
+        `${subject.carrera} · ${subject.numeroAnio}.º año · ${subject.nombre}`)));
+    commissionTeacher.replaceChildren(option("", "A confirmar"));
+    state.teachers.forEach(teacher => commissionTeacher.append(option(
+      teacher.id, `${teacher.apellido}, ${teacher.nombre}`)));
+  }
+
+  function commissionScheduleLabel(commission) {
+    return commission.horarios?.length
+      ? commission.horarios.map(h => `${h.diaSemana} ${String(h.horaInicio).slice(0, 5)}–${String(h.horaFin).slice(0, 5)}`).join(" · ")
+      : "Sin horario";
+  }
+
+  async function expandCommission(commission, content) {
+    content.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "empty-state";
+    loading.textContent = "Cargando estudiantes y lista de espera...";
+    content.append(loading);
+    try {
+      const [students, waiting] = await Promise.all([
+        AcadionApi.request(`/api/comisiones/${commission.id}/estudiantes`),
+        AcadionApi.request(`/api/comisiones/${commission.id}/lista-espera`)
+      ]);
+      content.replaceChildren();
+      const enrolledTitle = document.createElement("h4");
+      enrolledTitle.textContent = `Estudiantes inscriptos (${students.length})`;
+      content.append(enrolledTitle);
+      const enrolledList = document.createElement("ul");
+      enrolledList.className = "commission-people";
+      if (!students.length) enrolledList.append(Object.assign(document.createElement("li"), { textContent: "No hay estudiantes inscriptos." }));
+      students.forEach(student => enrolledList.append(Object.assign(document.createElement("li"), {
+        textContent: `${student.apellido}, ${student.nombre} · ${student.legajo || "Sin legajo"}`
+      })));
+      content.append(enrolledList);
+
+      const waitingTitle = document.createElement("h4");
+      waitingTitle.textContent = `Lista de espera (${waiting.filter(item => item.estado === "EnEspera").length})`;
+      content.append(waitingTitle);
+      const waitingList = document.createElement("div");
+      waitingList.className = "waiting-list";
+      const pending = waiting.filter(item => item.estado === "EnEspera");
+      if (!pending.length) waitingList.append(Object.assign(document.createElement("p"), { textContent: "No hay solicitudes pendientes." }));
+      pending.forEach(item => {
+        const row = document.createElement("div");
+        const name = document.createElement("span");
+        name.textContent = `${item.apellido}, ${item.nombre} · ${item.legajo || "Sin legajo"}`;
+        const confirmButton = document.createElement("button");
+        confirmButton.type = "button";
+        confirmButton.className = "primary-button compact-button";
+        confirmButton.textContent = "Confirmar vacante";
+        confirmButton.addEventListener("click", async () => {
+          if (!confirm(`¿Confirmar una vacante para ${item.apellido}, ${item.nombre}?`)) return;
+          confirmButton.disabled = true;
+          try {
+            await AcadionApi.request(`/api/comisiones/${commission.id}/lista-espera/${item.id}/confirmar`, { method: "POST" });
+            await loadCommissions();
+          } catch (error) {
+            alert(error.message);
+            confirmButton.disabled = false;
+          }
+        });
+        row.append(name, confirmButton);
+        waitingList.append(row);
+      });
+      content.append(waitingList);
+    } catch (error) {
+      content.replaceChildren(Object.assign(document.createElement("p"), {
+        className: "empty-state error", textContent: error.message
+      }));
+    }
+  }
+
+  function renderCommissions() {
+    commissionsList.replaceChildren();
+    if (!state.commissions.length) {
+      commissionsList.append(Object.assign(document.createElement("p"), {
+        className: "empty-state", textContent: "No hay comisiones registradas para el ciclo actual."
+      }));
+      return;
+    }
+    state.commissions.forEach(commission => {
+      const details = document.createElement("details");
+      details.className = "commission-card";
+      const summary = document.createElement("summary");
+      const identity = document.createElement("span");
+      const title = document.createElement("strong");
+      title.textContent = `${commission.materia} · ${commission.nombre}`;
+      const subtitle = document.createElement("small");
+      subtitle.textContent = `${commission.turno} · ${commission.docente} · ${commissionScheduleLabel(commission)}`;
+      identity.append(title, subtitle);
+      const capacity = document.createElement("span");
+      capacity.className = "badge active";
+      capacity.textContent = `${commission.inscriptos}/${commission.cupo} · ${commission.enEspera} en espera`;
+      summary.append(identity, capacity);
+      const content = document.createElement("div");
+      content.className = "commission-detail";
+      details.addEventListener("toggle", () => {
+        if (details.open && !content.dataset.loaded) {
+          content.dataset.loaded = "true";
+          expandCommission(commission, content);
+        }
+      });
+      details.append(summary, content);
+      commissionsList.append(details);
+    });
+  }
+
+  async function loadCommissions() {
+    state.commissions = await AcadionApi.request(`/api/comisiones/?cicloLectivo=${new Date().getFullYear()}`);
+    renderCommissions();
   }
 
   function showAssignmentMessage(text, success = false) {
@@ -189,37 +306,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const edit = document.createElement("button");
       edit.className = "secondary-button"; edit.type = "button"; edit.textContent = "Editar";
       edit.addEventListener("click", () => beginEdit(subject));
-      const remove = document.createElement("button");
-      remove.className = "danger-button"; remove.type = "button"; remove.textContent = "Eliminar";
-      remove.addEventListener("click", () => deleteSubject(subject, remove));
-      controls.append(edit, remove); actions.append(controls); tbody.append(row);
+      controls.append(edit); actions.append(controls); tbody.append(row);
     });
-  }
-
-  async function deleteSubject(subject, button) {
-    if (!window.confirm(`¿Eliminar definitivamente la materia ${subject.nombre}? Esta acción no se puede deshacer.`)) return;
-    button.disabled = true;
-    try {
-      await AcadionApi.request(`/materias/${subject.idMateria}`, { method: "DELETE" });
-      if (state.editingId === subject.idMateria) resetForm();
-      await loadData();
-    } catch (error) {
-      window.alert(error.message);
-      button.disabled = false;
-    }
   }
 
   async function loadData() {
     try {
-      [state.careers, state.subjects, state.schedules, state.teachers, state.examPeriod] = await Promise.all([
+      [state.careers, state.subjects, state.schedules, state.teachers, state.examPeriod, state.commissions] = await Promise.all([
         AcadionApi.request("/carreras/"), AcadionApi.request("/materias/"), AcadionApi.request("/horarios/"),
         AcadionApi.request("/api/gestion/usuarios/?rolId=2"),
-        AcadionApi.request(`/api/gestion-academica/periodo-inscripcion-examenes?cicloLectivo=${Number(examPeriodCycle.value)}`)
+        AcadionApi.request(`/api/gestion-academica/periodo-inscripcion-examenes?cicloLectivo=${Number(examPeriodCycle.value)}`),
+        AcadionApi.request(`/api/comisiones/?cicloLectivo=${new Date().getFullYear()}`)
       ]);
       renderCareerOptions();
       renderAssignmentOptions();
       fillYears(filterYear, selectedCareer(filterCareer), "Todos los años");
-      renderPrerequisites(); renderSubjects(); renderExamPeriod();
+      renderPrerequisites(); renderSubjects(); renderExamPeriod(); renderCommissions();
     } catch (error) {
       const tbody = document.getElementById("subjectsBody");
       tbody.replaceChildren(); const row = tbody.insertRow(); const cell = row.insertCell();
@@ -314,6 +416,58 @@ document.addEventListener("DOMContentLoaded", () => {
       assignmentSubject.value = "";
     } catch (error) { showAssignmentMessage(error.message); }
     finally { button.disabled = false; }
+  });
+
+  document.getElementById("toggleCommissionForm").addEventListener("click", () => {
+    commissionForm.hidden = false;
+    commissionForm.cicloLectivo.value = new Date().getFullYear();
+    commissionForm.cupo.value = 30;
+    commissionForm.horaInicio.value = "08:00";
+    commissionForm.horaFin.value = "10:00";
+    commissionForm.nombre.focus();
+  });
+  document.getElementById("cancelCommission").addEventListener("click", () => {
+    commissionForm.reset();
+    commissionForm.hidden = true;
+  });
+  commissionForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const start = commissionForm.horaInicio.value;
+    const end = commissionForm.horaFin.value;
+    const message = document.getElementById("commissionMessage");
+    const [startHour, startMinute] = start.split(":").map(Number);
+    const [endHour, endMinute] = end.split(":").map(Number);
+    if (endHour * 60 + endMinute - startHour * 60 - startMinute < 40) {
+      message.className = "status-message error";
+      message.textContent = "El horario de la comisión debe durar al menos 40 minutos.";
+      return;
+    }
+    try {
+      await AcadionApi.request("/api/comisiones/", {
+        method: "POST",
+        body: JSON.stringify({
+          materiaId: Number(commissionForm.materiaId.value),
+          nombre: commissionForm.nombre.value.trim(),
+          turno: commissionForm.turno.value,
+          cicloLectivo: Number(commissionForm.cicloLectivo.value),
+          cupo: Number(commissionForm.cupo.value),
+          docenteId: commissionForm.docenteId.value ? Number(commissionForm.docenteId.value) : null,
+          horarios: [{
+            diaSemana: commissionForm.diaSemana.value,
+            horaInicio: `${start}:00`,
+            horaFin: `${end}:00`
+          }]
+        })
+      });
+      message.className = "status-message success";
+      message.textContent = "La comisión fue creada correctamente.";
+      await loadCommissions();
+      commissionForm.reset();
+      commissionForm.hidden = true;
+    } catch (error) {
+      message.className = "status-message error";
+      message.textContent = error.message;
+    }
   });
 
   form.addEventListener("submit", async event => {

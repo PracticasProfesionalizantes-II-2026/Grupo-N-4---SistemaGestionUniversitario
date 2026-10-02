@@ -15,6 +15,9 @@ public class EstudianteMateria
     public int IdMateria { get; set; }
     public Materia? Materia { get; set; }
 
+    public int? ComisionId { get; set; }
+    public Comision? Comision { get; set; }
+
     // Qué docente dicta esta cursada este año
     public int? IdDocente { get; set; }
     public Usuario? Docente { get; set; }

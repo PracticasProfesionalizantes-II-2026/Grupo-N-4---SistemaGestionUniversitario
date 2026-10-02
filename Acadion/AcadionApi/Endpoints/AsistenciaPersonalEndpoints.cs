@@ -2,6 +2,7 @@ using AcadionApi.Datos;
 using AcadionApi.DTOs;
 using AcadionApi.Seguridad;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AcadionApi.Endpoints;
 
@@ -18,6 +19,7 @@ public static class AsistenciaPersonalEndpoints
                 .AsNoTracking()
                 .Include(r => r.Usuario).ThenInclude(u => u.Persona)
                 .Include(r => r.Materia).ThenInclude(m => m!.AnioCursada).ThenInclude(a => a!.Carrera)
+                .Include(r => r.JustificadaPor).ThenInclude(u => u!.Persona)
                 .AsQueryable();
 
             if (desde.HasValue) consulta = consulta.Where(r => r.Fecha >= desde.Value);
@@ -131,7 +133,13 @@ public static class AsistenciaPersonalEndpoints
             registro.MateriaId = dto.MateriaId;
             registro.Fecha = dto.Fecha;
             registro.Estado = NormalizarEstado(dto.Estado);
-            if (registro.Estado == "Presente") registro.Justificada = false;
+            if (registro.Estado == "Presente")
+            {
+                registro.Justificada = false;
+                registro.JustificadaPorUsuarioId = null;
+                registro.FechaJustificacionUtc = null;
+                registro.JustificativoArchivo = string.Empty;
+            }
             registro.Observaciones = NormalizarObservaciones(dto.Observaciones);
             registro.RegistradoPorUsuarioId = http.User.ObtenerUsuarioId();
             registro.FechaRegistroUtc = DateTime.UtcNow;
@@ -140,15 +148,17 @@ public static class AsistenciaPersonalEndpoints
         });
 
         group.MapPut("/{id:int}/justificacion", async (int id,
-            JustificacionInasistenciaDto dto, AppDbContext context) =>
+            JustificacionInasistenciaDto dto, HttpContext http, AppDbContext context) =>
         {
             var registro = await context.RegistrosAsistenciaPersonal.FindAsync(id);
             if (registro is null)
                 return Results.NotFound(new { mensaje = "La asistencia docente indicada no existe." });
-            if (!registro.Estado.Equals("Ausente", StringComparison.OrdinalIgnoreCase))
+            if (!PoliticasAcademicas.PuedeJustificarInasistencia(registro.Estado))
                 return Results.BadRequest(new { mensaje = "Solo se pueden justificar registros ausentes." });
 
             registro.Justificada = dto.Justificada;
+            registro.JustificadaPorUsuarioId = dto.Justificada ? http.User.ObtenerUsuarioId() : null;
+            registro.FechaJustificacionUtc = dto.Justificada ? DateTime.UtcNow : null;
             await context.SaveChangesAsync();
             return Results.Ok(new
             {
@@ -158,6 +168,35 @@ public static class AsistenciaPersonalEndpoints
                     ? "La inasistencia docente fue justificada correctamente."
                     : "Se quitó la justificación de la inasistencia docente."
             });
+        });
+
+        group.MapPost("/{id:int}/justificacion-archivo", async (int id, [FromForm] IFormFile archivo,
+            HttpContext http, AppDbContext context, DocumentoStorage storage,
+            CancellationToken cancellationToken) =>
+        {
+            var registro = await context.RegistrosAsistenciaPersonal.FindAsync(id);
+            if (registro is null || !PoliticasAcademicas.PuedeJustificarInasistencia(registro.Estado))
+                return Results.NotFound(new { mensaje = "La inasistencia docente indicada no existe." });
+            try
+            {
+                registro.JustificativoArchivo = await storage.GuardarAsync(archivo, $"justificativos/docentes/{registro.UsuarioId}", cancellationToken);
+                registro.Justificada = true;
+                registro.JustificadaPorUsuarioId = http.User.ObtenerUsuarioId();
+                registro.FechaJustificacionUtc = DateTime.UtcNow;
+                await context.SaveChangesAsync();
+                return Results.Ok(new { mensaje = "El justificativo docente fue adjuntado y aprobado." });
+            }
+            catch (ArgumentException error) { return Results.BadRequest(new { mensaje = error.Message }); }
+        }).DisableAntiforgery();
+
+        group.MapGet("/{id:int}/justificativo", async (int id, AppDbContext context,
+            DocumentoStorage storage) =>
+        {
+            var ruta = await context.RegistrosAsistenciaPersonal.AsNoTracking()
+                .Where(r => r.Id == id).Select(r => r.JustificativoArchivo).SingleOrDefaultAsync();
+            var documento = storage.Obtener(ruta);
+            if (documento is null) return Results.NotFound(new { mensaje = "No se encontró el justificativo." });
+            return Results.File(documento.Value.Ruta, documento.Value.ContentType, $"justificativo-docente-{id}{Path.GetExtension(documento.Value.Ruta)}");
         });
     }
 
@@ -173,7 +212,10 @@ public static class AsistenciaPersonalEndpoints
         Estado = r.Estado,
         Justificada = r.Justificada,
         Observaciones = r.Observaciones,
-        RegistradoPorUsuarioId = r.RegistradoPorUsuarioId
+        RegistradoPorUsuarioId = r.RegistradoPorUsuarioId,
+        TieneJustificativo = !string.IsNullOrEmpty(r.JustificativoArchivo),
+        JustificadaPor = r.JustificadaPor is null ? string.Empty : $"{r.JustificadaPor.Persona.Apellido}, {r.JustificadaPor.Persona.Nombre}",
+        FechaJustificacionUtc = r.FechaJustificacionUtc
     };
 
     private static bool EstadoValido(string? estado) =>

@@ -4,8 +4,8 @@ const getSessionId = () =>
   localStorage.getItem(STORAGE_ID_KEY) ||
   sessionStorage.getItem(STORAGE_ID_KEY);
 
-const clearSession = () => {
-  AcadionApi.clearSession();
+const clearSession = async () => {
+  await AcadionApi.logout();
   localStorage.removeItem(STORAGE_ID_KEY);
   localStorage.removeItem("acadion_token");
   sessionStorage.removeItem(STORAGE_ID_KEY);
@@ -125,9 +125,6 @@ async function loadStudentDashboard() {
     document.getElementById("welcomeTitle").textContent = `¡Hola, ${firstName}!`;
     document.getElementById("studentProposal").textContent = `Propuesta: ${profile.carrera || "Carrera sin informar"}`;
 
-    const profileImage = document.getElementById("profileImage");
-    profileImage.src = getProfileImage(profile, fullName);
-    profileImage.alt = `Foto de perfil de ${fullName}`;
     renderSchedule(Array.isArray(subjects) ? subjects : []);
   } catch (error) {
     console.error("No se pudo cargar el inicio del estudiante.", error);
@@ -136,17 +133,13 @@ async function loadStudentDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  Acadion.iniciarPantalla();
   if (!getSessionId()) {
     redirectToLogin();
     return;
   }
 
   loadStudentDashboard();
-
-  document.getElementById("logoutButton").addEventListener("click", () => {
-    clearSession();
-    redirectToLogin();
-  });
 
   document.getElementById("subjectSearch").addEventListener("input", event => {
     const searchTerm = normalizeText(event.target.value);
@@ -155,11 +148,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  document.querySelector(".notification-button").addEventListener("click", () => {
-    window.location.href = "Notificaciones.html";
-  });
-
-  document.getElementById("profileImage").addEventListener("click", () => {
-    window.location.href = "MisDatosPersonales.html";
-  });
 });

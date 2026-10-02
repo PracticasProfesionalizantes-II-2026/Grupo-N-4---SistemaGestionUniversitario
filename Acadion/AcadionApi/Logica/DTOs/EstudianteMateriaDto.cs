@@ -6,6 +6,7 @@ namespace AcadionApi.DTOs
     {
         public int IdEstudiante { get; set; }
         public int IdMateria { get; set; }
+        public int? ComisionId { get; set; }
         public int? IdDocente { get; set; }
         public int CicloLectivo { get; set; }
         public string Cuatrimestre { get; set; } = "1C";
@@ -14,6 +15,7 @@ namespace AcadionApi.DTOs
     public class InscripcionPropiaCrearDto
     {
         public int MateriaId { get; set; }
+        public int? ComisionId { get; set; }
     }
 
     public class InscripcionDto
@@ -21,6 +23,7 @@ namespace AcadionApi.DTOs
         public int IdEstudianteMateria { get; set; }
         public int IdEstudiante { get; set; }
         public int IdMateria { get; set; }
+        public int? ComisionId { get; set; }
         public int? IdDocente { get; set; }
         public int CicloLectivo { get; set; }
         public string Cuatrimestre { get; set; } = string.Empty;

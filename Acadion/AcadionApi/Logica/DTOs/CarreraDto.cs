@@ -17,8 +17,10 @@ namespace AcadionApi.DTOs
         public string Tipo { get; set; } = string.Empty;
         public int DuracionAnios { get; set; }
         public int CapacidadMaximaEstudiantes { get; set; }
+        public bool Activa { get; set; }
         public int EstudiantesInscriptos { get; set; }
         public List<AnioCarreraDto> Anios { get; set; } = new();
+        public List<PlanEstudioDto> Planes { get; set; } = new();
     }
 
     public class CarreraActualizarDto
@@ -28,6 +30,7 @@ namespace AcadionApi.DTOs
         public string Tipo { get; set; } = string.Empty;
         public int DuracionAnios { get; set; }
         public int CapacidadMaximaEstudiantes { get; set; }
+        public bool? Activa { get; set; }
     }
 
     public class AnioCarreraDto
@@ -35,5 +38,32 @@ namespace AcadionApi.DTOs
         public int IdAnio { get; set; }
         public int NumeroAnio { get; set; }
         public string NombreAnio { get; set; } = string.Empty;
+    }
+
+    public class PlanEstudioDto
+    {
+        public int Id { get; set; }
+        public int CarreraId { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public int VigenteDesde { get; set; }
+        public int? VigenteHasta { get; set; }
+        public bool Activo { get; set; }
+        public int CantidadMaterias { get; set; }
+        public int CantidadEstudiantes { get; set; }
+    }
+
+    public class PlanEstudioCrearDto
+    {
+        public string Codigo { get; set; } = string.Empty;
+        public int VigenteDesde { get; set; }
+        public bool CopiarMateriasDelPlanVigente { get; set; }
+    }
+
+    public class PlanEstudioActualizarDto
+    {
+        public string Codigo { get; set; } = string.Empty;
+        public int VigenteDesde { get; set; }
+        public int? VigenteHasta { get; set; }
+        public bool Activo { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  Acadion.iniciarPantalla();
   const session = AcadionApi.getSession();
-  if (!session?.token) {
+  if (!session?.usuarioId) {
     window.location.replace("Login.html");
     return;
   }
@@ -49,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const title = document.createElement("h2"); title.textContent = exam.materia || "Examen";
     const copy = document.createElement("p"); copy.textContent = `${exam.tipoExamen || "Examen"} correspondiente al ciclo lectivo ${exam.cicloLectivo || "actual"}.`;
     const grid = document.createElement("div"); grid.className = "detail-grid";
-    [["Tipo", exam.tipoExamen || "A confirmar"], ["Fecha", formatDate(exam.fecha)], ["Materia", exam.materia || "A confirmar"], ["Ciclo lectivo", exam.cicloLectivo || "A confirmar"]]
+    [["Tipo", exam.tipoExamen || "A confirmar"], ["Turno", exam.turnoFinal ? `${exam.turnoFinal} · ${exam.numeroLlamado}.º llamado` : "A confirmar"], ["Fecha", formatDate(exam.fecha)], ["Materia", exam.materia || "A confirmar"], ["Ciclo lectivo", exam.cicloLectivo || "A confirmar"]]
       .forEach(([label, value]) => {
         const item = document.createElement("div"); item.className = "detail-item";
         const itemLabel = document.createElement("span"); itemLabel.className = "detail-label"; itemLabel.textContent = label;
@@ -138,7 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
     visible.forEach(exam => {
       const button = document.createElement("button"); button.type = "button"; button.className = "subject-button";
       const title = document.createElement("strong"); title.textContent = exam.materia || "Examen";
-      const meta = document.createElement("small"); meta.textContent = `${exam.tipoExamen || "Examen"} · ${formatDate(exam.fecha)}`;
+      const turn = exam.turnoFinal ? `${exam.turnoFinal}, ${exam.numeroLlamado}.º llamado · ` : "";
+      const meta = document.createElement("small"); meta.textContent = `${turn}${exam.tipoExamen || "Examen"} · ${formatDate(exam.fecha)}`;
       button.append(title, meta);
       button.addEventListener("click", () => {
         document.querySelectorAll(".subject-button").forEach(item => item.classList.remove("is-selected"));
@@ -146,18 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       subjectsList.append(button);
     });
-  }
-
-  async function loadProfile() {
-    try {
-      const profile = await AcadionApi.request("/api/me/perfil");
-      const name = [profile.nombre, profile.apellido].filter(Boolean).join(" ") || session.nombreUsuario || "Estudiante";
-      const image = document.getElementById("profileImage");
-      image.src = profile.fotoPerfilUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff7a00&color=fff&bold=true`;
-      image.alt = `Foto de perfil de ${name}`;
-    } catch {
-      // Se conserva el avatar neutral si el perfil no está disponible.
-    }
   }
 
   async function loadExams() {
@@ -183,10 +173,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".toggle").forEach(item => item.classList.remove("is-active"));
     button.classList.add("is-active"); activeFilter = button.dataset.filter; renderExams();
   }));
-  document.querySelector(".notification-button").addEventListener("click", () => { window.location.href = "Notificaciones.html"; });
-  document.getElementById("profileImage").addEventListener("click", () => { window.location.href = "MisDatosPersonales.html"; });
-  document.getElementById("logoutButton").addEventListener("click", () => { AcadionApi.clearSession(); window.location.href = "Login.html"; });
-
-  loadProfile();
   loadExams();
 });

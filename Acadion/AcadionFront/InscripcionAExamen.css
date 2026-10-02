@@ -1,37 +1,11 @@
-@import url("MenuPrincipal.css");
+@import url("Comun.css?v=20261001-2");
 
 .sidebar .menu-item { white-space: nowrap; }
-.exam-main { padding: 12px 10px; }
-.exam-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 76px;
-  padding: 10px 20px;
-  border: 1px solid #ebebeb;
-  border-radius: 18px;
-  background: white;
-}
-.topbar-actions { display: flex; align-items: center; gap: 16px; }
-.back-to-home {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 10px;
-  background: white;
-  color: var(--gris-oscuro);
-  box-shadow: 0 2px 5px #0000001c;
-  font-size: 1.15rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-.back-to-home:hover { color: #d85f00; }
-.profile-image { cursor: pointer; }
+.exam-main { min-width: 0; }
 .exam-panel {
   min-height: calc(100vh - 122px);
   padding: 36px;
-  margin-top: 18px;
+  margin-top: 0;
   border: 1px solid #ebebeb;
   border-radius: 18px;
   background: white;
@@ -78,7 +52,6 @@
 .global-state p { margin: 0; color: var(--gris); font-size: .86rem; }
 .is-hidden { display: none !important; }
 @media (max-width: 800px) {
-  .exam-main { padding: 14px; }
   .exam-panel { min-height: 0; padding: 24px 18px; }
   .toolbar { align-items: stretch; flex-direction: column; }
   .search-box { width: 100%; }

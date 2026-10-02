@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const adminSummary = document.getElementById("careerAdminSummary");
   const adminCycle = document.getElementById("careerAdminCycle");
   const subjectsContainer = document.getElementById("careerSubjects");
+  const plansContainer = document.getElementById("studyPlans");
+  const planForm = document.getElementById("studyPlanForm");
+  const planMessage = document.getElementById("studyPlanMessage");
   const periodForm = document.getElementById("careerPeriodForm");
   const periodCareer = document.getElementById("careerPeriodCareer");
   const periodCycle = document.getElementById("careerPeriodCycle");
@@ -81,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     body.replaceChildren();
     if (!careers.length) {
-      body.innerHTML = '<tr><td colspan="6" class="empty-state">Todavía no hay carreras registradas.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" class="empty-state">Todavía no hay carreras registradas.</td></tr>';
       return;
     }
     careers.forEach(career => {
@@ -93,8 +96,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const capacity = document.createElement("span");
       capacity.className = "capacity";
       const percent = Math.min(100, Math.round(career.estudiantesInscriptos * 100 / career.capacidadMaximaEstudiantes));
-      capacity.innerHTML = `<span class="capacity-bar"><span style="width:${percent}%"></span></span><strong>${career.estudiantesInscriptos}/${career.capacidadMaximaEstudiantes}</strong>`;
+      const capacityBar = document.createElement("span"); capacityBar.className = "capacity-bar";
+      const capacityFill = document.createElement("span"); capacityFill.style.width = `${percent}%`; capacityBar.append(capacityFill);
+      const capacityText = document.createElement("strong"); capacityText.textContent = `${career.estudiantesInscriptos}/${career.capacidadMaximaEstudiantes}`;
+      capacity.append(capacityBar, capacityText);
       capacityCell.append(capacity);
+      const statusCell = row.insertCell();
+      const status = document.createElement("span");
+      status.className = `badge ${career.activa ? "active" : "inactive"}`;
+      status.textContent = career.activa ? "Activa" : "Inactiva";
+      statusCell.append(status);
       const actionsCell = row.insertCell();
       const actions = document.createElement("div");
       actions.className = "career-actions";
@@ -133,6 +144,49 @@ document.addEventListener("DOMContentLoaded", () => {
     strong.textContent = `${label}: `;
     item.append(strong, document.createTextNode(value));
     parent.append(item);
+  }
+
+  function renderPlans(plans) {
+    plansContainer.replaceChildren();
+    if (!plans.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = "La carrera todavía no tiene versiones de plan registradas.";
+      plansContainer.append(empty);
+      return;
+    }
+    const list = document.createElement("div");
+    list.className = "study-plan-list";
+    plans.forEach(plan => {
+      const card = document.createElement("article");
+      card.className = `study-plan-card${plan.activo ? " active" : ""}`;
+      const heading = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = plan.codigo;
+      const badge = document.createElement("span");
+      badge.className = `badge ${plan.activo ? "active" : "inactive"}`;
+      badge.textContent = plan.activo ? "Vigente" : "Histórico";
+      heading.append(title, badge);
+      const detail = document.createElement("p");
+      detail.textContent = `Desde ${plan.vigenteDesde}${plan.vigenteHasta ? ` hasta ${plan.vigenteHasta}` : ""} · ${plan.cantidadMaterias} materias · ${plan.cantidadEstudiantes} estudiantes`;
+      card.append(heading, detail);
+      list.append(card);
+    });
+    plansContainer.append(list);
+  }
+
+  async function loadPlans() {
+    if (!managedCareerId) return;
+    try {
+      const plans = await AcadionApi.request(`/api/planes-estudio/carrera/${managedCareerId}`);
+      renderPlans(plans);
+    } catch (error) {
+      plansContainer.replaceChildren();
+      const failure = document.createElement("p");
+      failure.className = "empty-state error";
+      failure.textContent = error.message;
+      plansContainer.append(failure);
+    }
   }
 
   function renderStudents(parent, students) {
@@ -194,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const yearHeader = document.createElement("div");
       yearHeader.className = "career-year-heading";
       const title = document.createElement("h3");
-      title.textContent = year.nombreAnio || `${year.numeroAnio}° año`;
+      title.textContent = year.nombreAnio || `${year.numeroAnio}.º año`;
       const count = document.createElement("span");
       count.textContent = `${year.materias.length} ${year.materias.length === 1 ? "materia" : "materias"}`;
       yearHeader.append(title, count);
@@ -366,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
     adminPanel.hidden = false;
     periodCareer.value = String(career.idCarrera);
     renderPeriod();
-    loadCareerDetail();
+    Promise.all([loadPlans(), loadCareerDetail()]);
     adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -377,6 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
     form.planEstudios.value = career.planEstudios;
     form.duracionAnios.value = career.duracionAnios;
     form.capacidadMaximaEstudiantes.value = career.capacidadMaximaEstudiantes;
+    form.activa.value = String(career.activa);
     editPanel.hidden = false;
     document.getElementById("formTitle").textContent = career.nombre;
     editPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -389,7 +444,11 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPeriodCareerOptions();
       await loadPeriods();
     }
-    catch (error) { body.innerHTML = `<tr><td colspan="6" class="empty-state">${error.message}</td></tr>`; }
+    catch (error) {
+      body.replaceChildren();
+      const row = body.insertRow(); const cell = row.insertCell();
+      cell.colSpan = 7; cell.className = "empty-state"; cell.textContent = error.message;
+    }
   }
 
   form.addEventListener("submit", async event => {
@@ -398,7 +457,8 @@ document.addEventListener("DOMContentLoaded", () => {
       nombre: form.nombre.value.trim(), tipo: form.tipo.value,
       planEstudios: form.planEstudios.value.trim(),
       duracionAnios: Number(form.duracionAnios.value),
-      capacidadMaximaEstudiantes: Number(form.capacidadMaximaEstudiantes.value)
+      capacidadMaximaEstudiantes: Number(form.capacidadMaximaEstudiantes.value),
+      activa: form.activa.value === "true"
     };
     try {
       if (!editingId) return;
@@ -441,6 +501,41 @@ document.addEventListener("DOMContentLoaded", () => {
     managedCareerId = null;
     adminPanel.hidden = true;
     subjectsContainer.replaceChildren();
+  });
+  document.getElementById("togglePlanForm").addEventListener("click", () => {
+    planForm.hidden = false;
+    planForm.codigo.value = `Plan ${new Date().getFullYear() + 1}`;
+    planForm.vigenteDesde.value = new Date().getFullYear() + 1;
+    planMessage.textContent = "";
+    planForm.codigo.focus();
+  });
+  document.getElementById("cancelPlan").addEventListener("click", () => {
+    planForm.reset();
+    planForm.hidden = true;
+  });
+  planForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!managedCareerId) return;
+    const codigo = planForm.codigo.value.trim();
+    if (!confirm(`Se publicará ${codigo} como plan vigente. El plan actual quedará histórico. ¿Continuar?`)) return;
+    try {
+      await AcadionApi.request(`/api/planes-estudio/carrera/${managedCareerId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          codigo,
+          vigenteDesde: Number(planForm.vigenteDesde.value),
+          copiarMateriasDelPlanVigente: planForm.copiarMaterias.checked
+        })
+      });
+      planMessage.className = "status-message success";
+      planMessage.textContent = "El nuevo plan se publicó correctamente.";
+      await Promise.all([loadPlans(), load(), loadCareerDetail()]);
+      planForm.reset();
+      planForm.hidden = true;
+    } catch (error) {
+      planMessage.className = "status-message error";
+      planMessage.textContent = error.message;
+    }
   });
   load();
 });

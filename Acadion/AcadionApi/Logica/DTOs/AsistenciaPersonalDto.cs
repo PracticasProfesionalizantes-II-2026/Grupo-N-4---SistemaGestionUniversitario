@@ -22,4 +22,7 @@ public class AsistenciaPersonalDto
     public bool Justificada { get; set; }
     public string? Observaciones { get; set; }
     public int RegistradoPorUsuarioId { get; set; }
+    public bool TieneJustificativo { get; set; }
+    public string JustificadaPor { get; set; } = string.Empty;
+    public DateTime? FechaJustificacionUtc { get; set; }
 }

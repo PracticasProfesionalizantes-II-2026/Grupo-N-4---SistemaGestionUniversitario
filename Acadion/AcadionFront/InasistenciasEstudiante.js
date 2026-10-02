@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function yearLabel(number, fallback) {
     if (fallback) return fallback;
-    return number === 1 ? "1.er año" : `${number}.º año`;
+    return `${number}.º año`;
   }
 
   function groupBy(items, keySelector) {
@@ -39,9 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function updateJustification(item, select) {
+    const justified = select.value === "true";
+    if (!window.confirm(`¿${justified ? "Justificar" : "Quitar la justificación de"} la inasistencia del ${formatDate(item.fecha)}?`)) {
+      select.value = String(item.justificada);
+      return;
+    }
     select.disabled = true;
     try {
-      const justified = select.value === "true";
       await AcadionApi.request(`/api/gestion/usuarios/${studentId}/inasistencias/${item.idAsistencia}/justificacion`, {
         method: "PUT",
         body: JSON.stringify({ justificada: justified })
@@ -55,6 +59,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       select.disabled = false;
     }
+  }
+
+  async function uploadJustification(item, input, button) {
+    if (!input.files[0]) return;
+    button.disabled = true;
+    const data = new FormData(); data.append("archivo", input.files[0]);
+    try {
+      const result = await AcadionApi.request(`/api/gestion/usuarios/${studentId}/inasistencias/${item.idAsistencia}/justificacion-archivo`, { method: "POST", body: data });
+      showMessage(result.mensaje);
+      await loadAbsences();
+    } catch (error) { showMessage(error.message, true); button.disabled = false; }
   }
 
   function createAbsenceRow(item) {
@@ -71,6 +86,16 @@ document.addEventListener("DOMContentLoaded", () => {
     select.value = String(Boolean(item.justificada));
     select.addEventListener("change", () => updateJustification(item, select));
     justificationCell.append(select);
+    const documentCell = row.insertCell();
+    if (item.tieneJustificativo) {
+      const link = document.createElement("a"); link.className = "document-link"; link.target = "_blank";
+      link.href = `${AcadionApi.baseUrl}/api/gestion/usuarios/${studentId}/inasistencias/${item.idAsistencia}/justificativo`;
+      link.textContent = "Ver archivo"; documentCell.append(link);
+    }
+    const file = document.createElement("input"); file.type = "file"; file.accept = "application/pdf,image/jpeg,image/png"; file.hidden = true;
+    const upload = document.createElement("button"); upload.type = "button"; upload.className = "upload-proof"; upload.textContent = item.tieneJustificativo ? "Reemplazar" : "Adjuntar";
+    upload.addEventListener("click", () => file.click()); file.addEventListener("change", () => uploadJustification(item, file, upload)); documentCell.append(file, upload);
+    const approvedByCell = row.insertCell(); approvedByCell.textContent = item.justificadaPor || "—";
     const countCell = row.insertCell();
     const count = document.createElement("span");
     count.className = "absence-count";
@@ -89,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const table = document.createElement("table");
     const head = document.createElement("thead");
     const headRow = document.createElement("tr");
-    ["Fecha", "Tipo de clase", "Tema dictado", "Justificada", "Cantidad"].forEach(label => {
+    ["Fecha", "Tipo de clase", "Tema dictado", "Justificada", "Justificativo", "Aprobado por", "Cantidad"].forEach(label => {
       const th = document.createElement("th");
       th.textContent = label;
       headRow.append(th);

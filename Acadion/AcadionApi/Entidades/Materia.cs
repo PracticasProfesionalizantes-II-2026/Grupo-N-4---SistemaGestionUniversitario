@@ -26,9 +26,15 @@ public class Materia
     public int IdAnio { get; set; }
     public Anio? AnioCursada { get; set; }
 
+    // Una materia pertenece a una versión concreta del plan de estudios.
+    // Es nullable durante la migración de instalaciones existentes.
+    public int? PlanEstudioId { get; set; }
+    public PlanEstudio? PlanEstudio { get; set; }
+
     // Relación de Correlatividades 
     // Una materia puede tener una lista de otras materias como correlativas
     public List<Materia> Correlativas { get; set; } = new List<Materia>();
+    public List<Comision> Comisiones { get; set; } = new List<Comision>();
 
     // Método de validación
     // Verifica si un estudiante cumple con las materias correlativas aprobadas

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Mi calendario académico</title>
+  <link rel="stylesheet" href="Comun.css?v=20261001-3">
+  <link rel="stylesheet" href="CalendarioPersonal.css?v=20261001-3">
+</head>
+<body data-section="student" data-page="CalendarioPersonal">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar">
+        <a id="calendarBack" class="back-button" href="MenuPrincipal.html" aria-label="Volver">←</a>
+        <div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mi perfil"></a></div>
+      </header>
+      <section class="page-content calendar-page-content">
+        <div class="calendar-hero">
+          <div>
+            <p class="section-kicker">Agenda académica</p>
+            <h1>Calendario académico</h1>
+            <p>Consultá inscripciones, evaluaciones, cuatrimestres, feriados y días sin clases.</p>
+          </div>
+          <label class="cycle-field">Ciclo lectivo
+            <input id="calendarCycle" type="number" min="2020" max="2100">
+          </label>
+        </div>
+        <nav class="calendar-tabs" aria-label="Filtrar calendario">
+          <button class="active" type="button" data-filter="Todos">Todos</button>
+          <button type="button" data-filter="Inscripciones">Inscripciones</button>
+          <button type="button" data-filter="Evaluaciones">Evaluaciones</button>
+          <button type="button" data-filter="Institucional">Institucional</button>
+        </nav>
+        <div id="calendarSummary" class="calendar-summary" aria-live="polite"></div>
+        <section id="personalCalendar" class="personal-calendar" aria-live="polite">
+          <p class="empty-state">Cargando calendario…</p>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-3"></script>
+  <script src="CalendarioPersonal.js?v=20261001-1"></script>
+</body>
+</html>

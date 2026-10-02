@@ -1,8 +1,0 @@
-@import url("Comun.css");
-
-#subjectPrerequisites { min-height: 120px; }
-.schedule-heading { margin-top: 14px; }
-
-@media (max-width: 700px) {
-  .schedule-heading { align-items: flex-start; flex-direction: column; }
-}

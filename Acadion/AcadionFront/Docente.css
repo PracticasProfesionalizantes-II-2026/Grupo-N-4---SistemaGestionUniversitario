@@ -51,6 +51,8 @@
 .evaluation-toolbar .form-field { min-width: 250px; margin: 0; }
 .exam-action-cell { text-align: right; white-space: nowrap; }
 .exam-action-cell { display: flex; justify-content: flex-end; gap: 7px; }
+.exam-reference { display: block; margin-top: 5px; color: #6a6a6a; font-size: 12px; }
+.field-help { margin-top: 5px; color: #6a6a6a; font-size: 12px; font-weight: 400; }
 .compact-button, .exam-action-cell .secondary-button { min-width: 0; padding: 8px 13px; }
 .danger-button { min-width: 0; padding: 8px 13px; border: 1px solid #d7a7a7; border-radius: 9px; background: #fff5f5; color: #a01919; font-weight: 700; cursor: pointer; }
 .danger-button:hover { border-color: #a01919; background: #fde7e7; }

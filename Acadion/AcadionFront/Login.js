@@ -4,6 +4,12 @@ const passwordInput = document.getElementById("password");
 const errorMessage = document.getElementById("errorMessage");
 const togglePasswordButton = document.getElementById("togglePassword");
 const submitButton = document.getElementById("submitButton");
+const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+
+fetch(`${AcadionApi.baseUrl}/api/auth/recuperacion/disponible`)
+  .then(response => response.ok ? response.json() : { disponible: false })
+  .then(result => { forgotPasswordLink.hidden = !result.disponible; })
+  .catch(() => { forgotPasswordLink.hidden = true; });
 
 togglePasswordButton.addEventListener("click", () => {
   const passwordIsHidden = passwordInput.type === "password";
@@ -29,6 +35,16 @@ loginForm.addEventListener("submit", async (event) => {
     errorMessage.classList.add("is-visible");
     return;
   }
+  if (!/^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/.test(NombreUsuario)) {
+    errorMessage.textContent = "El usuario solo puede contener letras, números y puntos";
+    errorMessage.classList.add("is-visible");
+    return;
+  }
+  if (NombreUsuario.length > 80 || Password.length > 256) {
+    errorMessage.textContent = "Los datos ingresados superan el tamaño permitido";
+    errorMessage.classList.add("is-visible");
+    return;
+  }
 
   submitButton.disabled = true;
   submitButton.textContent = "Validando...";
@@ -36,6 +52,7 @@ loginForm.addEventListener("submit", async (event) => {
   try {
     const response = await fetch(`${AcadionApi.baseUrl}/api/auth/login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -48,17 +65,28 @@ loginForm.addEventListener("submit", async (event) => {
     if (response.ok) {
       const loginResult = await response.json();
 
-      if (!loginResult.personaId || !loginResult.token) {
+      if (!loginResult.personaId || !loginResult.usuarioId) {
         throw new Error("La respuesta de inicio de sesión está incompleta");
       }
 
       AcadionApi.saveSession(loginResult);
+      const sessionCheck = await fetch(`${AcadionApi.baseUrl}/api/auth/session`, {
+        credentials: "include"
+      });
+      if (!sessionCheck.ok) {
+        AcadionApi.clearSession();
+        throw new Error("La sesión no pudo guardarse en el navegador. Volvé a intentarlo desde la dirección local de Acadion.");
+      }
       const isAdmin = loginResult.rol === "Secretario" ||
         loginResult.permisos?.includes("usuarios.gestionar");
       const isTeacher = loginResult.rol === "Docente" ||
         loginResult.permisos?.includes("docencia.gestionar");
-      window.location.href = isAdmin
-        ? "PanelDirectivo.html"
+      const isDirector = loginResult.rol === "Directivo" &&
+        loginResult.permisos?.includes("reportes.leer");
+      window.location.href = isDirector
+        ? "PanelInstitucional.html"
+        : isAdmin
+        ? "PanelSecretaria.html"
         : isTeacher ? "PanelDocente.html" : "MenuPrincipal.html";
       return;
     }
@@ -70,8 +98,8 @@ loginForm.addEventListener("submit", async (event) => {
       : errorData?.mensaje || "No fue posible iniciar sesión. Intentá nuevamente.";
 
     errorMessage.classList.add("is-visible");
-  } catch {
-    errorMessage.textContent = "No se pudo conectar con el servidor.";
+  } catch (error) {
+    errorMessage.textContent = error?.message || "No se pudo conectar con el servidor.";
     errorMessage.classList.add("is-visible");
   } finally {
     submitButton.disabled = false;

@@ -9,7 +9,7 @@
 </head>
 <body data-section="admin" data-page="CrearMateria">
   <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
-    <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+    <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver">←</a></header>
     <section class="page-content">
       <div class="admin-heading"><div><p class="section-kicker">Plan de estudios</p><h1>Crear materia</h1><p>Agregá una materia a una carrera con sus horarios y correlatividades.</p></div><a class="secondary-button" href="GestionMaterias.html">Administrar materias</a></div>
       <section class="panel">
@@ -17,6 +17,7 @@
         <form id="subjectForm">
           <div class="inline-grid">
             <label class="form-field">Carrera<select name="idCarrera" id="subjectCareer" required><option value="">Seleccionar carrera</option></select></label>
+            <label class="form-field">Plan de estudios<select name="planEstudioId" id="subjectPlan" required disabled><option value="">Seleccionar plan</option></select></label>
             <label class="form-field">Año de cursado<select name="idAnio" id="subjectYear" required disabled><option value="">Seleccionar año</option></select></label>
             <label class="form-field">Nombre de la materia<input name="nombre" required maxlength="150" placeholder="Ej. Matemática II"></label>
             <label class="form-field">Modalidad<select name="modalidad" required><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Híbrida">Híbrida</option></select></label>
@@ -34,6 +35,6 @@
       </section>
     </section>
   </main></div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="CrearMateria.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20260930-6"></script><script src="CrearMateria.js?v=20260930-6"></script>
 </body>
 </html>

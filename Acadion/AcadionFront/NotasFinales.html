@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acadion | Notas finales</title>
+  <link rel="stylesheet" href="NotasFinales.css?v=20261001-4">
+</head>
+<body data-section="student" data-page="NotasFinales">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main-content">
+      <header class="topbar">
+        <a class="back-button" href="MenuPrincipal.html" aria-label="Volver a la pantalla anterior">←</a>
+        <div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mis datos personales"></a></div>
+      </header>
+      <section class="page-content modern-report-content">
+        <div class="history-title"><span data-current-year>2026</span><br>Reportes</div>
+        <div class="report-heading">
+          <div>
+            <p class="section-kicker">Historial académico</p>
+            <h1>Notas finales</h1>
+            <p class="report-description">Consultá todos tus intentos de examen final, aprobados y desaprobados.</p>
+          </div>
+          <div class="report-filters" aria-label="Filtros de notas finales">
+            <label class="filter">Ciclo lectivo
+              <select id="yearFilter"><option value="all">Mostrar todo</option></select>
+            </label>
+            <label class="filter">Condición
+              <select id="conditionFilter">
+                <option value="all">Todas</option>
+                <option value="approved">Aprobadas</option>
+                <option value="failed">Desaprobadas</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div id="reportContent"><p class="report-empty">Cargando notas finales…</p></div>
+      </section>
+    </main>
+  </div>
+  <script src="Api.js?v=20261001-4"></script>
+  <script src="Comun.js?v=20261001-4"></script>
+  <script src="Reportes.js?v=20261001-6"></script>
+</body>
+</html>

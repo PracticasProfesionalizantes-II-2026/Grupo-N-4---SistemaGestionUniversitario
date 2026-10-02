@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "secondary-button";
     toggle.textContent = notification.activa ? "Desactivar" : "Activar";
     toggle.addEventListener("click", async () => {
+      if (!window.confirm(`¿${notification.activa ? "Desactivar" : "Activar"} la notificación “${notification.titulo}”?`)) return;
       try { await AcadionApi.request(`/api/notificaciones/${notification.id}/estado?activa=${!notification.activa}`, { method: "PATCH" }); await loadNotifications(); }
       catch (error) { showMessage(error.message); }
     });

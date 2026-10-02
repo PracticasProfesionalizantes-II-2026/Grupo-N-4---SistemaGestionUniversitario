@@ -1,63 +1,53 @@
 # AcadionFront
 
-Esta carpeta funciona junto a `AcadionApi`. Abrí `index.html`: si no hay una sesión activa te lleva al login y, después de ingresar como secretario, abre el panel administrativo.
+El frontend se publica junto con `AcadionApi`. En desarrollo consume `http://localhost:5050`; en Azure utiliza el mismo dominio de la aplicación web.
 
-## Organización
-Cada pantalla mantiene la organización HTML, CSS y JavaScript del proyecto. `Comun.css`, `Comun.js`, `Admin.css` y `Api.js` reúnen estilos, navegación, sesión JWT y llamadas repetidas. Las rutas usan enlaces directos a archivos HTML y funcionan con Live Server.
+## Sesión y roles
 
-## Integración existente
-El frontend consume la API en `http://localhost:5050`, guarda el JWT y envía el token en las operaciones protegidas. El secretario puede crear estudiantes, docentes y directivos, administrar la estructura académica, fichar docentes y publicar notificaciones.
+El JWT no se guarda en `localStorage`: la API lo entrega mediante una cookie segura `HttpOnly`. En el navegador solo se conserva información no sensible para adaptar la navegación.
 
-## Nuevas pantallas
-Las pantallas administrativas principales escriben datos reales en la API. Las credenciales iniciales se muestran después de crear una cuenta; el nombre de usuario se genera con nombre y apellido y la contraseña inicial es el DNI. Las pantallas heredadas que todavía usan la clase `local-form` continúan siendo demostrativas.
+- **Estudiante:** inicio, inscripciones, reportes, documentos y perfil.
+- **Docente:** materias, comisiones, asistencias, evaluaciones, finales y perfil.
+- **Secretaría:** ABM institucional, planes, comisiones, pagos, calendario y notificaciones.
+- **Directivo:** tablero institucional de solo lectura.
 
-## Panel administrativo
-- `PanelDirectivo.html` — inicio y accesos rápidos
-- `SeleccionarRol.html` — selección de tipo de usuario
-- `CrearEstudiante.html`, `CrearProfesor.html`, `CrearDirectivo.html` — altas institucionales
-- `GestionMaterias.html` — carreras, años, materias, días y horarios
-- `AsistenciaProfesores.html` — asistencia de docentes por materia
-- `GestionNotificaciones.html` — avisos generales o por rol
+## Pantallas principales
 
-## Alcance visual
-Se usaron las referencias de Figma consultadas en esta conversación. Figma alcanzó el límite de consultas Starter durante el relevamiento. Por ese motivo esta entrega cubre las pantallas principales identificadas, pero no certifica la réplica de todos los frames duplicados, estados de error y variantes del archivo. Los estados requeridos, contraseña distinta y foto inválida se representan mediante validación y mensajes.
+### Secretaría
 
-## Rutas
-- Login.html
-- MenuPrincipal.html
-- InscripcionAMateria.html
-- InscripcionAExamen.html
-- MateriasEnCurso.html — Historia Académica
-- MateriasAprobadas.html — Materias Aprobadas
-- MateriasDesaprobadas.html — Materias Desaprobadas
-- PromedioYAvance.html — Promedio y avance
-- Inasistencias.html — Reporte de inasistencias
-- MisDatosPersonales.html — Datos personales
-- EditarContacto.html — Editar datos de contacto
-- EditarDomicilio.html — Editar domicilio
-- EditarAllegados.html — Editar allegados
-- Ajustes.html — Ajustes
-- CambiarContrasena.html — Ajustes
-- CambiarFoto.html — Ajustes
-- RecuperarContrasena.html — ¿Olvidaste tu contraseña?
-- IngresarCodigo.html — Ingresar código
-- NuevaContrasena.html — Nueva contraseña
-- ContrasenaCambiada.html — Contraseña cambiada
-- PanelDirectivo.html — Bienvenido
-- Estudiantes.html — Alumnos
-- Profesores.html — Profesores
-- Secretarios.html — Secretarios
-- SeleccionarRol.html — Añadir
-- CrearEstudiante.html — Crear Estudiante
-- CrearProfesor.html — Crear Profesor
-- CrearDirectivo.html — Crear Directivo
-- GestionMaterias.html — Materias y horarios
-- AsistenciaProfesores.html — Asistencia docente
-- GestionNotificaciones.html — Notificaciones generales
-- Clases.html — Clases
-- CrearClase.html — Crear clase
-- Materia.html — Materia
-- Calificaciones.html — Calificaciones
-- Asistencia.html — Asistencia
-- Reuniones.html — Reuniones
-- CrearReunion.html — Crear reunión
+- `PanelSecretaria.html`: inicio e indicadores operativos.
+- `SeleccionarRol.html`: creación de estudiantes, docentes, secretarios y directivos.
+- `GestionUsuarios.html`: listado, filtros, edición, inasistencias, equivalencias y eliminación.
+- `CrearCarrera.html` y `GestionCarreras.html`: carreras y planes de estudio versionados.
+- `CrearMateria.html` y `GestionMaterias.html`: materias, correlatividades, comisiones, horarios y listas de espera.
+- `AsistenciaProfesores.html`: asistencia docente y justificaciones.
+- `GestionPagos.html`: matrícula, cuotas, comprobantes y validación.
+- `CalendarioAcademico.html`: calendario institucional central y turnos de examen final.
+- `GestionNotificaciones.html`: comunicaciones generales o por rol.
+
+`PanelDirectivo.html` se conserva únicamente como redirección de compatibilidad hacia `PanelSecretaria.html`; ya no contiene la pantalla administrativa.
+
+### Directivos
+
+- `PanelInstitucional.html`: indicadores académicos y administrativos de solo lectura, con filtros y exportación.
+
+### Docentes
+
+- `PanelDocente.html`: resumen docente.
+- `DocenteMaterias.html`: materias, carreras, comisiones y horarios.
+- `DocenteAsistencias.html`: clases y asistencia de estudiantes.
+- `DocenteEvaluaciones.html`: evaluaciones, finales, criterios y notas.
+- `DocentePerfil.html`: datos institucionales y datos personales editables.
+
+### Estudiantes
+
+- `MenuPrincipal.html`: materias vigentes y horarios del ciclo actual.
+- `InscripcionAMateria.html`: inscripción por comisión y lista de espera.
+- `InscripcionAExamen.html`: inscripción y baja de finales dentro del plazo permitido.
+- `MateriasEnCurso.html`, `MateriasAprobadas.html`, `MateriasDesaprobadas.html`, `PromedioYAvance.html` e `Inasistencias.html`: reportes académicos.
+- `MisDatosPersonales.html`: perfil, situación financiera y descarga de documentos.
+- `Notificaciones.html`: avisos institucionales y recordatorios automáticos.
+
+## Componentes compartidos
+
+`Comun.css`, `Comun.js`, `Admin.css` y `Api.js` centralizan el diseño, la navegación, los iconos, la validación básica, el comportamiento responsive y las llamadas autenticadas. Las validaciones del navegador mejoran la experiencia; la API vuelve a validar todos los datos y aplica las reglas de negocio.

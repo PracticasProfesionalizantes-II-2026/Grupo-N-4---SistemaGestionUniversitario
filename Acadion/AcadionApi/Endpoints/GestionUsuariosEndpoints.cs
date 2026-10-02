@@ -3,6 +3,7 @@ using AcadionApi.DTOs;
 using AcadionApi.Logica;
 using AcadionApi.Seguridad;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AcadionApi.Endpoints;
 
@@ -55,19 +56,22 @@ public static class GestionUsuariosEndpoints
         {
             var rolesGestionables = new[]
             {
-                RolesSistema.EstudianteId, RolesSistema.DocenteId, RolesSistema.DirectivoId
+                RolesSistema.EstudianteId, RolesSistema.DocenteId,
+                RolesSistema.SecretarioId, RolesSistema.DirectivoId
             };
             var consulta = context.Usuarios.AsNoTracking()
                 .Include(u => u.Persona)
                 .Include(u => u.Rol)
                 .Include(u => u.Carrera)
+                .Include(u => u.PlanEstudio)
                 .Where(u => rolesGestionables.Contains(u.RolId));
             if (rolId.HasValue)
                 consulta = consulta.Where(u => u.RolId == rolId.Value);
 
             var usuarios = await consulta
                 .OrderBy(u => u.RolId == RolesSistema.DirectivoId ? 0 :
-                    u.RolId == RolesSistema.DocenteId ? 1 : 2)
+                    u.RolId == RolesSistema.SecretarioId ? 1 :
+                    u.RolId == RolesSistema.DocenteId ? 2 : 3)
                 .ThenBy(u => u.Persona.Apellido)
                 .ThenBy(u => u.Persona.Nombre)
                 .ToListAsync();
@@ -80,10 +84,72 @@ public static class GestionUsuariosEndpoints
                 .Include(u => u.Persona)
                 .Include(u => u.Rol)
                 .Include(u => u.Carrera)
+                .Include(u => u.PlanEstudio)
                 .SingleOrDefaultAsync(u => u.Id == id);
-            if (usuario is null || usuario.RolId == RolesSistema.SecretarioId)
+            if (usuario is null)
                 return Results.NotFound();
             return Results.Ok(MapearUsuario(usuario));
+        });
+
+        group.MapGet("/{id:int}/detalle", async (int id, AppDbContext context) =>
+        {
+            var usuario = await context.Usuarios.AsNoTracking()
+                .Include(u => u.Persona)
+                .Include(u => u.Rol)
+                .Include(u => u.Carrera)
+                .Include(u => u.PlanEstudio)
+                .SingleOrDefaultAsync(u => u.Id == id &&
+                    (u.RolId == RolesSistema.EstudianteId || u.RolId == RolesSistema.DocenteId));
+            if (usuario is null)
+                return Results.NotFound(new { mensaje = "El estudiante o profesor indicado no existe." });
+
+            var financiamiento = await context.PerfilesFinanciamiento.AsNoTracking()
+                .SingleOrDefaultAsync(p => p.UsuarioId == id);
+            var matriculaInicial = await context.MatriculasIniciales.AsNoTracking()
+                .Where(m => m.EstudianteId == id)
+                .OrderByDescending(m => m.PeriodoLectivo)
+                .FirstOrDefaultAsync();
+            var ahora = DateTime.UtcNow;
+            var cuotaActual = await context.CuotasMensuales.AsNoTracking()
+                .SingleOrDefaultAsync(c => c.EstudianteId == id &&
+                    c.Anio == ahora.Year && c.Mes == ahora.Month);
+            var allegados = await context.Allegados.AsNoTracking()
+                .Where(a => a.EstudianteId == id)
+                .OrderBy(a => a.Id)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.NombreApellido,
+                    a.Relacion,
+                    a.Telefono
+                })
+                .ToListAsync();
+
+            return Results.Ok(new
+            {
+                Usuario = MapearUsuario(usuario),
+                Financiamiento = new
+                {
+                    AporteFamiliares = financiamiento?.AporteFamiliares ?? false,
+                    PlanesSociales = financiamiento?.PlanesSociales ?? false,
+                    Trabajo = financiamiento?.Trabajo ?? false,
+                    Beca = financiamiento?.Beca ?? false,
+                    OtraFuente = financiamiento?.OtraFuente ?? false
+                },
+                MatriculaInicial = matriculaInicial is null ? null : new
+                {
+                    Estado = matriculaInicial.Estado.ToString(),
+                    matriculaInicial.PeriodoLectivo,
+                    matriculaInicial.MetodoPago
+                },
+                CuotaActual = cuotaActual is null ? null : new
+                {
+                    Estado = cuotaActual.Estado.ToString(),
+                    Periodo = $"{cuotaActual.Anio}-{cuotaActual.Mes:D2}",
+                    cuotaActual.MetodoPago
+                },
+                Allegados = allegados
+            });
         });
 
         group.MapGet("/{id:int}/inasistencias", async (int id, int? cicloLectivo,
@@ -129,6 +195,10 @@ public static class GestionUsuariosEndpoints
                         ? "Sin tema registrado"
                         : a.TemaDictado,
                     Justificada = a.Justificada || a.Tipo == "Justificada",
+                    TieneJustificativo = !string.IsNullOrEmpty(a.JustificativoArchivo),
+                    JustificadaPor = a.JustificadaPor == null ? string.Empty :
+                        a.JustificadaPor.Persona.Apellido + ", " + a.JustificadaPor.Persona.Nombre,
+                    a.FechaJustificacionUtc,
                     CantidadInasistencias = a.CantidadInasistencias > 0
                         ? a.CantidadInasistencias
                         : 1,
@@ -145,18 +215,20 @@ public static class GestionUsuariosEndpoints
 
         group.MapPut("/{id:int}/inasistencias/{asistenciaId:int}/justificacion",
             async (int id, int asistenciaId, JustificacionInasistenciaDto dto,
-                AppDbContext context) =>
+                HttpContext http, AppDbContext context) =>
             {
                 var asistencia = await context.Set<Asistencia>()
                     .Include(a => a.Inscripcion)
                     .SingleOrDefaultAsync(a => a.IdAsistencia == asistenciaId &&
-                        a.Inscripcion != null && a.Inscripcion.IdEstudiante == id &&
-                        (a.Tipo == "Ausente" || a.Tipo == "Justificada"));
-                if (asistencia is null)
+                        a.Inscripcion != null && a.Inscripcion.IdEstudiante == id);
+                if (asistencia is null ||
+                    !PoliticasAcademicas.PuedeJustificarInasistencia(asistencia.Tipo))
                     return Results.NotFound(new { mensaje = "La inasistencia indicada no existe." });
 
                 asistencia.Justificada = dto.Justificada;
                 asistencia.Tipo = "Ausente";
+                asistencia.JustificadaPorUsuarioId = dto.Justificada ? http.User.ObtenerUsuarioId() : null;
+                asistencia.FechaJustificacionUtc = dto.Justificada ? DateTime.UtcNow : null;
                 if (asistencia.CantidadInasistencias <= 0)
                     asistencia.CantidadInasistencias = 1;
                 await context.SaveChangesAsync();
@@ -168,6 +240,39 @@ public static class GestionUsuariosEndpoints
                         ? "La inasistencia fue justificada correctamente."
                         : "Se quitó la justificación de la inasistencia."
                 });
+            });
+
+        group.MapPost("/{id:int}/inasistencias/{asistenciaId:int}/justificacion-archivo",
+            async (int id, int asistenciaId, [FromForm] IFormFile archivo, HttpContext http,
+                AppDbContext context, DocumentoStorage storage, CancellationToken cancellationToken) =>
+            {
+                var asistencia = await context.Set<Asistencia>().Include(a => a.Inscripcion)
+                    .SingleOrDefaultAsync(a => a.IdAsistencia == asistenciaId &&
+                        a.Inscripcion != null && a.Inscripcion.IdEstudiante == id);
+                if (asistencia is null || !PoliticasAcademicas.PuedeJustificarInasistencia(asistencia.Tipo))
+                    return Results.NotFound(new { mensaje = "La inasistencia indicada no existe." });
+                try
+                {
+                    asistencia.JustificativoArchivo = await storage.GuardarAsync(archivo, $"justificativos/estudiantes/{id}", cancellationToken);
+                    asistencia.Justificada = true;
+                    asistencia.Tipo = "Ausente";
+                    asistencia.JustificadaPorUsuarioId = http.User.ObtenerUsuarioId();
+                    asistencia.FechaJustificacionUtc = DateTime.UtcNow;
+                    await context.SaveChangesAsync();
+                    return Results.Ok(new { mensaje = "El justificativo fue adjuntado y aprobado correctamente." });
+                }
+                catch (ArgumentException error) { return Results.BadRequest(new { mensaje = error.Message }); }
+            }).DisableAntiforgery();
+
+        group.MapGet("/{id:int}/inasistencias/{asistenciaId:int}/justificativo",
+            async (int id, int asistenciaId, AppDbContext context, DocumentoStorage storage) =>
+            {
+                var ruta = await context.Set<Asistencia>().AsNoTracking()
+                    .Where(a => a.IdAsistencia == asistenciaId && a.Inscripcion != null && a.Inscripcion.IdEstudiante == id)
+                    .Select(a => a.JustificativoArchivo).SingleOrDefaultAsync();
+                var documento = storage.Obtener(ruta);
+                if (documento is null) return Results.NotFound(new { mensaje = "No se encontró el justificativo." });
+                return Results.File(documento.Value.Ruta, documento.Value.ContentType, $"justificativo-inasistencia-{asistenciaId}{Path.GetExtension(documento.Value.Ruta)}");
             });
 
         group.MapPost("/", async (CuentaInstitucionalCrearDto dto,
@@ -201,8 +306,9 @@ public static class GestionUsuariosEndpoints
                     .Include(u => u.Persona)
                     .Include(u => u.Rol)
                     .Include(u => u.Carrera)
+                    .Include(u => u.PlanEstudio)
                     .SingleOrDefaultAsync(u => u.Id == id);
-                if (usuario is null || usuario.RolId == RolesSistema.SecretarioId)
+                if (usuario is null)
                     return Results.NotFound();
 
                 if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Apellido))
@@ -228,6 +334,7 @@ public static class GestionUsuariosEndpoints
                     return Results.Conflict(new { mensaje = "Ese nombre de usuario ya está en uso." });
 
                 Carrera? carrera = null;
+                PlanEstudio? planEstudio = null;
                 if (usuario.RolId == RolesSistema.EstudianteId)
                 {
                     if (!dto.CarreraId.HasValue)
@@ -235,6 +342,19 @@ public static class GestionUsuariosEndpoints
                     carrera = await context.Set<Carrera>().SingleOrDefaultAsync(c => c.IdCarrera == dto.CarreraId.Value);
                     if (carrera is null)
                         return Results.BadRequest(new { mensaje = "La carrera indicada no existe." });
+                    if (usuario.CarreraId != carrera.IdCarrera && !carrera.Activa)
+                        return Results.Conflict(new { mensaje = "La carrera seleccionada está inactiva y no admite nuevos estudiantes." });
+                    if (dto.PlanEstudioId.HasValue)
+                        planEstudio = await context.PlanesEstudio.SingleOrDefaultAsync(p =>
+                            p.Id == dto.PlanEstudioId.Value && p.CarreraId == carrera.IdCarrera);
+                    else if (usuario.CarreraId == carrera.IdCarrera && usuario.PlanEstudioId.HasValue)
+                        planEstudio = await context.PlanesEstudio.SingleOrDefaultAsync(p =>
+                            p.Id == usuario.PlanEstudioId.Value);
+                    else
+                        planEstudio = await context.PlanesEstudio.SingleOrDefaultAsync(p =>
+                            p.CarreraId == carrera.IdCarrera && p.Activo);
+                    if (planEstudio is null)
+                        return Results.BadRequest(new { mensaje = "Seleccioná un plan de estudios válido para la carrera." });
                     if (usuario.CarreraId != carrera.IdCarrera)
                     {
                         var tieneCursadasActivas = await context.EstudianteMaterias.AnyAsync(i =>
@@ -257,6 +377,7 @@ public static class GestionUsuariosEndpoints
                 usuario.TelefonoContacto = dto.TelefonoContacto.Trim();
                 usuario.Estado = estado;
                 usuario.CarreraId = carrera?.IdCarrera;
+                usuario.PlanEstudioId = planEstudio?.Id;
                 usuario.Especialidad = usuario.RolId == RolesSistema.DocenteId ? dto.Especialidad.Trim() : string.Empty;
                 usuario.TituloAcademico = usuario.RolId == RolesSistema.DocenteId ? dto.TituloAcademico.Trim() : string.Empty;
                 usuario.Persona.Nombre = NormalizadorDatos.NombrePropio(dto.Nombre);
@@ -270,6 +391,7 @@ public static class GestionUsuariosEndpoints
 
                 await context.SaveChangesAsync();
                 usuario.Carrera = carrera;
+                usuario.PlanEstudio = planEstudio;
                 return Results.Ok(MapearUsuario(usuario));
             }
             catch (ArgumentException ex)
@@ -282,57 +404,6 @@ public static class GestionUsuariosEndpoints
             }
         });
 
-        group.MapDelete("/{id:int}", async (int id, AppDbContext context) =>
-        {
-            var usuario = await context.Usuarios
-                .Include(u => u.Persona)
-                .SingleOrDefaultAsync(u => u.Id == id);
-            if (usuario is null || usuario.RolId == RolesSistema.SecretarioId)
-                return Results.NotFound(new { mensaje = "El usuario indicado no existe o no puede eliminarse." });
-
-            var tieneHistorial = usuario.RolId switch
-            {
-                RolesSistema.EstudianteId =>
-                    await context.EstudianteMaterias.AnyAsync(i => i.IdEstudiante == id) ||
-                    await context.Set<NotaExamen>().AnyAsync(n => n.IdEstudiante == id) ||
-                    await context.InscripcionesExamenes.AnyAsync(i => i.EstudianteId == id),
-                RolesSistema.DocenteId =>
-                    await context.EstudianteMaterias.AnyAsync(i => i.IdDocente == id) ||
-                    await context.Set<Asistencia>().AnyAsync(a => a.IdDocente == id) ||
-                    await context.Set<Examen>().AnyAsync(e => e.IdDocente == id) ||
-                    await context.RegistrosAsistenciaPersonal.AnyAsync(r => r.UsuarioId == id),
-                _ => false
-            };
-
-            if (tieneHistorial)
-                return Results.Conflict(new
-                {
-                    mensaje = "El usuario tiene historial académico o de asistencia y no puede borrarse. Cambiá su estado a Inactivo para conservar los registros institucionales."
-                });
-
-            try
-            {
-                await using var transaccion = await context.Database.BeginTransactionAsync();
-                context.NotificacionesGenerales.RemoveRange(
-                    context.NotificacionesGenerales.Where(n => n.UsuarioDestinoId == id));
-                if (usuario.RolId == RolesSistema.DocenteId)
-                    context.DocentesMaterias.RemoveRange(
-                        context.DocentesMaterias.Where(dm => dm.IdDocente == id));
-
-                context.Usuarios.Remove(usuario);
-                context.Personas.Remove(usuario.Persona);
-                await context.SaveChangesAsync();
-                await transaccion.CommitAsync();
-                return Results.Ok(new { mensaje = "El usuario fue eliminado correctamente." });
-            }
-            catch (DbUpdateException)
-            {
-                return Results.Conflict(new
-                {
-                    mensaje = "El usuario está relacionado con registros institucionales y no puede borrarse. Cambiá su estado a Inactivo."
-                });
-            }
-        });
     }
 
     private static UsuarioGestionDto MapearUsuario(Usuario usuario) => new()
@@ -354,6 +425,8 @@ public static class GestionUsuariosEndpoints
         Rol = usuario.Rol.Nombre,
         Estado = usuario.Estado.ToString(),
         CarreraId = usuario.CarreraId,
+        PlanEstudioId = usuario.PlanEstudioId,
+        PlanEstudio = usuario.PlanEstudio?.Codigo ?? string.Empty,
         Carrera = usuario.Carrera?.Nombre ?? string.Empty,
         Legajo = usuario.Legajo,
         Especialidad = usuario.Especialidad,

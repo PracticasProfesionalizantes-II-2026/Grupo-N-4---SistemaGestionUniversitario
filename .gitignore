@@ -1,0 +1,23 @@
+# Compilados de .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Configuración local y secretos
+*.Development.local.json
+.env
+.env.*
+!.env.example
+
+# Archivos subidos por usuarios
+**/wwwroot/uploads/
+
+# Herramientas e IDE
+.vs/
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

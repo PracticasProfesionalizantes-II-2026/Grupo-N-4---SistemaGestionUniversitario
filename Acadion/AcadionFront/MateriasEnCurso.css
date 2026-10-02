@@ -1,3 +1,212 @@
-/* MateriasEnCurso.css: estilos compartidos y apariencia de la pantalla. */
-@import url("Comun.css");
+@import url("Comun.css?v=20261001-4");
 
+body {
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.modern-report-content {
+  position: relative;
+  left: 8px;
+}
+
+.history-title {
+  margin-bottom: 18px;
+}
+
+.current-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 26px 28px;
+  border: 1px solid #dedede;
+  border-radius: 22px;
+  background: #fff;
+}
+
+.current-heading h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(32px, 4vw, 46px);
+}
+
+.current-heading p:not(.section-kicker) {
+  margin: 0;
+  color: #666;
+}
+
+.cycle-badge,
+.course-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 1px solid #f0a000;
+  border-radius: 999px;
+  background: #fff5d8;
+  color: #6d4800;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cycle-badge {
+  min-width: 118px;
+  padding: 11px 16px;
+  gap: 4px;
+}
+
+.current-course {
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid #dedede;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 28px #0000000a;
+}
+
+.current-course-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 26px 18px;
+  border-bottom: 1px solid #ececec;
+  background: linear-gradient(105deg, #fff 0%, #fffaf0 100%);
+}
+
+.current-course-header h2 {
+  margin: 4px 0 0;
+  font-size: 26px;
+}
+
+.course-year {
+  margin: 0;
+  color: #a96e00;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.course-details,
+.course-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px 26px 0;
+}
+
+.course-detail,
+.course-metric {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #ededed;
+  border-radius: 14px;
+  background: #f5f5f5;
+}
+
+.course-detail {
+  border-left: 4px solid #f3a200;
+  background: #fafafa;
+}
+
+.course-detail span,
+.course-metric span {
+  display: block;
+  margin-bottom: 5px;
+  color: #686868;
+  font-size: 12px;
+}
+
+.course-detail strong,
+.course-metric strong {
+  display: block;
+  line-height: 1.35;
+  white-space: pre-line;
+}
+
+.course-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.course-metric:nth-child(1) { background: #f0f8ff; }
+.course-metric:nth-child(2) { background: #fff8e8; }
+.course-metric:nth-child(3) { background: #f3f8f2; }
+
+.course-evaluations {
+  padding: 22px 26px 26px;
+}
+
+.course-evaluations h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.course-evaluations .table-wrapper {
+  border: 1px solid #e2e2e2;
+  border-radius: 14px;
+}
+
+.course-evaluations table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.course-evaluations th,
+.course-evaluations td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #e7e7e7;
+  text-align: left;
+  font-size: 13px;
+}
+
+.course-evaluations th {
+  background: #eef9fd;
+}
+
+.course-evaluations tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.course-evaluations tbody tr:hover {
+  background: #fff7e8;
+}
+
+.course-evaluations tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.course-empty {
+  margin: 0;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f7f7f7;
+  color: #666;
+}
+
+#reportContent > .report-empty {
+  padding: 42px 28px;
+  border-radius: 20px;
+}
+
+@media (max-width: 900px) {
+  .course-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .course-metrics { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .modern-report-content { left: 0; }
+  .current-heading,
+  .current-course-header { align-items: stretch; flex-direction: column; }
+  .cycle-badge,
+  .course-status { align-self: flex-start; }
+  .course-details { grid-template-columns: 1fr; }
+  .current-course-header,
+  .course-details,
+  .course-metrics,
+  .course-evaluations { padding-left: 18px; padding-right: 18px; }
+}

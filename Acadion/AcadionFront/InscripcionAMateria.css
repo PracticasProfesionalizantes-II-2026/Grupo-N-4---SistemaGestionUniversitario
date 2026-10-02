@@ -2,14 +2,8 @@
 
 .enrollment-main { padding: 12px 10px; }
 .enrollment-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 76px;
-  padding: 10px 20px;
-  border: 1px solid #ebebeb;
-  border-radius: 18px;
-  background: var(--blanco);
+  border: 0;
+  background: transparent;
 }
 .topbar-actions { display: flex; align-items: center; gap: 16px; }
 .back-to-home {
@@ -30,7 +24,7 @@
 .enrollment-panel {
   min-height: calc(100vh - 122px);
   padding: 36px;
-  margin-top: 18px;
+  margin-top: 0;
   border: 1px solid #ebebeb;
   border-radius: 18px;
   background: var(--blanco);
@@ -97,4 +91,25 @@
   .enrollment-panel { min-height: 0; padding: 24px 18px; }
   .subject-card { align-items: flex-start; flex-direction: column; padding: 19px; }
   .enroll-button { width: 100%; }
+}
+.commission-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  max-width: 620px;
+  font-weight: 700;
+}
+
+.commission-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+
+.commission-field small {
+  color: #666;
+  font-weight: 400;
 }

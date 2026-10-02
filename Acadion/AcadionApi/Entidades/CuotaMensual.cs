@@ -13,5 +13,13 @@ public class CuotaMensual
     public DateTime? FechaPago { get; set; }
     [MaxLength(500)]
     public string ComprobanteUrl { get; set; } = string.Empty;
+    public decimal Importe { get; set; }
+    [MaxLength(40)]
+    public string MetodoPago { get; set; } = string.Empty;
+    public int? ValidadoPorUsuarioId { get; set; }
+    public Usuario? ValidadoPor { get; set; }
+    public DateTime? FechaValidacionUtc { get; set; }
+    [MaxLength(500)]
+    public string Observaciones { get; set; } = string.Empty;
     public DateTime FechaCreacionUtc { get; set; } = DateTime.UtcNow;
 }

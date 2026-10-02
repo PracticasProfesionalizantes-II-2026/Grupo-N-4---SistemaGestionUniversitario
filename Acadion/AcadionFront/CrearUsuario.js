@@ -13,12 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const result = document.getElementById("credentialResult");
   const button = form.querySelector("button[type='submit']");
   const careerSelect = document.getElementById("studentCareer");
+  const planSelect = document.getElementById("studentPlan");
   let careers = [];
 
   if (careerSelect) {
     AcadionApi.request("/carreras/").then(data => {
-      careers = data;
-      data.forEach(career => {
+      careers = data.filter(career => career.activa !== false);
+      careers.forEach(career => {
         const available = career.estudiantesInscriptos < career.capacidadMaximaEstudiantes;
         const item = document.createElement("option");
         item.value = career.idCarrera;
@@ -36,6 +37,21 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("careerCapacity").textContent = selected
         ? `Cupo disponible: ${selected.capacidadMaximaEstudiantes - selected.estudiantesInscriptos} de ${selected.capacidadMaximaEstudiantes}.`
         : "Seleccioná la carrera a la que pertenecerá el estudiante.";
+      if (planSelect) {
+        planSelect.replaceChildren();
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "Seleccionar plan";
+        planSelect.append(empty);
+        (selected?.planes || []).forEach(plan => {
+          const item = document.createElement("option");
+          item.value = plan.id;
+          item.textContent = `${plan.codigo}${plan.activo ? " · vigente" : " · histórico"}`;
+          item.selected = plan.activo;
+          planSelect.append(item);
+        });
+        planSelect.disabled = !selected || !selected.planes?.length;
+      }
     });
   }
 
@@ -47,9 +63,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const personName = /^[\p{L}\p{M}]+(?:[ -][\p{L}\p{M}]+)*$/u;
     const academicText = /^[\p{L}\p{M}\p{N} .()/\-]+$/u;
     const fields = form.elements;
+    const locality = fields.localidad?.value.trim() || "";
     const invalidIdentity = !personName.test(fields.nombre.value.trim()) ||
       !personName.test(fields.apellido.value.trim()) ||
-      !academicText.test(fields.localidad.value.trim());
+      (locality !== "" && !academicText.test(locality));
     const invalidTeacherProfile = roleId === 2 &&
       (!academicText.test(fields.especialidad.value.trim()) ||
        !academicText.test(fields.tituloAcademico.value.trim()));
@@ -64,12 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const payload = {
       nombre: fields.nombre.value.trim(), apellido: fields.apellido.value.trim(),
       dni: Number(fields.dni.value), fechaNacimiento: fields.fechaNacimiento.value,
-      direccion: fields.direccion.value.trim(), localidad: fields.localidad.value.trim(),
-      codigoPostal: Number(fields.codigoPostal.value),
-      emailPersonal: fields.emailPersonal.value.trim(),
+      direccion: fields.direccion?.value.trim() || "", localidad: locality,
+      codigoPostal: Number(fields.codigoPostal?.value || 0),
+      emailPersonal: fields.emailPersonal?.value.trim() || "",
       emailInstitucional: fields.emailInstitucional.value.trim(),
       telefonoContacto: fields.telefonoContacto.value.trim(), rolId: roleId,
       carreraId: fields.carreraId?.value ? Number(fields.carreraId.value) : null,
+      planEstudioId: fields.planEstudioId?.value ? Number(fields.planEstudioId.value) : null,
       estadoMatriculaInicial: fields.estadoMatriculaInicial?.value || "PENDIENTE",
       estadoCuotaActual: fields.estadoCuotaActual?.value || "PENDIENTE",
       especialidad: fields.especialidad?.value.trim() || "",

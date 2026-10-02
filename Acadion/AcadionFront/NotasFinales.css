@@ -1,0 +1,70 @@
+@import url("Comun.css?v=20261001-4");
+
+.modern-report-content {
+  position: relative;
+  left: 0;
+}
+
+.history-title {
+  margin-bottom: 18px;
+}
+
+.report-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 24px 26px;
+  border: 1px solid #dedede;
+  border-radius: 22px;
+  background: white;
+}
+
+.report-heading h1 {
+  margin: 4px 0 6px;
+}
+
+.report-description {
+  margin: 0;
+  color: #686868;
+}
+
+.report-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-filters .filter {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.report-filters select {
+  min-width: 170px;
+}
+
+.grade-group {
+  margin-bottom: 18px;
+}
+
+.grade-group h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 820px) {
+  .modern-report-content { left: 0; }
+  .report-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .report-filters,
+  .report-filters .filter,
+  .report-filters select {
+    width: 100%;
+  }
+}

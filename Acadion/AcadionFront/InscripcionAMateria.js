@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  Acadion.iniciarPantalla();
   const session = AcadionApi.getSession();
-  if (!session?.token) {
+  if (!session?.usuarioId) {
     window.location.replace("Login.html");
     return;
   }
@@ -25,22 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function hideAlert() { alertModal.classList.add("is-hidden"); }
-
-  function getProfileName(profile) {
-    return [profile.nombre, profile.apellido].filter(Boolean).join(" ") || session.nombreUsuario || "Estudiante";
-  }
-
-  async function loadProfile() {
-    try {
-      const profile = await AcadionApi.request("/api/me/perfil");
-      const name = getProfileName(profile);
-      const image = document.getElementById("profileImage");
-      image.src = profile.fotoPerfilUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff7a00&color=fff&bold=true`;
-      image.alt = `Foto de perfil de ${name}`;
-    } catch {
-      // Si el perfil no está disponible se conserva el avatar neutral.
-    }
-  }
 
   function formatSchedules(schedules) {
     if (!Array.isArray(schedules) || schedules.length === 0) return "Horario a confirmar";
@@ -76,6 +61,32 @@ document.addEventListener("DOMContentLoaded", () => {
     details.append(teacher, document.createTextNode(` · ${subject.modalidad} · ${formatSchedules(subject.horarios)}`));
     content.append(title, details);
 
+    let commissionSelect = null;
+    const commissions = Array.isArray(subject.comisiones) ? subject.comisiones : [];
+    if (commissions.length) {
+      const commissionField = document.createElement("label");
+      commissionField.className = "commission-field";
+      commissionField.append(document.createTextNode("Comisión"));
+      commissionSelect = document.createElement("select");
+      commissions.forEach(commission => {
+        const option = document.createElement("option");
+        option.value = commission.comisionId;
+        option.textContent = `${commission.nombre} · ${commission.turno} · ${commission.vacantes} vacantes${commission.cupoCompleto ? " (lista de espera)" : ""}`;
+        commissionSelect.append(option);
+      });
+      const commissionDetail = document.createElement("small");
+      const renderCommission = () => {
+        const selected = commissions.find(item => item.comisionId === Number(commissionSelect.value));
+        commissionDetail.textContent = selected
+          ? `${selected.docente} · ${formatSchedules(selected.horarios)}`
+          : "Seleccioná una comisión";
+      };
+      commissionSelect.addEventListener("change", renderCommission);
+      commissionField.append(commissionSelect, commissionDetail);
+      content.append(commissionField);
+      renderCommission();
+    }
+
     const pending = Array.isArray(subject.correlativasPendientes) ? subject.correlativasPendientes : [];
     if (pending.length) {
       const requirements = document.createElement("p"); requirements.className = "subject-requirements";
@@ -86,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const button = document.createElement("button"); button.type = "button"; button.className = "enroll-button";
     if (subject.habilitada) {
       button.textContent = "Inscribirse";
-      button.addEventListener("click", () => enrollSubject(subject, button, card));
+      button.addEventListener("click", () => enrollSubject(subject, button, card, commissionSelect));
     } else {
       button.textContent = "Ver requisitos";
       button.classList.add("requirements");
@@ -122,19 +133,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function enrollSubject(subject, button, card) {
+  async function enrollSubject(subject, button, card, commissionSelect) {
     button.disabled = true;
     button.textContent = "Inscribiendo...";
     try {
-      await AcadionApi.request("/api/me/inscripciones", {
+      const response = await AcadionApi.request("/api/me/inscripciones", {
         method: "POST",
-        body: JSON.stringify({ materiaId: subject.materiaId })
+        body: JSON.stringify({
+          materiaId: subject.materiaId,
+          comisionId: commissionSelect ? Number(commissionSelect.value) : null
+        })
       });
       card.remove();
       const remaining = subjectsList.children.length;
       subjectsCount.textContent = `${remaining} materia${remaining === 1 ? "" : "s"} disponible${remaining === 1 ? "" : "s"}`;
       if (remaining === 0) showEmpty();
-      showAlert("Inscripción exitosa", `Te inscribiste correctamente a ${subject.nombre}.`, true);
+      showAlert(response?.enListaEspera ? "Solicitud registrada" : "Inscripción exitosa",
+        response?.mensaje || `Te inscribiste correctamente a ${subject.nombre}.`, true);
     } catch (error) {
       button.disabled = false;
       button.textContent = "Inscribirse";
@@ -146,11 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("acceptAlert").addEventListener("click", hideAlert);
   alertModal.addEventListener("click", event => { if (event.target === alertModal) hideAlert(); });
   document.addEventListener("keydown", event => { if (event.key === "Escape") hideAlert(); });
-  document.querySelector(".notification-button").addEventListener("click", () => { window.location.href = "Notificaciones.html"; });
-  document.getElementById("profileImage").addEventListener("click", () => { window.location.href = "MisDatosPersonales.html"; });
-  document.getElementById("logoutButton").addEventListener("click", () => { AcadionApi.clearSession(); window.location.href = "Login.html"; });
-
-  loadProfile();
   loadEnrollmentWindow();
   loadSubjects();
 });

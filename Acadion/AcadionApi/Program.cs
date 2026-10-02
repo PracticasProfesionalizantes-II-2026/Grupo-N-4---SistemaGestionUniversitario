@@ -8,6 +8,9 @@ using AcadionApi.Seguridad;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +21,12 @@ builder.Logging.AddDebug();
 
 // Servicios
 builder.Services.AddOpenApi();
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    var clavesPrueba = new DirectoryInfo(Path.Combine(Path.GetTempPath(), "AcadionTests", "data-protection"));
+    clavesPrueba.Create();
+    builder.Services.AddDataProtection().PersistKeysToFileSystem(clavesPrueba);
+}
 
 var jwt = builder.Configuration.GetSection(JwtOptions.Seccion).Get<JwtOptions>()
     ?? throw new InvalidOperationException("Falta la configuración JWT.");
@@ -39,15 +48,71 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
             ClockSkew = TimeSpan.FromMinutes(1)
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (string.IsNullOrEmpty(context.Token) &&
+                    context.Request.Cookies.TryGetValue("acadion_access", out var cookieToken))
+                    context.Token = cookieToken;
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 8,
+            Window = TimeSpan.FromMinutes(5),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        }));
+    options.AddPolicy("recuperacion", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        }));
+});
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.Seccion));
+builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+var rutaPerfiles = builder.Configuration["Uploads:RutaPerfiles"];
+if (string.IsNullOrWhiteSpace(rutaPerfiles))
+{
+    var raizPersistente = Environment.GetEnvironmentVariable("HOME");
+    if (string.IsNullOrWhiteSpace(raizPersistente))
+        raizPersistente = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    rutaPerfiles = Path.Combine(raizPersistente, "Acadion", "perfiles");
+}
+Directory.CreateDirectory(rutaPerfiles);
+builder.Services.AddSingleton(new PerfilStorage(rutaPerfiles));
+var rutaDocumentos = builder.Configuration["Uploads:RutaDocumentos"];
+if (string.IsNullOrWhiteSpace(rutaDocumentos))
+{
+    var raizDocumentos = builder.Environment.IsEnvironment("Testing")
+        ? Path.Combine(Path.GetTempPath(), "AcadionTests", Guid.NewGuid().ToString("N"))
+        : Environment.GetEnvironmentVariable("HOME");
+    if (string.IsNullOrWhiteSpace(raizDocumentos))
+        raizDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    rutaDocumentos = Path.Combine(raizDocumentos, "Acadion", "documentos");
+}
+builder.Services.AddSingleton(new DocumentoStorage(rutaDocumentos));
 var permitirArchivosLocales = builder.Environment.IsDevelopment();
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .SetIsOriginAllowed(origin =>
         (permitirArchivosLocales && origin == "null") ||
         (Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback))
     .AllowAnyHeader()
-    .AllowAnyMethod()));
+    .AllowAnyMethod()
+    .AllowCredentials()));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
@@ -101,6 +166,32 @@ builder.Services.AddScoped<IHorarioMateriaRepositorio, HorarioMateriaRepositorio
 
 var app = builder.Build();
 
+var redireccionesPantallasAntiguas = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+{
+    ["/PanelDirectivo.html"] = "/",
+    ["/Profesores.html"] = "/GestionUsuarios.html",
+    ["/Secretarios.html"] = "/GestionUsuarios.html",
+    ["/Estudiantes.html"] = "/GestionUsuarios.html",
+    ["/Materia.html"] = "/GestionMaterias.html",
+    ["/Clases.html"] = "/GestionMaterias.html",
+    ["/CrearClase.html"] = "/GestionMaterias.html",
+    ["/Calificaciones.html"] = "/GestionMaterias.html",
+    ["/Asistencia.html"] = "/GestionMaterias.html",
+    ["/Reuniones.html"] = "/PanelSecretaria.html",
+    ["/CrearReunion.html"] = "/PanelSecretaria.html"
+};
+
+app.Use(async (http, siguiente) =>
+{
+    if (HttpMethods.IsGet(http.Request.Method) &&
+        redireccionesPantallasAntiguas.TryGetValue(http.Request.Path, out var destino))
+    {
+        http.Response.Redirect(destino, permanent: false);
+        return;
+    }
+    await siguiente();
+});
+
 
 // Pipeline
 if (app.Environment.IsDevelopment())
@@ -117,31 +208,57 @@ if (!app.Environment.IsDevelopment())
 app.UseDefaultFiles();
 app.UseCors();
 app.UseStaticFiles();
+if (app.Environment.IsDevelopment())
+{
+    var rutaFrontDesarrollo = Path.GetFullPath(Path.Combine(
+        app.Environment.ContentRootPath, "..", "AcadionFront"));
+    if (!Directory.Exists(rutaFrontDesarrollo))
+        throw new DirectoryNotFoundException(
+            $"No se encontró el frontend de Acadion en '{rutaFrontDesarrollo}'.");
+
+    var proveedorFrontDesarrollo = new PhysicalFileProvider(rutaFrontDesarrollo);
+    app.UseDefaultFiles(new DefaultFilesOptions
+    {
+        FileProvider = proveedorFrontDesarrollo
+    });
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = proveedorFrontDesarrollo,
+        OnPrepareResponse = context =>
+        {
+            context.Context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+            context.Context.Response.Headers.Pragma = "no-cache";
+            context.Context.Response.Headers.Expires = "0";
+        }
+    });
+}
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(rutaPerfiles),
+    RequestPath = "/uploads/perfiles"
+});
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<AuditoriaMiddleware>();
+app.UseMiddleware<ValidacionEntradaMiddleware>();
 
 
 // Endpoints
-// Usuarios
-app.MapUsuarioEndpoints();
-// Personas
-app.MapPersonaEndpoints();
 // Login
 app.MapLoginEndpoints();
 // Materias
 app.MapMateriaEndpoints();
 // Inscripciones
 app.MapEstudianteMateriaEndpoints();
-// Anios
-app.MapAnioEndpoints();
 // Carreras
 app.MapCarreraEndpoints();
-// Asistencias
-app.MapAsistenciaEndpoints();
-// Exámenes
-app.MapExamenEndpoints();
-// Notas
-app.MapNotaExamenEndpoints();
+app.MapPlanEstudioEndpoints();
+app.MapComisionEndpoints();
+app.MapCalendarioEndpoints();
+app.MapTurnosExamenFinalEndpoints();
+app.MapEquivalenciasEndpoints();
+app.MapDocumentosEndpoints();
 // Horarios
 app.MapHorarioMateriaEndpoints();
 // Gestión segura de cuentas, estructura académica y portales por rol
@@ -152,19 +269,26 @@ app.MapPortalEndpoints();
 app.MapRolesEndpoints();
 app.MapNotificacionesEndpoints();
 app.MapPagosEndpoints();
+app.MapDirectivoEndpoints();
+app.MapAuditoriaEndpoints();
 
 try
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await context.Database.MigrateAsync();
+    if (builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+        await context.Database.MigrateAsync();
+    else if (!await context.Database.CanConnectAsync())
+        throw new InvalidOperationException("No fue posible conectar con la base de datos.");
     await NotificacionAutomaticaService.ReprogramarPendientesAsync(context);
 }
 catch (Exception error)
 {
     app.Logger.LogCritical(error,
-        "No fue posible aplicar las migraciones o reconciliar las notificaciones automáticas al iniciar.");
+        "No fue posible validar la base o reconciliar las notificaciones automáticas al iniciar.");
     throw;
 }
 
 app.Run();
+
+public partial class Program;

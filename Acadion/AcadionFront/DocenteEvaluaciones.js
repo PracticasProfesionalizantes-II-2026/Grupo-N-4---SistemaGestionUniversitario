@@ -7,7 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const editPanel = document.getElementById("examEditPanel");
   const editForm = document.getElementById("examEditForm");
   const subjectSelect = document.getElementById("evaluationSubject");
+  const recoveryOriginal = document.getElementById("recoveryOriginal");
+  const recoveryOriginalField = document.getElementById("recoveryOriginalField");
   const finalSubject = document.getElementById("finalSubject");
+  const finalTurn = document.getElementById("finalTurn");
   const subjectFilter = document.getElementById("examSubjectFilter");
   const tableBody = document.getElementById("evaluationTableBody");
   const finalSubjectList = document.getElementById("finalSubjectList");
@@ -21,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let subjects = [];
   let exams = [];
+  let finalTurns = [];
   let selectedExam = null;
   let selectedEditExam = null;
   const expandedSubjects = new Set();
@@ -120,6 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
       badge.className = "badge active";
       badge.textContent = examType(exam.tipoExamen);
       typeCell.append(badge);
+      if (exam.tipoExamen === "Recuperatorio" && exam.evaluacionRecuperada) {
+        const reference = document.createElement("small");
+        reference.className = "exam-reference";
+        reference.textContent = `Recupera ${examType(exam.evaluacionRecuperada)} del ${formatDate(exam.fechaEvaluacionRecuperada)}`;
+        typeCell.append(reference);
+      }
       row.insertCell().textContent = exam.materia || "—";
       row.insertCell().textContent = formatDate(exam.fecha);
       row.insertCell().textContent = exam.cicloLectivo;
@@ -179,7 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const finalTitle = document.createElement("strong");
           finalTitle.textContent = `Final del ${formatDate(exam.fecha)}`;
           const finalMeta = document.createElement("small");
-          finalMeta.textContent = `${exam.cantidadInscriptos ?? 0} estudiantes inscriptos · ${exam.cantidadNotas ?? 0} notas cargadas`;
+          const turnLabel = exam.turnoFinal ? `${exam.turnoFinal} · ${exam.numeroLlamado}.º llamado · ` : "";
+          finalMeta.textContent = `${turnLabel}${exam.cantidadInscriptos ?? 0} estudiantes inscriptos · ${exam.cantidadNotas ?? 0} notas cargadas`;
           info.append(finalTitle, finalMeta);
           const actions = document.createElement("div"); actions.className = "final-exam-actions";
           actions.append(
@@ -203,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyRow(tableBody, "Cargando evaluaciones...", 6);
     try {
       exams = await AcadionApi.request("/api/docente/examenes");
+      updateRecoverySelector();
       renderAll();
       if (!preserveMessage) showMessage("");
     } catch (error) {
@@ -323,6 +335,50 @@ document.addEventListener("DOMContentLoaded", () => {
       subjectSelect.value = assignmentValue(initial);
       finalSubject.value = assignmentValue(initial);
       if (requestedId) subjectFilter.value = assignmentValue(initial);
+      loadFinalTurns(initial.cicloLectivo);
+    }
+    updateRecoverySelector();
+  }
+
+  function updateRecoverySelector() {
+    const isRecovery = form.tipoExamen.value === "Recuperatorio";
+    recoveryOriginalField.hidden = !isRecovery;
+    recoveryOriginal.required = isRecovery;
+    recoveryOriginal.disabled = !isRecovery;
+    if (!isRecovery) {
+      recoveryOriginal.value = "";
+      return;
+    }
+
+    const assignment = parseAssignment(subjectSelect.value);
+    const previous = recoveryOriginal.value;
+    const candidates = assignment ? exams.filter(exam =>
+      exam.idMateria === assignment.materiaId &&
+      exam.cicloLectivo === assignment.cicloLectivo &&
+      exam.tipoExamen !== "Final" && exam.tipoExamen !== "Recuperatorio" &&
+      !exams.some(item => item.examenRecuperadoId === exam.idExamen)) : [];
+    recoveryOriginal.replaceChildren(option("", candidates.length
+      ? "Seleccionar evaluación"
+      : "No hay evaluaciones disponibles"));
+    candidates.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(exam =>
+      recoveryOriginal.append(option(exam.idExamen,
+        `${examType(exam.tipoExamen)} · ${formatDate(exam.fecha)}`)));
+    if (candidates.some(exam => String(exam.idExamen) === previous))
+      recoveryOriginal.value = previous;
+  }
+
+  async function loadFinalTurns(cycle) {
+    finalTurn.replaceChildren(option("", "Cargando turnos..."));
+    finalTurn.disabled = true;
+    try {
+      finalTurns = await AcadionApi.request(`/api/turnos-final/?cicloLectivo=${cycle}&incluirInactivos=false`);
+      finalTurn.replaceChildren(option("", finalTurns.length ? "Seleccionar turno" : "No hay turnos habilitados"));
+      finalTurns.forEach(turn => finalTurn.append(option(turn.id,
+        `${turn.nombre} · ${turn.numeroLlamado}.º llamado (${formatDate(turn.fechaInicioUtc)} al ${formatDate(turn.fechaFinUtc)})`)));
+      finalTurn.disabled = !finalTurns.length;
+    } catch (error) {
+      finalTurn.replaceChildren(option("", "No se pudieron cargar los turnos"));
+      showMessage(error.message, true);
     }
   }
 
@@ -338,10 +394,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function createExam(assignment, type, date) {
+  async function createExam(assignment, type, date, turnId = null, recoveredExamId = null) {
+    const examDate = type === "Final" ? new Date(date).toISOString() : dateTimePayload(date);
     return AcadionApi.request("/api/docente/examenes", {
       method: "POST",
-      body: JSON.stringify({ idMateria: assignment.materiaId, cicloLectivo: assignment.cicloLectivo, fecha: dateTimePayload(date), tipoExamen: type })
+      body: JSON.stringify({ idMateria: assignment.materiaId, cicloLectivo: assignment.cicloLectivo, fecha: examDate, tipoExamen: type, turnoExamenFinalId: turnId, examenRecuperadoId: recoveredExamId })
     });
   }
 
@@ -349,9 +406,14 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     const assignment = parseAssignment(subjectSelect.value);
     if (!assignment) return showMessage("Seleccioná la materia de la evaluación.", true);
+    const recoveredExamId = form.tipoExamen.value === "Recuperatorio"
+      ? Number(recoveryOriginal.value)
+      : null;
+    if (form.tipoExamen.value === "Recuperatorio" && !recoveredExamId)
+      return showMessage("Seleccioná qué evaluación recupera.", true);
     const button = form.querySelector('button[type="submit"]'); button.disabled = true;
     try {
-      await createExam(assignment, form.tipoExamen.value, form.fecha.value);
+      await createExam(assignment, form.tipoExamen.value, form.fecha.value, null, recoveredExamId);
       subjectFilter.value = subjectSelect.value;
       setCreatePanel(false);
       showMessage("La evaluación se creó correctamente.");
@@ -364,9 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     const assignment = parseAssignment(finalSubject.value);
     if (!assignment) return showMessage("Seleccioná la materia del examen final.", true);
+    if (!finalTurn.value) return showMessage("Seleccioná el turno y llamado del examen final.", true);
     const button = finalForm.querySelector('button[type="submit"]'); button.disabled = true;
     try {
-      await createExam(assignment, "Final", finalForm.fecha.value);
+      await createExam(assignment, "Final", finalForm.fecha.value, Number(finalTurn.value));
       expandedSubjects.add(assignmentValue(assignment));
       setFinalForm(false);
       showMessage("El examen final se programó correctamente.");
@@ -378,10 +441,13 @@ document.addEventListener("DOMContentLoaded", () => {
   editForm.addEventListener("submit", async event => {
     event.preventDefault();
     if (!selectedEditExam) return;
+    if (!window.confirm(`¿Modificar la fecha de ${examType(selectedEditExam.tipoExamen).toLowerCase()} de ${selectedEditExam.materia}?`)) return;
     const button = editForm.querySelector('button[type="submit"]'); button.disabled = true;
     try {
       await AcadionApi.request(`/api/docente/examenes/${selectedEditExam.idExamen}/fecha`, {
-        method: "PUT", body: JSON.stringify({ fecha: dateTimePayload(document.getElementById("editExamDate").value) })
+        method: "PUT", body: JSON.stringify({ fecha: selectedEditExam.tipoExamen === "Final"
+          ? new Date(document.getElementById("editExamDate").value).toISOString()
+          : dateTimePayload(document.getElementById("editExamDate").value) })
       });
       editPanel.hidden = true; selectedEditExam = null;
       showMessage("La fecha se modificó correctamente.");
@@ -402,15 +468,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const rows = [...gradeBody.querySelectorAll("tr[data-student-id]")].filter(row => row.querySelector(".grade-input").value !== "");
     if (rows.some(row => { const value = Number(row.querySelector(".grade-input").value); return value < 0 || value > 10; }))
       return showMessage("Todas las notas deben estar entre 0 y 10.", true);
+    if (!window.confirm(`¿Guardar los criterios y ${rows.length} ${rows.length === 1 ? "nota" : "notas"}? Los cambios quedarán registrados en auditoría.`)) return;
 
     saveGrades.disabled = true; saveGrades.textContent = "Guardando...";
     try {
       await AcadionApi.request(`/api/docente/examenes/${selectedExam.idExamen}/criterios`, {
         method: "PUT",
+        feedback: false,
         body: JSON.stringify({ notaMinimaRegularizacion: regular, notaMinimaPromocion: selectedExam.esFinal ? null : promotion })
       });
       const results = await Promise.allSettled(rows.map(row => AcadionApi.request("/api/docente/notas", {
         method: "POST",
+        feedback: false,
         body: JSON.stringify({
           idExamen: selectedExam.idExamen,
           idEstudiante: Number(row.dataset.studentId),
@@ -419,12 +488,22 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       })));
       const failed = results.filter(result => result.status === "rejected");
-      showMessage(failed.length ? `${failed.length} notas no pudieron guardarse.` : rows.length ? "Los criterios y las notas se guardaron correctamente." : "Los criterios se guardaron correctamente.", failed.length > 0);
+      const resultMessage = failed.length
+        ? `${results.length - failed.length} notas se guardaron y ${failed.length} no pudieron guardarse.`
+        : rows.length ? "Los criterios y las notas se guardaron correctamente." : "Los criterios se guardaron correctamente.";
+      showMessage(resultMessage, failed.length > 0);
+      AcadionApi.showFeedback(resultMessage, {
+        type: failed.length ? "error" : "success",
+        title: failed.length ? "Guardado incompleto" : "Notas actualizadas"
+      });
       if (!failed.length) {
         await loadGradebook({ ...selectedExam, materia: selectedExam.materia });
         await loadExams({ preserveMessage: true });
       }
-    } catch (error) { showMessage(error.message, true); }
+    } catch (error) {
+      showMessage(error.message, true);
+      AcadionApi.showFeedback(error.message, { type: "error" });
+    }
     finally { saveGrades.disabled = false; saveGrades.textContent = "Guardar criterios y notas"; }
   });
 
@@ -434,6 +513,20 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   regularGrade.addEventListener("input", updateConditions);
   promotionGrade.addEventListener("input", updateConditions);
+  finalSubject.addEventListener("change", () => {
+    const assignment = parseAssignment(finalSubject.value);
+    if (assignment) loadFinalTurns(assignment.cicloLectivo);
+  });
+  subjectSelect.addEventListener("change", updateRecoverySelector);
+  form.tipoExamen.addEventListener("change", updateRecoverySelector);
+  finalTurn.addEventListener("change", () => {
+    const selected = finalTurns.find(turn => turn.id === Number(finalTurn.value));
+    if (!selected) return;
+    finalForm.fecha.min = localDateTimeInputValue(selected.fechaInicioUtc);
+    finalForm.fecha.max = localDateTimeInputValue(selected.fechaFinUtc);
+    if (!finalForm.fecha.value || finalForm.fecha.value < finalForm.fecha.min || finalForm.fecha.value > finalForm.fecha.max)
+      finalForm.fecha.value = finalForm.fecha.min;
+  });
   subjectFilter.addEventListener("change", renderInternalExams);
   document.getElementById("toggleEvaluationForm").addEventListener("click", () => setCreatePanel(createPanel.hidden));
   document.getElementById("closeEvaluationForm").addEventListener("click", () => setCreatePanel(false));

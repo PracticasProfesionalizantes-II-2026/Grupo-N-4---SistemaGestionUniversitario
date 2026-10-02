@@ -24,6 +24,8 @@ public class Usuario
     // Los estudiantes pertenecen a una carrera. Para el resto de los roles es nulo.
     public int? CarreraId { get; set; }
     public Carrera? Carrera { get; set; }
+    public int? PlanEstudioId { get; set; }
+    public PlanEstudio? PlanEstudio { get; set; }
 
     // SECCIÓN TEMPORAL: Atributos específicos del diagrama
     
@@ -35,4 +37,5 @@ public class Usuario
     // Solo Docente
     public string Especialidad { get; set; } = string.Empty;
     public string TituloAcademico { get; set; } = string.Empty;
+    public ICollection<RecuperacionContrasena> RecuperacionesContrasena { get; set; } = new List<RecuperacionContrasena>();
 }

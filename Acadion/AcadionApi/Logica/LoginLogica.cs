@@ -67,8 +67,7 @@ namespace AcadionApi.Logica
 
         public async Task<bool> CambiarPasswordAsync(int usuarioId, CambiarPasswordDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.PasswordNueva) || dto.PasswordNueva.Length < 8)
-                throw new ArgumentException("La nueva contraseña debe tener al menos 8 caracteres.");
+            SeguridadContrasena.Validar(dto.PasswordNueva);
 
             if (string.IsNullOrEmpty(dto.PasswordActual))
                 return false;

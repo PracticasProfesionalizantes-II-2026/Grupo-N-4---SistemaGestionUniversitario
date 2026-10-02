@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Acadion | Mi perfil</title><link rel="stylesheet" href="MisDatosPersonales.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Acadion | Mi perfil</title><link rel="stylesheet" href="MisDatosPersonales.css?v=20261001-2"></head>
 <body data-section="student" data-page="MisDatosPersonales">
   <div class="app-layout"><aside class="sidebar" id="sidebar"></aside><main class="main-content">
     <header class="topbar"><a class="back-button" href="MenuPrincipal.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mi perfil"></a></div></header>
@@ -48,10 +48,14 @@
           <div class="panel-heading"><div><p class="section-kicker">Contactos cercanos</p><h2>Allegados</h2><p class="muted">Podés registrar hasta tres personas.</p></div><button id="addRelative" class="secondary-button compact-button" type="button">+ Agregar</button></div>
           <form id="relativesForm"><div id="relativesList" class="relatives-list"></div><p id="relativesEmpty" class="section-empty">Todavía no agregaste allegados.</p><div class="form-actions"><button class="primary-button" type="submit">Guardar allegados</button></div></form>
         </article>
+        <article class="panel profile-card">
+          <div class="panel-heading"><div><p class="section-kicker">Documentación</p><h2>Certificados y constancias</h2><p class="muted">Descargá documentos institucionales en PDF.</p></div></div>
+          <div class="document-actions"><a id="regularCertificate" class="secondary-button" href="#" download>Constancia de alumno regular</a><a id="academicHistory" class="secondary-button" href="#" download>Historial académico</a><a id="approvedSubjectsCertificate" class="secondary-button" href="#" download>Materias aprobadas</a></div>
+        </article>
       </section>
-      <section id="studentPasswordPanel" class="panel password-panel" hidden><div class="panel-heading"><div><p class="section-kicker">Seguridad</p><h2>Cambiar contraseña</h2></div><button id="closeStudentPassword" class="secondary-button compact-button" type="button">Cerrar</button></div><form id="studentPasswordForm"><label class="form-field">Contraseña actual<input name="actual" type="password" autocomplete="current-password" required></label><label class="form-field">Nueva contraseña<input name="nueva" type="password" minlength="8" autocomplete="new-password" required></label><label class="form-field">Confirmar contraseña<input name="confirmacion" type="password" minlength="8" autocomplete="new-password" required></label><div class="form-actions"><button class="primary-button" type="submit">Actualizar contraseña</button></div></form></section>
+      <section id="studentPasswordPanel" class="panel password-panel" hidden><div class="panel-heading"><div><p class="section-kicker">Seguridad</p><h2>Cambiar contraseña</h2></div><button id="closeStudentPassword" class="secondary-button compact-button" type="button">Cerrar</button></div><form id="studentPasswordForm"><label class="form-field">Contraseña actual<input name="actual" type="password" autocomplete="current-password" required></label><label class="form-field">Nueva contraseña<input name="nueva" type="password" minlength="10" autocomplete="new-password" required></label><label class="form-field">Confirmar contraseña<input name="confirmacion" type="password" minlength="10" autocomplete="new-password" required></label><div class="form-actions"><button class="primary-button" type="submit">Actualizar contraseña</button></div></form></section>
     </section>
   </main></div>
   <dialog id="statusDialog"><h2>Acadion</h2><p id="dialogMessage"></p><button id="closeDialog" class="primary-button">Entendido</button></dialog>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="MisDatosPersonales.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20261001-2"></script><script src="MisDatosPersonales.js?v=20260930-6"></script>
 </body></html>

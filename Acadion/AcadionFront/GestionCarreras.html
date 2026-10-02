@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acadion | Administrar carreras</title>
-  <link rel="stylesheet" href="GestionCarreras.css">
-  <link rel="stylesheet" href="Admin.css">
+  <link rel="stylesheet" href="GestionCarreras.css?v=20260930-6">
+  <link rel="stylesheet" href="Admin.css?v=20260930-6">
 </head>
 <body data-section="admin" data-page="GestionCarreras">
   <div class="app-layout">
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
-      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html">US</a></div></header>
+      <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver">←</a></header>
       <section class="page-content">
         <div class="admin-heading"><div><p class="section-kicker">Estructura académica</p><h1>Administrar carreras</h1><p>Consultá la oferta institucional y revisá sus materias, profesores y estudiantes inscriptos.</p></div><a class="primary-button" href="CrearCarrera.html">+ Crear carrera</a></div>
         <section class="panel enrollment-period-panel">
@@ -27,7 +27,7 @@
             <p id="careerPeriodMessage" class="status-message" role="status"></p>
           </form>
         </section>
-        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Oferta institucional</p><h2>Carreras registradas</h2></div><button id="refreshCareers" class="secondary-button" type="button">Actualizar</button></div><div class="table-wrapper"><table><thead><tr><th>Carrera</th><th>Tipo</th><th>Plan</th><th>Duración</th><th>Cupo</th><th></th></tr></thead><tbody id="careersBody"><tr><td colspan="6" class="empty-state">Cargando carreras...</td></tr></tbody></table></div></section>
+        <section class="panel table-panel"><div class="panel-heading"><div><p class="section-kicker">Oferta institucional</p><h2>Carreras registradas</h2></div><button id="refreshCareers" class="secondary-button" type="button">Actualizar</button></div><div class="table-wrapper"><table><thead><tr><th>Carrera</th><th>Tipo</th><th>Plan</th><th>Duración</th><th>Cupo</th><th>Estado</th><th></th></tr></thead><tbody id="careersBody"><tr><td colspan="7" class="empty-state">Cargando carreras...</td></tr></tbody></table></div></section>
         <section id="careerEditPanel" class="panel career-edit-panel" hidden>
           <div class="panel-heading"><div><p class="section-kicker" id="formKicker">Edición</p><h2 id="formTitle">Editar carrera</h2></div><button id="cancelEdit" class="secondary-button compact-button" type="button">Cerrar</button></div>
           <form id="careerForm">
@@ -37,6 +37,7 @@
               <label class="form-field">Plan de estudios<input name="planEstudios" required maxlength="80"></label>
               <label class="form-field">Años de cursado<input name="duracionAnios" type="number" min="1" max="10" required></label>
               <label class="form-field">Capacidad máxima<input name="capacidadMaximaEstudiantes" type="number" min="1" required></label>
+              <label class="form-field">Estado<select name="activa"><option value="true">Activa</option><option value="false">Inactiva</option></select></label>
             </div>
             <p class="field-help">Si aumentás la duración, Acadion agregará los años académicos faltantes.</p>
             <div class="form-actions"><button id="saveCareer" class="primary-button" type="submit">Guardar cambios</button></div>
@@ -52,11 +53,24 @@
             <label class="form-field">Ciclo lectivo<input id="careerAdminCycle" type="number" min="2020" max="2100"></label>
             <button id="refreshCareerAdmin" class="secondary-button compact-button" type="button">Actualizar listado</button>
           </div>
+          <section class="plan-management" aria-labelledby="plansTitle">
+            <div class="panel-heading"><div><p class="section-kicker">Versiones académicas</p><h3 id="plansTitle">Planes de estudios</h3><p class="muted">Los estudiantes conservan el plan que tenían al ser creados.</p></div><button id="togglePlanForm" class="secondary-button compact-button" type="button">Crear nueva versión</button></div>
+            <div id="studyPlans"><p class="empty-state">Cargando planes...</p></div>
+            <form id="studyPlanForm" hidden>
+              <div class="inline-grid">
+                <label class="form-field">Código del plan<input name="codigo" maxlength="80" placeholder="Plan 2028" required></label>
+                <label class="form-field">Vigente desde<input name="vigenteDesde" type="number" min="2000" max="2100" required></label>
+                <label class="form-field span-2 checkbox-field"><input name="copiarMaterias" type="checkbox" checked> Copiar las materias, horarios y correlatividades del plan vigente</label>
+              </div>
+              <div class="form-actions"><button id="cancelPlan" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Publicar nuevo plan</button></div>
+              <p id="studyPlanMessage" class="status-message" role="status"></p>
+            </form>
+          </section>
           <div id="careerSubjects"><p class="empty-state">Seleccioná una carrera para ver sus materias.</p></div>
         </section>
       </section>
     </main>
   </div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="GestionCarreras.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js?v=20260930-6"></script><script src="GestionCarreras.js?v=20260930-6"></script>
 </body>
 </html>

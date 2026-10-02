@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<RegistroAsistenciaPersonal> RegistrosAsistenciaPersonal { get; set; }
     public DbSet<DocenteMateria> DocentesMaterias { get; set; }
     public DbSet<NotificacionGeneral> NotificacionesGenerales { get; set; }
+    public DbSet<NotificacionLectura> NotificacionesLecturas { get; set; }
     public DbSet<PerfilFinanciamiento> PerfilesFinanciamiento { get; set; }
     public DbSet<Allegado> Allegados { get; set; }
     public DbSet<MatriculaInicial> MatriculasIniciales { get; set; }
@@ -26,6 +27,16 @@ public class AppDbContext : DbContext
     public DbSet<InscripcionExamen> InscripcionesExamenes { get; set; }
     public DbSet<PeriodoInscripcionMateria> PeriodosInscripcionMaterias { get; set; }
     public DbSet<PeriodoInscripcionExamen> PeriodosInscripcionExamenes { get; set; }
+    public DbSet<RecuperacionContrasena> RecuperacionesContrasena { get; set; }
+    public DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; }
+    public DbSet<PlanEstudio> PlanesEstudio { get; set; }
+    public DbSet<Comision> Comisiones { get; set; }
+    public DbSet<HorarioComision> HorariosComisiones { get; set; }
+    public DbSet<ListaEsperaComision> ListasEsperaComisiones { get; set; }
+    public DbSet<ClaseAcademica> ClasesAcademicas { get; set; }
+    public DbSet<EventoCalendario> EventosCalendario { get; set; }
+    public DbSet<EquivalenciaMateria> EquivalenciasMaterias { get; set; }
+    public DbSet<TurnoExamenFinal> TurnosExamenFinal { get; set; }
     
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -60,6 +71,47 @@ public class AppDbContext : DbContext
         .WithMany(c => c.AlumnosInscritos)
         .HasForeignKey(u => u.CarreraId)
         .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Usuario>()
+        .HasOne(u => u.PlanEstudio)
+        .WithMany(p => p.Estudiantes)
+        .HasForeignKey(u => u.PlanEstudioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PlanEstudio>()
+        .HasOne(p => p.Carrera)
+        .WithMany(c => c.PlanesEstudio)
+        .HasForeignKey(p => p.CarreraId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<PlanEstudio>()
+        .HasIndex(p => new { p.CarreraId, p.Codigo })
+        .IsUnique();
+
+    modelBuilder.Entity<PlanEstudio>()
+        .HasIndex(p => new { p.CarreraId, p.Activo });
+
+    modelBuilder.Entity<RecuperacionContrasena>()
+        .HasOne(r => r.Usuario)
+        .WithMany(u => u.RecuperacionesContrasena)
+        .HasForeignKey(r => r.UsuarioId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<RecuperacionContrasena>()
+        .HasIndex(r => new { r.UsuarioId, r.FechaExpiracionUtc });
+
+    modelBuilder.Entity<RecuperacionContrasena>()
+        .HasIndex(r => r.TokenHash)
+        .HasFilter("[TokenHash] IS NOT NULL");
+
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.NombreUsuario).HasMaxLength(80);
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.Rol).HasMaxLength(40);
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.Metodo).HasMaxLength(10);
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.Ruta).HasMaxLength(500);
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.Ip).HasMaxLength(64);
+    modelBuilder.Entity<RegistroAuditoria>().Property(r => r.Detalle).HasMaxLength(1000);
+    modelBuilder.Entity<RegistroAuditoria>().HasIndex(r => r.FechaUtc);
+    modelBuilder.Entity<RegistroAuditoria>().HasIndex(r => new { r.UsuarioId, r.FechaUtc });
 
     modelBuilder.Entity<Persona>()
         .HasIndex(p => p.Dni)
@@ -104,6 +156,56 @@ public class AppDbContext : DbContext
         .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<EstudianteMateria>()
+        .HasOne(em => em.Comision)
+        .WithMany(c => c.Inscripciones)
+        .HasForeignKey(em => em.ComisionId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Comision>()
+        .HasOne(c => c.Materia)
+        .WithMany(m => m.Comisiones)
+        .HasForeignKey(c => c.MateriaId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Comision>()
+        .HasOne(c => c.Docente)
+        .WithMany()
+        .HasForeignKey(c => c.DocenteId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Comision>()
+        .HasIndex(c => new { c.MateriaId, c.CicloLectivo, c.Nombre })
+        .IsUnique();
+
+    modelBuilder.Entity<HorarioComision>()
+        .HasOne(h => h.Comision)
+        .WithMany(c => c.Horarios)
+        .HasForeignKey(h => h.ComisionId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<ListaEsperaComision>()
+        .HasOne(l => l.Comision)
+        .WithMany(c => c.ListaEspera)
+        .HasForeignKey(l => l.ComisionId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<ListaEsperaComision>()
+        .HasOne(l => l.Estudiante)
+        .WithMany()
+        .HasForeignKey(l => l.EstudianteId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ListaEsperaComision>()
+        .HasOne(l => l.ResueltoPor)
+        .WithMany()
+        .HasForeignKey(l => l.ResueltoPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ListaEsperaComision>()
+        .HasIndex(l => new { l.ComisionId, l.EstudianteId })
+        .IsUnique();
+
+    modelBuilder.Entity<EstudianteMateria>()
         .HasIndex(em => new { em.IdEstudiante, em.IdMateria, em.CicloLectivo })
         .IsUnique();
 
@@ -125,6 +227,12 @@ public class AppDbContext : DbContext
     modelBuilder.Entity<Asistencia>()
         .HasIndex(a => new { a.IdEstudianteMateria, a.Fecha })
         .IsUnique();
+
+    modelBuilder.Entity<Asistencia>()
+        .HasOne(a => a.JustificadaPor)
+        .WithMany()
+        .HasForeignKey(a => a.JustificadaPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
 
     // Configuración de Examen
     // Relación con Materia
@@ -155,6 +263,27 @@ public class AppDbContext : DbContext
         .WithOne(a => a.Carrera)
         .HasForeignKey(a => a.IdCarrera)
         .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Examen>()
+        .HasOne(e => e.ExamenRecuperado)
+        .WithMany(e => e.Recuperatorios)
+        .HasForeignKey(e => e.ExamenRecuperadoId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<Examen>()
+        .HasIndex(e => e.ExamenRecuperadoId)
+        .IsUnique()
+        .HasFilter("[ExamenRecuperadoId] IS NOT NULL");
+
+    modelBuilder.Entity<Examen>()
+        .HasOne(e => e.TurnoExamenFinal)
+        .WithMany(t => t.Examenes)
+        .HasForeignKey(e => e.TurnoExamenFinalId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<TurnoExamenFinal>()
+        .HasIndex(t => new { t.CicloLectivo, t.Nombre, t.NumeroLlamado })
+        .IsUnique();
 
     modelBuilder.Entity<Carrera>()
         .HasIndex(c => new { c.Nombre, c.PlanEstudios })
@@ -213,6 +342,12 @@ public class AppDbContext : DbContext
         .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<RegistroAsistenciaPersonal>()
+        .HasOne(r => r.JustificadaPor)
+        .WithMany()
+        .HasForeignKey(r => r.JustificadaPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<RegistroAsistenciaPersonal>()
         .HasIndex(r => new { r.UsuarioId, r.Fecha })
         .HasFilter("[MateriaId] IS NULL")
         .IsUnique();
@@ -261,11 +396,84 @@ public class AppDbContext : DbContext
         .HasFilter("[ClaveAutomatica] IS NOT NULL")
         .IsUnique();
 
+    modelBuilder.Entity<NotificacionLectura>()
+        .HasKey(l => new { l.NotificacionId, l.UsuarioId });
+    modelBuilder.Entity<NotificacionLectura>()
+        .HasOne(l => l.Notificacion)
+        .WithMany()
+        .HasForeignKey(l => l.NotificacionId)
+        .OnDelete(DeleteBehavior.Cascade);
+    modelBuilder.Entity<NotificacionLectura>()
+        .HasOne(l => l.Usuario)
+        .WithMany()
+        .HasForeignKey(l => l.UsuarioId)
+        .OnDelete(DeleteBehavior.Cascade);
+
     modelBuilder.Entity<PerfilFinanciamiento>()
         .HasOne(p => p.Usuario)
         .WithOne()
         .HasForeignKey<PerfilFinanciamiento>(p => p.UsuarioId)
         .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Asistencia>()
+        .HasOne(a => a.Clase)
+        .WithMany(c => c.Asistencias)
+        .HasForeignKey(a => a.ClaseId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ClaseAcademica>()
+        .HasOne(c => c.Materia)
+        .WithMany()
+        .HasForeignKey(c => c.MateriaId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ClaseAcademica>()
+        .HasOne(c => c.Comision)
+        .WithMany()
+        .HasForeignKey(c => c.ComisionId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ClaseAcademica>()
+        .HasOne(c => c.Docente)
+        .WithMany()
+        .HasForeignKey(c => c.DocenteId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<ClaseAcademica>()
+        .HasIndex(c => new { c.MateriaId, c.ComisionId, c.Fecha })
+        .IsUnique();
+
+    modelBuilder.Entity<EventoCalendario>()
+        .HasOne(e => e.Carrera)
+        .WithMany()
+        .HasForeignKey(e => e.CarreraId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<EventoCalendario>()
+        .HasOne(e => e.CreadoPor)
+        .WithMany()
+        .HasForeignKey(e => e.CreadoPorUsuarioId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    modelBuilder.Entity<EventoCalendario>()
+        .HasIndex(e => new { e.FechaInicioUtc, e.FechaFinUtc });
+
+    modelBuilder.Entity<EquivalenciaMateria>().HasOne(e => e.Estudiante).WithMany()
+        .HasForeignKey(e => e.EstudianteId).OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<EquivalenciaMateria>().HasOne(e => e.MateriaOrigen).WithMany()
+        .HasForeignKey(e => e.MateriaOrigenId).OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<EquivalenciaMateria>().HasOne(e => e.MateriaDestino).WithMany()
+        .HasForeignKey(e => e.MateriaDestinoId).OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<EquivalenciaMateria>().HasOne(e => e.OtorgadaPor).WithMany()
+        .HasForeignKey(e => e.OtorgadaPorUsuarioId).OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<EquivalenciaMateria>()
+        .HasIndex(e => new { e.EstudianteId, e.MateriaDestinoId }).IsUnique();
+
+    modelBuilder.Entity<Materia>()
+        .HasOne(m => m.PlanEstudio)
+        .WithMany(p => p.Materias)
+        .HasForeignKey(m => m.PlanEstudioId)
+        .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<Examen>()
         .Property(e => e.NotaMinimaRegularizacion)
@@ -320,6 +528,10 @@ public class AppDbContext : DbContext
         .Property(m => m.Estado)
         .HasConversion<string>();
 
+    modelBuilder.Entity<MatriculaInicial>().Property(m => m.Importe).HasPrecision(12, 2);
+    modelBuilder.Entity<MatriculaInicial>().HasOne(m => m.ValidadoPor).WithMany()
+        .HasForeignKey(m => m.ValidadoPorUsuarioId).OnDelete(DeleteBehavior.Restrict);
+
     modelBuilder.Entity<CuotaMensual>()
         .HasOne(c => c.Estudiante)
         .WithMany()
@@ -333,6 +545,10 @@ public class AppDbContext : DbContext
     modelBuilder.Entity<CuotaMensual>()
         .Property(c => c.Estado)
         .HasConversion<string>();
+
+    modelBuilder.Entity<CuotaMensual>().Property(c => c.Importe).HasPrecision(12, 2);
+    modelBuilder.Entity<CuotaMensual>().HasOne(c => c.ValidadoPor).WithMany()
+        .HasForeignKey(c => c.ValidadoPorUsuarioId).OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<InscripcionExamen>()
         .HasOne(i => i.Examen)

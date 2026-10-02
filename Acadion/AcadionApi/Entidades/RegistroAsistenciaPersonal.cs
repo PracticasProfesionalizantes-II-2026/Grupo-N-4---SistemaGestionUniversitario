@@ -13,6 +13,11 @@ public class RegistroAsistenciaPersonal
     public TimeOnly? HoraSalida { get; set; }
     public string Estado { get; set; } = "Presente";
     public bool Justificada { get; set; }
+    [MaxLength(500)]
+    public string JustificativoArchivo { get; set; } = string.Empty;
+    public int? JustificadaPorUsuarioId { get; set; }
+    public Usuario? JustificadaPor { get; set; }
+    public DateTime? FechaJustificacionUtc { get; set; }
     public string? Observaciones { get; set; }
     public int RegistradoPorUsuarioId { get; set; }
     public Usuario RegistradoPor { get; set; } = null!;

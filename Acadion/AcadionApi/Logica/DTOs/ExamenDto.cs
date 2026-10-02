@@ -9,6 +9,8 @@ namespace AcadionApi.DTOs
         public int IdDocente { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoExamen { get; set; } = "Parcial";
+        public int? ExamenRecuperadoId { get; set; }
+        public int? TurnoExamenFinalId { get; set; }
     }
 
     public class ExamenDto
@@ -19,6 +21,8 @@ namespace AcadionApi.DTOs
         public int IdDocente { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoExamen { get; set; } = string.Empty;
+        public int? ExamenRecuperadoId { get; set; }
+        public int? TurnoExamenFinalId { get; set; }
         public decimal NotaMinimaRegularizacion { get; set; }
         public decimal? NotaMinimaPromocion { get; set; }
     }
@@ -30,6 +34,8 @@ namespace AcadionApi.DTOs
         public int IdDocente { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoExamen { get; set; } = "Parcial";
+        public int? ExamenRecuperadoId { get; set; }
+        public int? TurnoExamenFinalId { get; set; }
     }
 
     public class ExamenFechaActualizarDto

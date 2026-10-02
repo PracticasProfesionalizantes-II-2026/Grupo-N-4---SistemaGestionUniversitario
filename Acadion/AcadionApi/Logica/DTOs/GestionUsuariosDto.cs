@@ -28,6 +28,7 @@ public class CuentaInstitucionalCrearDto
     public string TelefonoContacto { get; set; } = string.Empty;
     public int RolId { get; set; }
     public int? CarreraId { get; set; }
+    public int? PlanEstudioId { get; set; }
     public string EstadoMatriculaInicial { get; set; } = "PENDIENTE";
     public string EstadoCuotaActual { get; set; } = "PENDIENTE";
     public string Especialidad { get; set; } = string.Empty;
@@ -52,6 +53,8 @@ public class CuentaInstitucionalCreadaDto
     public string Rol { get; set; } = string.Empty;
     public string Legajo { get; set; } = string.Empty;
     public int? CarreraId { get; set; }
+    public int? PlanEstudioId { get; set; }
+    public string PlanEstudio { get; set; } = string.Empty;
     public string Carrera { get; set; } = string.Empty;
     public bool DebeCambiarPassword { get; set; }
 }
@@ -75,6 +78,8 @@ public class UsuarioGestionDto
     public string Rol { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty;
     public int? CarreraId { get; set; }
+    public int? PlanEstudioId { get; set; }
+    public string PlanEstudio { get; set; } = string.Empty;
     public string Carrera { get; set; } = string.Empty;
     public string Legajo { get; set; } = string.Empty;
     public string Especialidad { get; set; } = string.Empty;
@@ -97,6 +102,7 @@ public class UsuarioGestionActualizarDto
     public string EmailInstitucional { get; set; } = string.Empty;
     public string TelefonoContacto { get; set; } = string.Empty;
     public int? CarreraId { get; set; }
+    public int? PlanEstudioId { get; set; }
     public string Estado { get; set; } = "Activo";
     public string Especialidad { get; set; } = string.Empty;
     public string TituloAcademico { get; set; } = string.Empty;

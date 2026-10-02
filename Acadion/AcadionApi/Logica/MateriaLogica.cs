@@ -20,8 +20,12 @@ public class MateriaLogica : IMateriaLogica
         var anio = await _context.Set<Anio>().Include(a => a.Carrera)
             .SingleOrDefaultAsync(a => a.IdAnio == dto.IdAnio)
             ?? throw new ArgumentException("El año académico indicado no existe.");
-        await ValidarNombreUnicoAsync(dto.Nombre, anio.IdCarrera);
-        var correlativas = await ObtenerCorrelativasValidasAsync(dto.CorrelativasIds, anio, null);
+        if (anio.Carrera is null || !anio.Carrera.Activa)
+            throw new InvalidOperationException("No se pueden crear materias en una carrera inactiva.");
+        var plan = await ObtenerPlanValidoAsync(anio.IdCarrera, dto.PlanEstudioId);
+        await ValidarNombreUnicoAsync(dto.Nombre, anio.IdCarrera, plan.Id);
+        var correlativas = await ObtenerCorrelativasValidasAsync(
+            dto.CorrelativasIds, anio, plan.Id, null);
 
         var materia = new Materia
         {
@@ -32,6 +36,8 @@ public class MateriaLogica : IMateriaLogica
             NumeroPeriodo = NormalizarNumeroPeriodo(dto.TipoCursada, dto.NumeroPeriodo),
             IdAnio = dto.IdAnio,
             AnioCursada = anio,
+            PlanEstudioId = plan.Id,
+            PlanEstudio = plan,
             Correlativas = correlativas
         };
         _context.Materias.Add(materia);
@@ -44,6 +50,7 @@ public class MateriaLogica : IMateriaLogica
     {
         var consulta = _context.Materias.AsNoTracking()
             .Include(m => m.AnioCursada)!.ThenInclude(a => a!.Carrera)
+            .Include(m => m.PlanEstudio)
             .Include(m => m.Correlativas)
             .AsQueryable();
         if (carreraId.HasValue)
@@ -67,6 +74,8 @@ public class MateriaLogica : IMateriaLogica
                 IdCarrera = m.AnioCursada!.IdCarrera,
                 Carrera = m.AnioCursada.Carrera!.Nombre,
                 NumeroAnio = m.AnioCursada.NumeroAnio,
+                PlanEstudioId = m.PlanEstudioId,
+                PlanEstudio = m.PlanEstudio != null ? m.PlanEstudio.Codigo : m.AnioCursada.Carrera!.PlanEstudios,
                 Correlativas = m.Correlativas.OrderBy(c => c.Nombre).Select(c => new MateriaResumenDto
                 {
                     IdMateria = c.IdMateria,
@@ -79,6 +88,7 @@ public class MateriaLogica : IMateriaLogica
     {
         var materia = await _context.Materias.AsNoTracking()
             .Include(m => m.AnioCursada)!.ThenInclude(a => a!.Carrera)
+            .Include(m => m.PlanEstudio)
             .Include(m => m.Correlativas)
             .SingleOrDefaultAsync(m => m.IdMateria == id);
         return materia is null ? null : MapearDetalle(materia);
@@ -96,9 +106,11 @@ public class MateriaLogica : IMateriaLogica
         var anio = await _context.Set<Anio>().Include(a => a.Carrera)
             .SingleOrDefaultAsync(a => a.IdAnio == dto.IdAnio)
             ?? throw new ArgumentException("El año académico indicado no existe.");
-        await ValidarNombreUnicoAsync(dto.Nombre, anio.IdCarrera, id);
+        var plan = await ObtenerPlanValidoAsync(anio.IdCarrera, dto.PlanEstudioId ?? materia.PlanEstudioId);
+        await ValidarNombreUnicoAsync(dto.Nombre, anio.IdCarrera, plan.Id, id);
         await ValidarHorariosAlCambiarAnioAsync(id, dto.IdAnio);
-        var correlativas = await ObtenerCorrelativasValidasAsync(dto.CorrelativasIds, anio, id);
+        var correlativas = await ObtenerCorrelativasValidasAsync(
+            dto.CorrelativasIds, anio, plan.Id, id);
 
         materia.Nombre = dto.Nombre.Trim();
         materia.Modalidad = dto.Modalidad.Trim();
@@ -107,6 +119,8 @@ public class MateriaLogica : IMateriaLogica
         materia.NumeroPeriodo = NormalizarNumeroPeriodo(dto.TipoCursada, dto.NumeroPeriodo);
         materia.IdAnio = dto.IdAnio;
         materia.AnioCursada = anio;
+        materia.PlanEstudioId = plan.Id;
+        materia.PlanEstudio = plan;
         materia.Correlativas.Clear();
         materia.Correlativas.AddRange(correlativas);
         await _context.SaveChangesAsync();
@@ -134,16 +148,18 @@ public class MateriaLogica : IMateriaLogica
         return true;
     }
 
-    private async Task ValidarNombreUnicoAsync(string nombre, int carreraId, int? excluirId = null)
+    private async Task ValidarNombreUnicoAsync(
+        string nombre, int carreraId, int planEstudioId, int? excluirId = null)
     {
         var normalizado = nombre.Trim();
         if (await _context.Materias.AnyAsync(m => m.IdMateria != excluirId &&
-            m.AnioCursada!.IdCarrera == carreraId && m.Nombre == normalizado))
-            throw new InvalidOperationException("Ya existe una materia con ese nombre dentro de la carrera.");
+            m.AnioCursada!.IdCarrera == carreraId && m.PlanEstudioId == planEstudioId &&
+            m.Nombre == normalizado))
+            throw new InvalidOperationException("Ya existe una materia con ese nombre dentro del plan de estudios.");
     }
 
     private async Task<List<Materia>> ObtenerCorrelativasValidasAsync(
-        IEnumerable<int>? ids, Anio anioDestino, int? materiaId)
+        IEnumerable<int>? ids, Anio anioDestino, int planEstudioId, int? materiaId)
     {
         var distintos = (ids ?? []).Distinct().ToList();
         if (materiaId.HasValue && distintos.Contains(materiaId.Value))
@@ -158,9 +174,24 @@ public class MateriaLogica : IMateriaLogica
             throw new ArgumentException("Una o más correlativas no existen.");
         if (materias.Any(m => m.AnioCursada!.IdCarrera != anioDestino.IdCarrera))
             throw new ArgumentException("Todas las correlativas deben pertenecer a la misma carrera.");
+        if (materias.Any(m => m.PlanEstudioId != planEstudioId))
+            throw new ArgumentException("Todas las correlativas deben pertenecer a la misma versión del plan de estudios.");
         if (materias.Any(m => m.AnioCursada!.NumeroAnio >= anioDestino.NumeroAnio))
             throw new ArgumentException("Las correlativas deben pertenecer a un año anterior de la misma carrera.");
         return materias;
+    }
+
+    private async Task<PlanEstudio> ObtenerPlanValidoAsync(int carreraId, int? planEstudioId)
+    {
+        var plan = planEstudioId.HasValue
+            ? await _context.PlanesEstudio.SingleOrDefaultAsync(p => p.Id == planEstudioId.Value)
+            : await _context.PlanesEstudio.SingleOrDefaultAsync(p =>
+                p.CarreraId == carreraId && p.Activo);
+        if (plan is null)
+            throw new ArgumentException("La carrera no tiene un plan de estudios vigente.");
+        if (plan.CarreraId != carreraId)
+            throw new ArgumentException("El plan de estudios no pertenece a la carrera seleccionada.");
+        return plan;
     }
 
     private async Task ValidarHorariosAlCambiarAnioAsync(int materiaId, int anioDestinoId)
@@ -232,6 +263,8 @@ public class MateriaLogica : IMateriaLogica
         IdCarrera = materia.AnioCursada!.IdCarrera,
         Carrera = materia.AnioCursada.Carrera!.Nombre,
         NumeroAnio = materia.AnioCursada.NumeroAnio,
+        PlanEstudioId = materia.PlanEstudioId,
+        PlanEstudio = materia.PlanEstudio?.Codigo ?? materia.AnioCursada.Carrera!.PlanEstudios,
         Correlativas = materia.Correlativas.OrderBy(c => c.Nombre).Select(c => new MateriaResumenDto
         {
             IdMateria = c.IdMateria,

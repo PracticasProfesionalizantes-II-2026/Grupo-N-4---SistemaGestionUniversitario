@@ -19,6 +19,11 @@ public class Examen
 
     public DateTime Fecha { get; set; }
     public string TipoExamen { get; set; } = "Parcial";
+    public int? ExamenRecuperadoId { get; set; }
+    public Examen? ExamenRecuperado { get; set; }
+    public List<Examen> Recuperatorios { get; set; } = new();
+    public int? TurnoExamenFinalId { get; set; }
+    public TurnoExamenFinal? TurnoExamenFinal { get; set; }
     public decimal NotaMinimaRegularizacion { get; set; } = 6;
     public decimal? NotaMinimaPromocion { get; set; }
 

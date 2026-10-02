@@ -21,4 +21,6 @@ public class NotificacionGeneralDto
     public DateTime? FechaExpiracionUtc { get; set; }
     public bool Activa { get; set; }
     public string CreadaPor { get; set; } = string.Empty;
+    public bool Leida { get; set; }
+    public DateTime? FechaLecturaUtc { get; set; }
 }

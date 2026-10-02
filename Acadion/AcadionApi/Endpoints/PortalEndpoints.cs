@@ -82,7 +82,7 @@ public static class PortalEndpoints
         });
 
         me.MapPost("/foto-perfil", async (IFormFile foto, HttpContext http,
-            IWebHostEnvironment environment, AppDbContext context) =>
+            PerfilStorage storage, AppDbContext context) =>
         {
             if (foto.Length == 0 || foto.Length > 5 * 1024 * 1024)
                 return Results.BadRequest(new { mensaje = "Seleccioná una imagen de hasta 5 MB." });
@@ -97,12 +97,25 @@ public static class PortalEndpoints
             if (extension.Length == 0)
                 return Results.BadRequest(new { mensaje = "La foto debe ser JPEG, PNG o WebP." });
 
+            await using (var lectura = foto.OpenReadStream())
+            {
+                var firma = new byte[12];
+                var leidos = await lectura.ReadAsync(firma);
+                var jpeg = leidos >= 3 && firma[0] == 0xFF && firma[1] == 0xD8 && firma[2] == 0xFF;
+                var png = leidos >= 8 && firma.AsSpan(0, 8).SequenceEqual(
+                    new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
+                var webp = leidos >= 12 &&
+                    firma.AsSpan(0, 4).SequenceEqual("RIFF"u8) &&
+                    firma.AsSpan(8, 4).SequenceEqual("WEBP"u8);
+                if (!jpeg && !png && !webp)
+                    return Results.BadRequest(new { mensaje = "El contenido del archivo no corresponde a una imagen válida." });
+            }
+
             var usuarioId = http.User.ObtenerUsuarioId();
             var usuario = await context.Usuarios.SingleOrDefaultAsync(u => u.Id == usuarioId);
             if (usuario is null) return Results.NotFound();
 
-            var webRoot = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-            var uploadDirectory = Path.Combine(webRoot, "uploads", "perfiles");
+            var uploadDirectory = storage.Directorio;
             Directory.CreateDirectory(uploadDirectory);
             var fileName = $"perfil-{usuarioId}-{Guid.NewGuid():N}{extension}";
             var destination = Path.Combine(uploadDirectory, fileName);
@@ -183,6 +196,27 @@ public static class PortalEndpoints
                 string.IsNullOrWhiteSpace(a.Relacion) || a.NombreApellido.Length > 120 ||
                 (a.Relacion?.Length ?? 0) > 60 || (a.Telefono?.Length ?? 0) > 30))
                 return Results.BadRequest(new { mensaje = "Completá correctamente los datos de cada allegado." });
+            var relacionesPermitidas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Madre", "Padre", "Hermano/a", "Pareja", "Tutor/a",
+                "Otro familiar", "Otra"
+            };
+            foreach (var item in items)
+            {
+                try
+                {
+                    NormalizadorDatos.ValidarNombrePersona(item.NombreApellido, "El nombre del allegado");
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { mensaje = ex.Message });
+                }
+                if (!relacionesPermitidas.Contains(item.Relacion.Trim()))
+                    return Results.BadRequest(new { mensaje = "Seleccioná una relación válida para cada allegado." });
+                if (!string.IsNullOrWhiteSpace(item.Telefono) &&
+                    !System.Text.RegularExpressions.Regex.IsMatch(item.Telefono, @"^[0-9+() -]+$"))
+                    return Results.BadRequest(new { mensaje = "El teléfono del allegado contiene caracteres no permitidos." });
+            }
 
             var usuarioId = http.User.ObtenerUsuarioId();
             var existentes = await context.Allegados
@@ -191,7 +225,7 @@ public static class PortalEndpoints
             context.Allegados.AddRange(items.Select(a => new Allegado
             {
                 EstudianteId = usuarioId,
-                NombreApellido = a.NombreApellido.Trim(),
+                NombreApellido = NormalizadorDatos.NombrePropio(a.NombreApellido),
                 Relacion = a.Relacion.Trim(),
                 Telefono = a.Telefono?.Trim() ?? string.Empty
             }));
@@ -311,7 +345,7 @@ public static class PortalEndpoints
                 .Where(n => n.IdEstudiante == usuarioId)
                 .ToListAsync();
             var finalesInscriptos = await context.InscripcionesExamenes.AsNoTracking()
-                .Where(i => i.EstudianteId == usuarioId && i.Estado == "Inscripto")
+                .Where(i => i.EstudianteId == usuarioId && i.Estado != "Anulado")
                 .Select(i => i.ExamenId)
                 .ToListAsync();
             var notasPorExamen = notas.ToDictionary(n => n.IdExamen);
@@ -321,18 +355,7 @@ public static class PortalEndpoints
             {
                 var evaluaciones = examenes.Where(e => e.IdMateria == inscripcion.IdMateria &&
                     e.CicloLectivo == inscripcion.CicloLectivo && e.IdDocente == inscripcion.IdDocente).ToList();
-                var evaluacionesCursada = evaluaciones.Where(e => !EsFinal(e)).ToList();
-                var notasCursada = evaluacionesCursada
-                    .Where(e => notasPorExamen.ContainsKey(e.IdExamen))
-                    .Select(e => notasPorExamen[e.IdExamen])
-                    .ToList();
-                var promociono = evaluacionesCursada.Count > 0 &&
-                    notasCursada.Count == evaluacionesCursada.Count &&
-                    notasCursada.All(n => n.Condicion == "Promocionó");
-                var regularizo = evaluacionesCursada.Count > 0 &&
-                    notasCursada.Count == evaluacionesCursada.Count &&
-                    evaluacionesCursada.All(e =>
-                        notasPorExamen[e.IdExamen].Nota >= e.NotaMinimaRegularizacion);
+                var resultadoCursada = CalcularResultadoCursada(evaluaciones, notasPorExamen);
                 var finalesAprobados = evaluaciones
                     .Where(EsFinal)
                     .Where(e => finalesPermitidos.Contains(e.IdExamen) && notasPorExamen.ContainsKey(e.IdExamen))
@@ -341,15 +364,18 @@ public static class PortalEndpoints
                     .OrderByDescending(x => x.Examen.Fecha)
                     .ToList();
                 var finalAprobado = finalesAprobados.FirstOrDefault();
-                var promedioPromocion = promociono ? Math.Round(notasCursada.Average(n => n.Nota), 2) : (decimal?)null;
+                var promedioPromocion = resultadoCursada.PromedioPromocion;
                 var notaFinal = finalAprobado?.Nota.Nota ?? promedioPromocion;
                 var estadoGuardado = inscripcion.Estado is "Aprobada" or "Promocionada"
                     ? "En curso"
                     : inscripcion.Estado;
                 var estado = finalAprobado is not null
                     ? "Aprobada"
-                    : promociono ? "Promocionada" : regularizo ? "Regular" : estadoGuardado;
-                var via = finalAprobado is not null ? "Final" : promociono ? "Promoción" : string.Empty;
+                    : resultadoCursada.Promociono ? "Promocionada"
+                    : resultadoCursada.Regularizo ? "Regular"
+                    : resultadoCursada.QuedoLibre ? "Libre"
+                    : estadoGuardado;
+                var via = finalAprobado is not null ? "Final" : resultadoCursada.Promociono ? "Promoción" : string.Empty;
                 return new
                 {
                     InscripcionId = inscripcion.IdEstudianteMateria,
@@ -360,10 +386,12 @@ public static class PortalEndpoints
                     ViaAprobacion = via,
                     CalificacionFinal = notaFinal,
                     PromedioEvaluaciones = promedioPromocion,
-                    EvaluacionesCreadas = evaluacionesCursada.Count,
-                    EvaluacionesCalificadas = notasCursada.Count,
+                    EvaluacionesCreadas = resultadoCursada.EvaluacionesRequeridas,
+                    EvaluacionesCalificadas = resultadoCursada.EvaluacionesCalificadas,
                     FechaAprobacion = finalAprobado?.Examen.Fecha,
-                    TipoAprobacion = finalAprobado is not null ? "Examen final" : promociono ? "Promoción directa" : null
+                    TipoAprobacion = finalAprobado is not null
+                        ? "Examen final"
+                        : resultadoCursada.Promociono ? "Promoción directa" : null
                 };
             });
             return Results.Ok(resumen);
@@ -375,7 +403,7 @@ public static class PortalEndpoints
             var usuarioId = http.User.ObtenerUsuarioId();
             var carrera = await context.Usuarios.AsNoTracking()
                 .Where(u => u.Id == usuarioId)
-                .Select(u => new { u.CarreraId, Carrera = u.Carrera == null ? "" : u.Carrera.Nombre })
+                .Select(u => new { u.CarreraId, u.PlanEstudioId, Carrera = u.Carrera == null ? "" : u.Carrera.Nombre })
                 .SingleAsync();
             if (!carrera.CarreraId.HasValue)
                 return Results.BadRequest(new { mensaje = "Tu cuenta todavía no tiene una carrera asignada. Contactá a Secretaría." });
@@ -383,7 +411,8 @@ public static class PortalEndpoints
             var ciclo = DateTime.UtcNow.Year;
             var cantidadMaterias = await context.Materias.AsNoTracking()
                 .CountAsync(m => m.AnioCursada != null &&
-                    m.AnioCursada.IdCarrera == carrera.CarreraId.Value && m.Estado == "Activa");
+                    m.AnioCursada.IdCarrera == carrera.CarreraId.Value && m.Estado == "Activa" &&
+                    (!carrera.PlanEstudioId.HasValue || m.PlanEstudioId == carrera.PlanEstudioId));
             var periodo = await context.PeriodosInscripcionMaterias.AsNoTracking()
                 .SingleOrDefaultAsync(p => p.CicloLectivo == ciclo &&
                     p.CarreraId == carrera.CarreraId.Value && p.MateriaId == null);
@@ -410,11 +439,11 @@ public static class PortalEndpoints
 
             var usuarioId = http.User.ObtenerUsuarioId();
             var cicloLectivo = DateTime.UtcNow.Year;
-            var carreraId = await context.Usuarios.AsNoTracking()
+            var estudiante = await context.Usuarios.AsNoTracking()
                 .Where(u => u.Id == usuarioId)
-                .Select(u => u.CarreraId)
+                .Select(u => new { u.CarreraId, u.PlanEstudioId })
                 .SingleAsync();
-            if (!carreraId.HasValue)
+            if (!estudiante.CarreraId.HasValue)
                 return Results.BadRequest(new { mensaje = "Tu cuenta todavía no tiene una carrera asignada. Contactá a Secretaría." });
             var inscriptas = await context.EstudianteMaterias.AsNoTracking()
                 .Where(em => em.IdEstudiante == usuarioId && em.CicloLectivo == cicloLectivo)
@@ -433,7 +462,8 @@ public static class PortalEndpoints
 
             var materias = await context.Materias.AsNoTracking()
                 .Where(m => m.Estado == "Activa" &&
-                    m.AnioCursada!.IdCarrera == carreraId.Value &&
+                    m.AnioCursada!.IdCarrera == estudiante.CarreraId.Value &&
+                    (!estudiante.PlanEstudioId.HasValue || m.PlanEstudioId == estudiante.PlanEstudioId) &&
                     !inscriptas.Contains(m.IdMateria))
                 .Include(m => m.Correlativas)
                 .Include(m => m.Horarios)
@@ -442,7 +472,7 @@ public static class PortalEndpoints
                 .ToListAsync();
             var periodo = await context.PeriodosInscripcionMaterias.AsNoTracking()
                 .SingleOrDefaultAsync(p => p.CicloLectivo == cicloLectivo &&
-                    p.CarreraId == carreraId.Value && p.MateriaId == null);
+                    p.CarreraId == estudiante.CarreraId.Value && p.MateriaId == null);
             var ahora = DateTime.UtcNow;
             if (periodo is null || ahora < periodo.FechaInicioUtc || ahora > periodo.FechaFinUtc)
                 materias.Clear();
@@ -456,6 +486,26 @@ public static class PortalEndpoints
             var asignacionesPorMateria = asignaciones
                 .GroupBy(a => a.IdMateria)
                 .ToDictionary(g => g.Key, g => g.First());
+            var comisiones = await context.Comisiones.AsNoTracking()
+                .Where(c => c.CicloLectivo == cicloLectivo && c.Activa &&
+                    idsMaterias.Contains(c.MateriaId))
+                .Include(c => c.Docente).ThenInclude(d => d!.Persona)
+                .Include(c => c.Horarios)
+                .OrderBy(c => c.Nombre)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.MateriaId,
+                    c.Nombre,
+                    c.Turno,
+                    c.Cupo,
+                    c.DocenteId,
+                    Docente = c.Docente == null ? "A confirmar" :
+                        c.Docente.Persona.Apellido + ", " + c.Docente.Persona.Nombre,
+                    Inscriptos = c.Inscripciones.Count(i => i.Estado != "Cancelada"),
+                    Horarios = c.Horarios.OrderBy(h => h.DiaSemana).ThenBy(h => h.HoraInicio)
+                        .Select(h => new { h.DiaSemana, h.HoraInicio, h.HoraFin })
+                }).ToListAsync();
 
             var disponibles = materias.Select(materia =>
                 {
@@ -475,6 +525,19 @@ public static class PortalEndpoints
                         Cuatrimestre = asignacion?.Cuatrimestre ?? "A confirmar",
                         Habilitada = pendientes.Length == 0,
                         CorrelativasPendientes = pendientes,
+                        Comisiones = comisiones.Where(c => c.MateriaId == materia.IdMateria)
+                            .Select(c => new
+                            {
+                                ComisionId = c.Id,
+                                c.Nombre,
+                                c.Turno,
+                                c.Docente,
+                                c.Cupo,
+                                c.Inscriptos,
+                                Vacantes = Math.Max(0, c.Cupo - c.Inscriptos),
+                                CupoCompleto = c.Inscriptos >= c.Cupo,
+                                c.Horarios
+                            }),
                         Horarios = materia.Horarios
                             .OrderBy(h => h.DiaSemana)
                             .ThenBy(h => h.HoraInicio)
@@ -492,20 +555,21 @@ public static class PortalEndpoints
                 return Results.BadRequest(new { mensaje = "La materia es obligatoria." });
 
             var cicloLectivo = DateTime.UtcNow.Year;
-            var carreraId = await context.Usuarios.AsNoTracking()
+            var estudiante = await context.Usuarios.AsNoTracking()
                 .Where(u => u.Id == http.User.ObtenerUsuarioId())
-                .Select(u => u.CarreraId)
+                .Select(u => new { u.CarreraId, u.PlanEstudioId })
                 .SingleAsync();
-            if (!carreraId.HasValue)
+            if (!estudiante.CarreraId.HasValue)
                 return Results.BadRequest(new { mensaje = "Tu cuenta todavía no tiene una carrera asignada." });
             var materia = await context.Materias.AsNoTracking()
                 .Where(m => m.IdMateria == dto.MateriaId && m.AnioCursada != null)
-                .Select(m => new { m.IdMateria, m.Nombre, m.AnioCursada!.IdCarrera })
+                .Select(m => new { m.IdMateria, m.Nombre, m.PlanEstudioId, m.AnioCursada!.IdCarrera })
                 .SingleOrDefaultAsync();
-            if (materia is null || materia.IdCarrera != carreraId.Value)
-                return Results.BadRequest(new { mensaje = "La materia no pertenece a tu carrera." });
+            if (materia is null || materia.IdCarrera != estudiante.CarreraId.Value ||
+                (estudiante.PlanEstudioId.HasValue && materia.PlanEstudioId != estudiante.PlanEstudioId))
+                return Results.BadRequest(new { mensaje = "La materia no pertenece a tu carrera y plan de estudios." });
             var periodo = await context.PeriodosInscripcionMaterias.AsNoTracking()
-                .Where(p => p.CicloLectivo == cicloLectivo && p.CarreraId == carreraId.Value &&
+                .Where(p => p.CicloLectivo == cicloLectivo && p.CarreraId == estudiante.CarreraId.Value &&
                     p.MateriaId == null)
                 .FirstOrDefaultAsync();
             var ahora = DateTime.UtcNow;
@@ -517,13 +581,52 @@ public static class PortalEndpoints
                     dm.CicloLectivo == cicloLectivo && dm.Activa)
                 .OrderBy(dm => dm.Id)
                 .FirstOrDefaultAsync();
+            Comision? comision = null;
+            if (dto.ComisionId.HasValue)
+            {
+                comision = await context.Comisiones.SingleOrDefaultAsync(c =>
+                    c.Id == dto.ComisionId.Value && c.MateriaId == dto.MateriaId &&
+                    c.CicloLectivo == cicloLectivo && c.Activa);
+                if (comision is null)
+                    return Results.BadRequest(new { mensaje = "La comisión seleccionada no está disponible." });
+                var ocupados = await context.EstudianteMaterias.CountAsync(i =>
+                    i.ComisionId == comision.Id && i.Estado != "Cancelada");
+                if (!PoliticasAcademicas.HayVacante(comision.Cupo, ocupados))
+                {
+                    var espera = await context.ListasEsperaComisiones.SingleOrDefaultAsync(l =>
+                        l.ComisionId == comision.Id && l.EstudianteId == http.User.ObtenerUsuarioId());
+                    if (espera is null)
+                    {
+                        espera = new ListaEsperaComision
+                        {
+                            ComisionId = comision.Id,
+                            EstudianteId = http.User.ObtenerUsuarioId()
+                        };
+                        context.ListasEsperaComisiones.Add(espera);
+                    }
+                    else if (espera.Estado != "EnEspera")
+                    {
+                        espera.Estado = "EnEspera";
+                        espera.FechaSolicitudUtc = DateTime.UtcNow;
+                        espera.FechaResolucionUtc = null;
+                        espera.ResueltoPorUsuarioId = null;
+                    }
+                    await context.SaveChangesAsync();
+                    return Results.Accepted(value: new
+                    {
+                        EnListaEspera = true,
+                        mensaje = "La comisión está completa. Quedaste en la lista de espera y Secretaría podrá confirmar tu vacante."
+                    });
+                }
+            }
             try
             {
                 var resultado = await logica.InscribirEstudianteAsync(new InscripcionCrearDto
                 {
                     IdEstudiante = http.User.ObtenerUsuarioId(),
                     IdMateria = dto.MateriaId,
-                    IdDocente = asignacion?.IdDocente,
+                    ComisionId = comision?.Id,
+                    IdDocente = comision?.DocenteId ?? asignacion?.IdDocente,
                     CicloLectivo = cicloLectivo,
                     Cuatrimestre = asignacion?.Cuatrimestre ?? "Anual"
                 });
@@ -587,6 +690,7 @@ public static class PortalEndpoints
                 .Where(e => inscripciones.Any(i => i.IdMateria == e.IdMateria &&
                     i.CicloLectivo == e.CicloLectivo && i.IdDocente == e.IdDocente))
                 .Include(e => e.Materia)
+                .Include(e => e.TurnoExamenFinal)
                 .OrderBy(e => e.Fecha)
                 .Select(e => new
                 {
@@ -596,6 +700,8 @@ public static class PortalEndpoints
                     e.Fecha,
                     e.TipoExamen,
                     e.CicloLectivo,
+                    TurnoFinal = e.TurnoExamenFinal == null ? null : e.TurnoExamenFinal.Nombre,
+                    NumeroLlamado = e.TurnoExamenFinal == null ? (int?)null : e.TurnoExamenFinal.NumeroLlamado,
                     Inscripto = context.InscripcionesExamenes.Any(i =>
                         i.ExamenId == e.IdExamen && i.EstudianteId == usuarioId),
                     PeriodoConfigurado = context.PeriodosInscripcionExamenes.Any(p =>
@@ -612,10 +718,12 @@ public static class PortalEndpoints
                 e.Fecha,
                 e.TipoExamen,
                 e.CicloLectivo,
+                e.TurnoFinal,
+                e.NumeroLlamado,
                 e.Inscripto,
-                PuedeDarseDeBaja = e.Inscripto &&
-                    ahoraArgentina < ConvertirAFechaArgentina(e.Fecha).AddHours(-24),
-                LimiteBaja = ConvertirAFechaArgentina(e.Fecha).AddHours(-24),
+                PuedeDarseDeBaja = e.Inscripto && PoliticasAcademicas.PuedeDarseDeBajaExamen(
+                    ConvertirAFechaArgentina(e.Fecha), ahoraArgentina),
+                LimiteBaja = PoliticasAcademicas.CalcularLimiteBajaExamen(ConvertirAFechaArgentina(e.Fecha)),
                 Habilitado = e.PeriodoAbierto && habilitadoFinancieramente,
                 MotivoBloqueo = !e.PeriodoConfigurado
                     ? "La secretaría todavía no configuró el período de inscripción a finales."
@@ -691,8 +799,9 @@ public static class PortalEndpoints
             if (!EsFinal(inscripcion.Examen))
                 return Results.BadRequest(new { mensaje = "Solo es posible gestionar inscripciones a exámenes finales." });
 
-            var limiteBaja = ConvertirAFechaArgentina(inscripcion.Examen.Fecha).AddHours(-24);
-            if (ObtenerAhoraArgentina() >= limiteBaja)
+            var fechaExamen = ConvertirAFechaArgentina(inscripcion.Examen.Fecha);
+            var limiteBaja = PoliticasAcademicas.CalcularLimiteBajaExamen(fechaExamen);
+            if (!PoliticasAcademicas.PuedeDarseDeBajaExamen(fechaExamen, ObtenerAhoraArgentina()))
             {
                 return Results.Conflict(new
                 {
@@ -713,7 +822,7 @@ public static class PortalEndpoints
             var usuarioId = http.User.ObtenerUsuarioId();
             return Results.Ok(await context.Set<NotaExamen>().AsNoTracking()
                 .Where(n => n.IdEstudiante == usuarioId)
-                .Include(n => n.Examen).ThenInclude(e => e!.Materia)
+                .Include(n => n.Examen).ThenInclude(e => e!.Materia).ThenInclude(m => m!.AnioCursada)
                 .OrderByDescending(n => n.Examen!.Fecha)
                 .Select(n => new
                 {
@@ -726,11 +835,19 @@ public static class PortalEndpoints
                     n.Examen.CicloLectivo,
                     MateriaId = n.Examen.IdMateria,
                     Materia = n.Examen.Materia!.Nombre,
+                    AnioCursada = n.Examen.Materia.AnioCursada == null
+                        ? string.Empty
+                        : n.Examen.Materia.AnioCursada.NombreAnio,
+                    NumeroAnio = n.Examen.Materia.AnioCursada == null
+                        ? 0
+                        : n.Examen.Materia.AnioCursada.NumeroAnio,
+                    EsFinal = n.Examen.TipoExamen == "Final",
+                    n.Examen.NotaMinimaRegularizacion,
                     Descripcion = n.Observaciones,
                     Resultado = n.Condicion,
                     CorregidoPor = n.Examen.Docente == null
                         ? null
-                        : n.Examen.Docente.Persona.Nombre + " " + n.Examen.Docente.Persona.Apellido
+                        : n.Examen.Docente.Persona.Apellido + ", " + n.Examen.Docente.Persona.Nombre
                 }).ToListAsync());
         });
 
@@ -765,7 +882,8 @@ public static class PortalEndpoints
         {
             var usuarioId = http.User.ObtenerUsuarioId();
             var consulta = context.EstudianteMaterias.AsNoTracking()
-                .Where(em => em.IdDocente == usuarioId)
+                .Where(em => em.IdDocente == usuarioId &&
+                    em.Estudiante != null && em.Estudiante.Estado == EstadoUsuario.Activo)
                 .Include(em => em.Estudiante).ThenInclude(e => e!.Persona)
                 .Include(em => em.Materia).AsQueryable();
             if (materiaId.HasValue) consulta = consulta.Where(em => em.IdMateria == materiaId);
@@ -828,6 +946,67 @@ public static class PortalEndpoints
                 .ToListAsync());
         });
 
+        docente.MapGet("/clases", async (int? materiaId, int? cicloLectivo,
+            HttpContext http, AppDbContext context) =>
+        {
+            var usuarioId = http.User.ObtenerUsuarioId();
+            var ciclo = cicloLectivo ?? DateTime.UtcNow.Year;
+            var query = context.ClasesAcademicas.AsNoTracking()
+                .Where(c => c.DocenteId == usuarioId && c.Fecha.Year == ciclo)
+                .Include(c => c.Materia).Include(c => c.Comision).AsQueryable();
+            if (materiaId.HasValue) query = query.Where(c => c.MateriaId == materiaId.Value);
+            return Results.Ok(await query.OrderByDescending(c => c.Fecha).Select(c => new
+            {
+                c.Id,
+                c.MateriaId,
+                Materia = c.Materia.Nombre,
+                c.ComisionId,
+                Comision = c.Comision == null ? "Comisión general" : c.Comision.Nombre,
+                c.Fecha,
+                c.Modalidad,
+                c.AulaOEnlace,
+                c.Observaciones,
+                AsistenciasRegistradas = c.Asistencias.Count
+            }).ToListAsync());
+        });
+
+        docente.MapPost("/clases", async (ClaseAcademicaCrearDto dto,
+            HttpContext http, AppDbContext context) =>
+        {
+            var usuarioId = http.User.ObtenerUsuarioId();
+            if (dto.Fecha == default || dto.Fecha.Date > DateTime.UtcNow.Date.AddDays(1))
+                return Results.BadRequest(new { mensaje = "La fecha de la clase no es válida." });
+            if (dto.Modalidad is not ("Presencial" or "Virtual" or "Híbrida"))
+                return Results.BadRequest(new { mensaje = "La modalidad no es válida." });
+            var asignado = await context.DocentesMaterias.AnyAsync(dm =>
+                dm.IdDocente == usuarioId && dm.IdMateria == dto.MateriaId && dm.Activa);
+            if (!asignado) return Results.Forbid();
+            if (dto.ComisionId.HasValue && !await context.Comisiones.AnyAsync(c =>
+                c.Id == dto.ComisionId.Value && c.MateriaId == dto.MateriaId &&
+                c.DocenteId == usuarioId && c.Activa))
+                return Results.BadRequest(new { mensaje = "La comisión no corresponde a la materia y docente." });
+
+            var fecha = dto.Fecha.Date;
+            var clase = await context.ClasesAcademicas.SingleOrDefaultAsync(c =>
+                c.MateriaId == dto.MateriaId && c.ComisionId == dto.ComisionId && c.Fecha == fecha);
+            if (clase is null)
+            {
+                clase = new ClaseAcademica
+                {
+                    MateriaId = dto.MateriaId,
+                    ComisionId = dto.ComisionId,
+                    DocenteId = usuarioId,
+                    Fecha = fecha
+                };
+                context.ClasesAcademicas.Add(clase);
+            }
+            clase.Modalidad = dto.Modalidad;
+            clase.AulaOEnlace = dto.AulaOEnlace.Trim();
+            clase.Observaciones = dto.Observaciones.Trim();
+            await context.SaveChangesAsync();
+            return Results.Ok(new { clase.Id, mensaje = "La clase quedó registrada correctamente." });
+        });
+
         docente.MapPost("/asistencias", async (AsistenciaCrearDto dto,
             HttpContext http, AppDbContext context) =>
         {
@@ -836,6 +1015,9 @@ public static class PortalEndpoints
                 .SingleOrDefaultAsync(i => i.IdEstudianteMateria == dto.IdEstudianteMateria);
             if (inscripcion is null) return Results.NotFound(new { mensaje = "La inscripción no existe." });
             if (inscripcion.IdDocente != usuarioId) return Results.Forbid();
+            if (!await context.Usuarios.AsNoTracking().AnyAsync(u =>
+                    u.Id == inscripcion.IdEstudiante && u.Estado == EstadoUsuario.Activo))
+                return Results.Conflict(new { mensaje = "El estudiante está inactivo y no admite nuevas asistencias." });
             if (!TiposAsistencia.Contains(dto.Tipo, StringComparer.OrdinalIgnoreCase))
                 return Results.BadRequest(new { mensaje = "Tipo de asistencia inválido." });
             if (dto.TipoClase is not ("Presencial" or "Virtual"))
@@ -844,6 +1026,21 @@ public static class PortalEndpoints
                 return Results.BadRequest(new { mensaje = "La cantidad de inasistencias debe estar entre 1 y 10." });
 
             var fecha = dto.Fecha.Date;
+            var clase = await context.ClasesAcademicas.SingleOrDefaultAsync(c =>
+                c.MateriaId == inscripcion.IdMateria && c.ComisionId == inscripcion.ComisionId &&
+                c.Fecha == fecha);
+            if (clase is null)
+            {
+                clase = new ClaseAcademica
+                {
+                    MateriaId = inscripcion.IdMateria,
+                    ComisionId = inscripcion.ComisionId,
+                    DocenteId = usuarioId,
+                    Fecha = fecha,
+                    Modalidad = dto.TipoClase
+                };
+                context.ClasesAcademicas.Add(clase);
+            }
             var existente = await context.Set<Asistencia>().SingleOrDefaultAsync(a =>
                 a.IdEstudianteMateria == dto.IdEstudianteMateria && a.Fecha == fecha);
             if (existente is null)
@@ -857,6 +1054,7 @@ public static class PortalEndpoints
                 context.Add(existente);
             }
             existente.Tipo = dto.Tipo;
+            existente.Clase = clase;
             existente.TipoClase = dto.TipoClase;
             existente.TemaDictado = string.Empty;
             existente.CantidadInasistencias = dto.Tipo.Equals("Ausente", StringComparison.OrdinalIgnoreCase)
@@ -882,6 +1080,43 @@ public static class PortalEndpoints
             if (!TiposExamen.Contains(dto.TipoExamen, StringComparer.OrdinalIgnoreCase))
                 return Results.BadRequest(new { mensaje = "Tipo de evaluación inválido." });
 
+            TurnoExamenFinal? turnoFinal = null;
+            var esFinalNuevo = dto.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase);
+            var esRecuperatorio = dto.TipoExamen.Equals("Recuperatorio", StringComparison.OrdinalIgnoreCase);
+            Examen? examenRecuperado = null;
+            if (esRecuperatorio)
+            {
+                if (!dto.ExamenRecuperadoId.HasValue)
+                    return Results.BadRequest(new { mensaje = "Seleccioná qué evaluación recupera." });
+                examenRecuperado = await context.Set<Examen>().AsNoTracking().SingleOrDefaultAsync(e =>
+                    e.IdExamen == dto.ExamenRecuperadoId.Value && e.IdMateria == dto.IdMateria &&
+                    e.IdDocente == usuarioId && e.CicloLectivo == dto.CicloLectivo);
+                if (examenRecuperado is null || EsFinal(examenRecuperado) ||
+                    EsRecuperatorio(examenRecuperado))
+                    return Results.BadRequest(new { mensaje = "La evaluación seleccionada no puede recuperarse." });
+                if (dto.Fecha <= examenRecuperado.Fecha)
+                    return Results.BadRequest(new { mensaje = "El recuperatorio debe ser posterior a la evaluación original." });
+                if (await context.Set<Examen>().AnyAsync(e =>
+                    e.ExamenRecuperadoId == examenRecuperado.IdExamen))
+                    return Results.Conflict(new { mensaje = "Esa evaluación ya tiene un recuperatorio creado." });
+            }
+            else if (dto.ExamenRecuperadoId.HasValue)
+            {
+                return Results.BadRequest(new { mensaje = "Solo los recuperatorios pueden reemplazar otra evaluación." });
+            }
+            if (esFinalNuevo)
+            {
+                if (!dto.TurnoExamenFinalId.HasValue)
+                    return Results.BadRequest(new { mensaje = "Seleccioná el turno y llamado del examen final." });
+                turnoFinal = await context.TurnosExamenFinal.AsNoTracking()
+                    .SingleOrDefaultAsync(t => t.Id == dto.TurnoExamenFinalId.Value && t.Activo);
+                if (turnoFinal is null)
+                    return Results.BadRequest(new { mensaje = "El turno de examen seleccionado no está disponible." });
+                if (turnoFinal.CicloLectivo != dto.CicloLectivo ||
+                    dto.Fecha < turnoFinal.FechaInicioUtc || dto.Fecha > turnoFinal.FechaFinUtc)
+                    return Results.BadRequest(new { mensaje = "La fecha del final debe estar dentro del turno seleccionado." });
+            }
+
             var examen = new Examen
             {
                 IdMateria = dto.IdMateria,
@@ -889,6 +1124,8 @@ public static class PortalEndpoints
                 CicloLectivo = dto.CicloLectivo,
                 Fecha = dto.Fecha,
                 TipoExamen = dto.TipoExamen,
+                ExamenRecuperadoId = examenRecuperado?.IdExamen,
+                TurnoExamenFinalId = esFinalNuevo ? turnoFinal!.Id : null,
                 NotaMinimaRegularizacion = 6
             };
             context.Add(examen);
@@ -913,6 +1150,7 @@ public static class PortalEndpoints
             var consulta = context.Set<Examen>().AsNoTracking()
                 .Where(e => e.IdDocente == usuarioId)
                 .Include(e => e.Materia)
+                .Include(e => e.TurnoExamenFinal)
                 .AsQueryable();
             if (materiaId.HasValue) consulta = consulta.Where(e => e.IdMateria == materiaId.Value);
             if (cicloLectivo.HasValue) consulta = consulta.Where(e => e.CicloLectivo == cicloLectivo.Value);
@@ -927,6 +1165,16 @@ public static class PortalEndpoints
                     e.CicloLectivo,
                     e.Fecha,
                     e.TipoExamen,
+                    e.ExamenRecuperadoId,
+                    EvaluacionRecuperada = e.ExamenRecuperado == null
+                        ? null
+                        : e.ExamenRecuperado.TipoExamen,
+                    FechaEvaluacionRecuperada = e.ExamenRecuperado == null
+                        ? (DateTime?)null
+                        : e.ExamenRecuperado.Fecha,
+                    e.TurnoExamenFinalId,
+                    TurnoFinal = e.TurnoExamenFinal == null ? null : e.TurnoExamenFinal.Nombre,
+                    NumeroLlamado = e.TurnoExamenFinal == null ? (int?)null : e.TurnoExamenFinal.NumeroLlamado,
                     e.NotaMinimaRegularizacion,
                     e.NotaMinimaPromocion,
                     CantidadNotas = e.Notas.Count,
@@ -944,6 +1192,16 @@ public static class PortalEndpoints
             if (examen.IdDocente != usuarioId) return Results.Forbid();
             if (dto.Fecha == default)
                 return Results.BadRequest(new { mensaje = "Ingresá una fecha válida." });
+            if (examen.Fecha <= DateTime.UtcNow ||
+                await context.Set<NotaExamen>().AnyAsync(n => n.IdExamen == examenId))
+                return Results.Conflict(new { mensaje = "Una evaluación realizada o con notas cargadas no puede cambiar de fecha." });
+            if (EsFinal(examen) && examen.TurnoExamenFinalId.HasValue)
+            {
+                var turno = await context.TurnosExamenFinal.AsNoTracking()
+                    .SingleAsync(t => t.Id == examen.TurnoExamenFinalId.Value);
+                if (dto.Fecha < turno.FechaInicioUtc || dto.Fecha > turno.FechaFinUtc)
+                    return Results.BadRequest(new { mensaje = "La nueva fecha debe permanecer dentro del turno de examen asignado." });
+            }
             var fechaAnterior = examen.Fecha;
             examen.Fecha = dto.Fecha;
             await context.SaveChangesAsync();
@@ -961,6 +1219,12 @@ public static class PortalEndpoints
             var examen = await context.Set<Examen>().SingleOrDefaultAsync(e => e.IdExamen == examenId);
             if (examen is null) return Results.NotFound(new { mensaje = "La evaluación no existe." });
             if (examen.IdDocente != usuarioId) return Results.Forbid();
+            if (await context.Set<Examen>().AnyAsync(e => e.ExamenRecuperadoId == examenId))
+                return Results.Conflict(new { mensaje = "Eliminá primero el recuperatorio asociado a esta evaluación." });
+            if (examen.Fecha <= DateTime.UtcNow ||
+                await context.Set<NotaExamen>().AnyAsync(n => n.IdExamen == examenId) ||
+                await context.InscripcionesExamenes.AnyAsync(i => i.ExamenId == examenId))
+                return Results.Conflict(new { mensaje = "No se puede eliminar una evaluación realizada, con notas o con estudiantes inscriptos." });
             var estudiantes = await context.EstudianteMaterias.AsNoTracking()
                 .Where(i => i.IdMateria == examen.IdMateria && i.IdDocente == examen.IdDocente &&
                     i.CicloLectivo == examen.CicloLectivo && i.Estado != "Cancelada")
@@ -979,20 +1243,22 @@ public static class PortalEndpoints
         docente.MapPut("/examenes/{examenId:int}/criterios", async (int examenId,
             CriteriosEvaluacionDto dto, HttpContext http, AppDbContext context) =>
         {
-            if (dto.NotaMinimaRegularizacion is < 0 or > 10)
-                return Results.BadRequest(new { mensaje = "La nota para regularizar debe estar entre 0 y 10." });
-            if (dto.NotaMinimaPromocion.HasValue &&
-                (dto.NotaMinimaPromocion.Value is < 0 or > 10 ||
-                 dto.NotaMinimaPromocion.Value < dto.NotaMinimaRegularizacion))
-                return Results.BadRequest(new
-                {
-                    mensaje = "La nota para promocionar debe estar entre 0 y 10 y no puede ser menor que la nota para regularizar."
-                });
-
             var usuarioId = http.User.ObtenerUsuarioId();
             var examen = await context.Set<Examen>().SingleOrDefaultAsync(e => e.IdExamen == examenId);
             if (examen is null) return Results.NotFound(new { mensaje = "La evaluación no existe." });
             if (examen.IdDocente != usuarioId) return Results.Forbid();
+            var esFinalParaValidar = EsFinal(examen);
+            if (!PoliticasAcademicas.CriteriosCalificacionValidos(
+                    dto.NotaMinimaRegularizacion, dto.NotaMinimaPromocion, esFinalParaValidar))
+                return Results.BadRequest(new
+                {
+                    mensaje = dto.NotaMinimaRegularizacion is < 0 or > 10
+                        ? "La nota para regularizar debe estar entre 0 y 10."
+                        : "La nota para promocionar debe estar entre 0 y 10 y no puede ser menor que la nota para regularizar."
+                });
+
+            if (EsFinal(examen) && DateTime.UtcNow > PoliticasAcademicas.LimiteCargaNotaFinal(examen.Fecha))
+                return Results.Conflict(new { mensaje = "El acta del final está cerrada y sus criterios ya no pueden modificarse." });
             examen.NotaMinimaRegularizacion = dto.NotaMinimaRegularizacion;
             examen.NotaMinimaPromocion = examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase)
                 ? null
@@ -1002,13 +1268,9 @@ public static class PortalEndpoints
                 .ToListAsync();
             foreach (var nota in notasExistentes)
             {
-                nota.Condicion = EsFinal(examen) && nota.Nota >= examen.NotaMinimaRegularizacion
-                    ? "Aprobó"
-                    : examen.NotaMinimaPromocion.HasValue && nota.Nota >= examen.NotaMinimaPromocion.Value
-                    ? "Promocionó"
-                    : nota.Nota >= examen.NotaMinimaRegularizacion
-                        ? "Regularizó"
-                        : "Desaprobó";
+                nota.Condicion = PoliticasAcademicas.DeterminarCondicionNota(
+                    nota.Nota, examen.NotaMinimaRegularizacion,
+                    examen.NotaMinimaPromocion, EsFinal(examen));
             }
             await context.SaveChangesAsync();
             foreach (var estudianteId in notasExistentes.Select(n => n.IdEstudiante).Distinct())
@@ -1030,7 +1292,8 @@ public static class PortalEndpoints
             var esFinal = examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase);
             var estudiantes = esFinal
                 ? await context.InscripcionesExamenes.AsNoTracking()
-                    .Where(i => i.ExamenId == examenId && i.Estado == "Inscripto")
+                    .Where(i => i.ExamenId == examenId &&
+                        (i.Estado == "Inscripto" || i.Estado == "Aprobado" || i.Estado == "Desaprobado"))
                     .OrderBy(i => i.Estudiante.Persona.Apellido)
                     .ThenBy(i => i.Estudiante.Persona.Nombre)
                     .Select(i => new PlanillaEstudianteItem(
@@ -1054,9 +1317,9 @@ public static class PortalEndpoints
                 .Where(n => n.IdExamen == examenId)
                 .ToDictionaryAsync(n => n.IdEstudiante);
             var ahora = DateTime.UtcNow;
-            var fechaHabilitacion = examen.Fecha.Date.AddDays(1);
-            var fechaLimite = examen.Fecha.Date.AddDays(15).AddTicks(-1);
-            var habilitada = !esFinal || ahora >= fechaHabilitacion && ahora <= fechaLimite;
+            var fechaHabilitacion = PoliticasAcademicas.InicioCargaNotaFinal(examen.Fecha);
+            var fechaLimite = PoliticasAcademicas.LimiteCargaNotaFinal(examen.Fecha);
+            var habilitada = !esFinal || PoliticasAcademicas.PuedeCargarNotaFinal(examen.Fecha, ahora);
             var motivo = !esFinal
                 ? null
                 : ahora < fechaHabilitacion
@@ -1130,7 +1393,9 @@ public static class PortalEndpoints
                 return Results.BadRequest(new { mensaje = "La nota debe estar entre 0 y 10." });
 
             var usuarioId = http.User.ObtenerUsuarioId();
-            var examen = await context.Set<Examen>().SingleOrDefaultAsync(e => e.IdExamen == dto.IdExamen);
+            var examen = await context.Set<Examen>()
+                .Include(e => e.Materia)
+                .SingleOrDefaultAsync(e => e.IdExamen == dto.IdExamen);
             if (examen is null) return Results.NotFound(new { mensaje = "El examen no existe." });
             if (examen.IdDocente != usuarioId) return Results.Forbid();
 
@@ -1142,13 +1407,14 @@ public static class PortalEndpoints
                 return Results.BadRequest(new { mensaje = "El estudiante no pertenece a esta comisión." });
             if (examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase) &&
                 !await context.InscripcionesExamenes.AnyAsync(i =>
-                    i.ExamenId == examen.IdExamen && i.EstudianteId == dto.IdEstudiante))
+                    i.ExamenId == examen.IdExamen && i.EstudianteId == dto.IdEstudiante &&
+                    (i.Estado == "Inscripto" || i.Estado == "Aprobado" || i.Estado == "Desaprobado")))
                 return Results.BadRequest(new { mensaje = "El estudiante no está inscripto en este examen final." });
             if (examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase))
             {
                 var ahora = DateTime.UtcNow;
-                var fechaHabilitacion = examen.Fecha.Date.AddDays(1);
-                var fechaLimite = examen.Fecha.Date.AddDays(15).AddTicks(-1);
+                var fechaHabilitacion = PoliticasAcademicas.InicioCargaNotaFinal(examen.Fecha);
+                var fechaLimite = PoliticasAcademicas.LimiteCargaNotaFinal(examen.Fecha);
                 if (ahora < fechaHabilitacion)
                     return Results.Conflict(new { mensaje = "Todavía no pasó la fecha del examen final." });
                 if (ahora > fechaLimite)
@@ -1157,6 +1423,8 @@ public static class PortalEndpoints
 
             var nota = await context.Set<NotaExamen>().SingleOrDefaultAsync(n =>
                 n.IdExamen == dto.IdExamen && n.IdEstudiante == dto.IdEstudiante);
+            var notaAnterior = nota?.Nota;
+            var condicionAnterior = nota?.Condicion;
             if (nota is null)
             {
                 nota = new NotaExamen { IdExamen = dto.IdExamen, IdEstudiante = dto.IdEstudiante };
@@ -1164,17 +1432,65 @@ public static class PortalEndpoints
             }
             nota.Nota = dto.Nota;
             nota.Observaciones = dto.Observaciones;
-            nota.Condicion = EsFinal(examen) && dto.Nota >= examen.NotaMinimaRegularizacion
-                ? "Aprobó"
-                : examen.NotaMinimaPromocion.HasValue && dto.Nota >= examen.NotaMinimaPromocion.Value
-                ? "Promocionó"
-                : dto.Nota >= examen.NotaMinimaRegularizacion
-                    ? "Regularizó"
-                    : "Desaprobó";
+            nota.Condicion = PoliticasAcademicas.DeterminarCondicionNota(
+                dto.Nota, examen.NotaMinimaRegularizacion,
+                examen.NotaMinimaPromocion, EsFinal(examen));
+            if (EsFinal(examen))
+            {
+                var inscripcionFinal = await context.InscripcionesExamenes.SingleAsync(i =>
+                    i.ExamenId == examen.IdExamen && i.EstudianteId == dto.IdEstudiante);
+                inscripcionFinal.Estado = dto.Nota >= examen.NotaMinimaRegularizacion
+                    ? "Aprobado"
+                    : "Desaprobado";
+            }
             await context.SaveChangesAsync();
             await ActualizarEstadoMateriaAsync(dto.IdEstudiante, examen, context);
+            await NotificacionAutomaticaService.NotificarNotaCargadaAsync(
+                examen, dto.IdEstudiante, notaAnterior.HasValue, context);
+            context.RegistrosAuditoria.Add(new RegistroAuditoria
+            {
+                UsuarioId = usuarioId,
+                NombreUsuario = http.User.Identity?.Name ?? string.Empty,
+                Rol = RolesSistema.Docente,
+                Metodo = "NOTA",
+                Ruta = $"/api/docente/examenes/{examen.IdExamen}/estudiantes/{dto.IdEstudiante}",
+                EstadoHttp = StatusCodes.Status200OK,
+                Ip = http.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                Detalle = $"Nota: {(notaAnterior.HasValue ? notaAnterior.Value.ToString("0.##") : "sin cargar")} -> {nota.Nota:0.##}; condición: {condicionAnterior ?? "sin condición"} -> {nota.Condicion}.",
+                FechaUtc = DateTime.UtcNow
+            });
             await context.SaveChangesAsync();
             return Results.Ok(new { nota.IdNota, nota.Condicion });
+        });
+
+        docente.MapPut("/examenes/{examenId:int}/estudiantes/{estudianteId:int}/estado", async (
+            int examenId, int estudianteId, EstadoExamenAlumnoDto dto,
+            HttpContext http, AppDbContext context) =>
+        {
+            var estados = new[] { "Inscripto", "Ausente", "Anulado" };
+            if (!estados.Contains(dto.Estado, StringComparer.OrdinalIgnoreCase))
+                return Results.BadRequest(new { mensaje = "El estado debe ser Inscripto, Ausente o Anulado." });
+            var examen = await context.Set<Examen>().AsNoTracking()
+                .SingleOrDefaultAsync(e => e.IdExamen == examenId);
+            if (examen is null || !EsFinal(examen))
+                return Results.NotFound(new { mensaje = "El examen final no existe." });
+            if (examen.IdDocente != http.User.ObtenerUsuarioId()) return Results.Forbid();
+            if (DateTime.UtcNow < examen.Fecha.Date)
+                return Results.Conflict(new { mensaje = "El estado se registra una vez llegada la fecha del final." });
+            var inscripcion = await context.InscripcionesExamenes.SingleOrDefaultAsync(i =>
+                i.ExamenId == examenId && i.EstudianteId == estudianteId);
+            if (inscripcion is null) return Results.NotFound(new { mensaje = "El estudiante no estaba inscripto en el final." });
+            inscripcion.Estado = estados.Single(e => e.Equals(dto.Estado, StringComparison.OrdinalIgnoreCase));
+            if (inscripcion.Estado is "Ausente" or "Anulado")
+            {
+                var nota = await context.Set<NotaExamen>().SingleOrDefaultAsync(n =>
+                    n.IdExamen == examenId && n.IdEstudiante == estudianteId);
+                if (nota is not null) context.Remove(nota);
+            }
+            await context.SaveChangesAsync();
+            await ActualizarEstadoMateriaAsync(estudianteId, examen, context);
+            await context.SaveChangesAsync();
+            return Results.Ok(new { mensaje = $"El estudiante quedó registrado como {inscripcion.Estado}." });
         });
     }
 
@@ -1190,6 +1506,9 @@ public static class PortalEndpoints
     private static bool EsFinal(Examen examen) =>
         examen.TipoExamen.Equals("Final", StringComparison.OrdinalIgnoreCase);
 
+    private static bool EsRecuperatorio(Examen examen) =>
+        examen.TipoExamen.Equals("Recuperatorio", StringComparison.OrdinalIgnoreCase);
+
     private static async Task ActualizarEstadoMateriaAsync(int estudianteId, Examen examen,
         AppDbContext context)
     {
@@ -1203,7 +1522,7 @@ public static class PortalEndpoints
             e.IdMateria == examen.IdMateria && e.CicloLectivo == examen.CicloLectivo &&
             e.IdDocente == examen.IdDocente && e.TipoExamen == "Final" &&
             context.InscripcionesExamenes.Any(i => i.ExamenId == e.IdExamen &&
-                i.EstudianteId == estudianteId && i.Estado == "Inscripto") &&
+                i.EstudianteId == estudianteId && i.Estado != "Anulado" && i.Estado != "Ausente") &&
             context.Set<NotaExamen>().Any(n => n.IdExamen == e.IdExamen &&
                 n.IdEstudiante == estudianteId && n.Nota >= e.NotaMinimaRegularizacion));
         if (finalAprobado)
@@ -1224,15 +1543,75 @@ public static class PortalEndpoints
         var notas = await context.Set<NotaExamen>().AsNoTracking()
             .Where(n => n.IdEstudiante == estudianteId && ids.Contains(n.IdExamen))
             .ToListAsync();
-        if (notas.Count != evaluaciones.Count) return;
-
-        if (notas.All(n => n.Condicion == "Promocionó"))
+        var resultado = CalcularResultadoCursada(evaluaciones,
+            notas.ToDictionary(n => n.IdExamen));
+        if (resultado.Promociono)
             inscripcion.Estado = "Promocionada";
-        else if (evaluaciones.All(e => notas.Single(n => n.IdExamen == e.IdExamen).Nota >= e.NotaMinimaRegularizacion))
+        else if (resultado.Regularizo)
             inscripcion.Estado = "Regular";
+        else if (resultado.QuedoLibre)
+            inscripcion.Estado = "Libre";
         else
             inscripcion.Estado = "En curso";
     }
+
+    private static ResultadoCursada CalcularResultadoCursada(
+        IReadOnlyCollection<Examen> evaluaciones,
+        IReadOnlyDictionary<int, NotaExamen> notasPorExamen)
+    {
+        var evaluacionesBase = evaluaciones
+            .Where(e => !EsFinal(e) && (!EsRecuperatorio(e) || !e.ExamenRecuperadoId.HasValue))
+            .OrderBy(e => e.Fecha)
+            .ThenBy(e => e.IdExamen)
+            .ToList();
+        if (evaluacionesBase.Count == 0)
+            return new ResultadoCursada(0, 0, false, false, false, null);
+
+        var efectivas = new List<(Examen Examen, NotaExamen Nota, bool EsRecuperatorio)>();
+        var quedoLibre = false;
+        foreach (var evaluacionBase in evaluacionesBase)
+        {
+            notasPorExamen.TryGetValue(evaluacionBase.IdExamen, out var notaEfectiva);
+            var examenEfectivo = evaluacionBase;
+            var recuperatorios = evaluaciones
+                .Where(e => EsRecuperatorio(e) && e.ExamenRecuperadoId == evaluacionBase.IdExamen)
+                .OrderByDescending(e => e.Fecha)
+                .ThenByDescending(e => e.IdExamen)
+                .ToList();
+            var recuperatorioCalificado = recuperatorios
+                .FirstOrDefault(e => notasPorExamen.ContainsKey(e.IdExamen));
+            if (recuperatorioCalificado is not null)
+            {
+                examenEfectivo = recuperatorioCalificado;
+                notaEfectiva = notasPorExamen[recuperatorioCalificado.IdExamen];
+                quedoLibre |= notaEfectiva.Nota < recuperatorioCalificado.NotaMinimaRegularizacion;
+            }
+            else if (notaEfectiva is not null &&
+                notaEfectiva.Nota < evaluacionBase.NotaMinimaRegularizacion && recuperatorios.Count > 0)
+            {
+                notaEfectiva = null;
+            }
+
+            if (notaEfectiva is not null)
+                efectivas.Add((examenEfectivo, notaEfectiva,
+                    recuperatorioCalificado is not null));
+        }
+
+        var completas = efectivas.Count == evaluacionesBase.Count;
+        var promociono = completas && !quedoLibre &&
+            efectivas.All(x => x.Nota.Condicion == "Promocionó");
+        var regularizo = completas && !quedoLibre &&
+            efectivas.All(x => x.Nota.Nota >= x.Examen.NotaMinimaRegularizacion);
+        var promedio = promociono
+            ? Math.Round(efectivas.Average(x => x.Nota.Nota), 2)
+            : (decimal?)null;
+        return new ResultadoCursada(evaluacionesBase.Count, efectivas.Count,
+            promociono, regularizo, quedoLibre, promedio);
+    }
+
+    private sealed record ResultadoCursada(int EvaluacionesRequeridas,
+        int EvaluacionesCalificadas, bool Promociono, bool Regularizo,
+        bool QuedoLibre, decimal? PromedioPromocion);
 
     private static async Task<bool> EstaHabilitadoFinancieramenteAsync(int estudianteId,
         AppDbContext context)

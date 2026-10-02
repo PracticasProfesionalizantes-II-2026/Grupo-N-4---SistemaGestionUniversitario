@@ -10,17 +10,17 @@
   <div class="app-layout">
     <aside class="sidebar" id="sidebar"></aside>
     <main class="main-content">
-      <header class="topbar"><a class="back-button" href="PanelDirectivo.html" aria-label="Volver a la pantalla anterior">←</a><div class="header-actions"><a class="profile-avatar" href="MisDatosPersonales.html" aria-label="Mis datos personales"></a></div></header>
+      <header class="topbar"><a class="back-button" href="PanelSecretaria.html" aria-label="Volver a la pantalla anterior">←</a></header>
       <section class="page-content">
         <div class="admin-heading"><div><p class="section-kicker">Gestión financiera</p><h1>Matrículas y cuotas</h1><p>Actualizá el estado que habilita a cada estudiante para rendir exámenes finales.</p></div></div>
         <section class="panel table-panel">
           <div class="period-filter"><label>Año<input id="paymentYear" type="number" min="2020" max="2100"></label><label>Mes<select id="paymentMonth"></select></label><button id="loadPayments" class="primary-button" type="button">Consultar</button></div>
           <p id="paymentsStatus" class="status-message" role="status"></p>
-          <div class="table-wrapper"><table><thead><tr><th>Estudiante</th><th>Matrícula inicial</th><th>Cuota del período</th><th></th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+          <div class="table-wrapper"><table><thead><tr><th>Estudiante</th><th>Matrícula inicial</th><th>Cuota del período</th><th>Importe</th><th>Método</th><th>Comprobante</th><th></th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
         </section>
       </section>
     </main>
   </div>
-  <script src="Api.js"></script><script src="Comun.js"></script><script src="GestionPagos.js"></script>
+  <script src="Api.js?v=20261001-4"></script><script src="Comun.js"></script><script src="GestionPagos.js"></script>
 </body>
 </html>

@@ -25,3 +25,4 @@
   .student-summary { align-items: flex-start; flex-wrap: wrap; }
   .cycle-filter { width: 100%; margin-left: 0; }
 }
+ .document-link{display:block;color:#a54e00;font-weight:700;margin-bottom:6px}.upload-proof{border:1px solid #d3d3d3;background:#fff;border-radius:8px;padding:6px 9px;font-weight:700;cursor:pointer}

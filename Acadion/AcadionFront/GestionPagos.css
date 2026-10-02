@@ -8,3 +8,12 @@
 .student-photo { width: 38px; height: 38px; border-radius: 50%; background: #ff7a00; object-fit: cover; }
 .student-identity small { display: block; margin-top: 3px; color: #777; }
 .save-payment { padding: 8px 12px; border: 0; border-radius: 8px; background: var(--naranja); font-weight: 700; }
+.payment-input {
+  min-width: 120px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #d2d2d2;
+  border-radius: 9px;
+  background: #fff;
+}
+.receipt-link{display:block;color:#a54e00;font-weight:700;margin:3px 0}.muted{color:#777}
